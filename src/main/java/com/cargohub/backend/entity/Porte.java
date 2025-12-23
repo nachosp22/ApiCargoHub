@@ -19,47 +19,49 @@ public class Porte {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // --- RUTA Y DINERO ---
+    // --- RUTA ---
     private String origen;
     private String destino;
-    private Double distanciaKm;
-    private Double precio;
 
-    // --- CARGA (INPUT) ---
-    // Lo que escribe el cliente: "Quiero llevar un piano de cola y 3 cajas"
+    // ESTOS SON LOS CAMPOS QUE TE FALTAN Y CAUSAN EL ERROR
+    private Double latitudOrigen;
+    private Double longitudOrigen;
+    private Double latitudDestino;
+    private Double longitudDestino;
+
+    private Double distanciaKm;
+    private boolean distanciaEstimada = false;
+
+    // --- ECONOMÍA ---
+    private Double precio;
+    private Double ajustePrecio = 0.0; // <-- Campo para penalizaciones
+    private String motivoAjuste;       // <-- Motivo del ajuste
+
+    // --- CARGA ---
     @Column(columnDefinition = "TEXT")
     private String descripcionCliente;
-
-    // --- CÁLCULOS DE LA IA (OUTPUT) ---
-    // Dimensiones estimadas por n8n para hacer el matching
     private Double pesoTotalKg;
     private Double volumenTotalM3;
-    private Double largoMaxPaquete; // Vital para ver si cabe de largo
+    private Double largoMaxPaquete;
 
-    // Preferencias técnicas
     @Enumerated(EnumType.STRING)
     private TipoVehiculo tipoVehiculoRequerido;
-    private boolean requiereFrio;
+    private boolean requiereFrio = false;
 
-    // --- SEGURIDAD Y ERRORES (HUMAN-IN-THE-LOOP) ---
-
-    // Si esto es TRUE, el algoritmo SE DETIENE y el porte no se asigna.
-    // Aparecerá en el Dashboard del Admin con una alerta roja.
+    // --- SEGURIDAD ---
     private boolean revisionManual = false;
-
-    // Aquí guardamos por qué falló:
-    // "IA con baja confianza", "Dimensiones imposibles", "Sin vehículos disponibles"
     private String motivoRevision;
 
-    // --- ESTADO Y FECHAS ---
     @Enumerated(EnumType.STRING)
     private EstadoPorte estado = EstadoPorte.PENDIENTE;
+
+    @Version
+    private Integer version;
 
     private LocalDateTime fechaCreacion = LocalDateTime.now();
     private LocalDateTime fechaRecogida;
     private LocalDateTime fechaEntrega;
 
-    // --- RELACIONES ---
     @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
@@ -68,7 +70,15 @@ public class Porte {
     @JoinColumn(name = "conductor_id")
     private Conductor conductor;
 
+    // El vehículo es opcional, así que no da error si falta
     @ManyToOne
     @JoinColumn(name = "vehiculo_id")
     private Vehiculo vehiculo;
+
+    // Helper para el precio final
+    public Double getPrecioFinal() {
+        Double p = this.precio != null ? this.precio : 0.0;
+        Double a = this.ajustePrecio != null ? this.ajustePrecio : 0.0;
+        return p + a;
+    }
 }
