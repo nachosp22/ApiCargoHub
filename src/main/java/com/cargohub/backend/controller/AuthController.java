@@ -9,6 +9,7 @@ import com.cargohub.backend.service.ConductorService;
 import com.cargohub.backend.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder; // <--- Importante
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -25,23 +26,24 @@ public class AuthController {
     @Autowired private ConductorService conductorService;
     @Autowired private ClienteService clienteService;
 
-    // --- 1. REGISTRO (Ahora crea perfiles automáticos) ---
+    @Autowired private PasswordEncoder passwordEncoder; // <--- Inyectamos el codificador
+
+    // --- EL REGISTRO NO CAMBIA (El servicio ya encripta) ---
     @PostMapping("/register")
     public ResponseEntity<?> registrar(@RequestParam String email,
                                        @RequestParam String password,
                                        @RequestParam RolUsuario rol) {
         try {
-            // 1. Crear el Usuario base (Login)
             Usuario nuevoUsuario = usuarioService.registrarUsuario(email, password, rol);
 
-            // 2. Crear el Perfil asociado según el rol (Para evitar errores de SQL)
+            // ... (Lógica de perfiles Conductor/Cliente se mantiene igual) ...
             if (rol == RolUsuario.CONDUCTOR) {
                 Conductor c = new Conductor();
                 c.setUsuario(nuevoUsuario);
-                c.setNombre("Conductor " + email.split("@")[0]); // Nombre temporal
-                c.setDni("TEMP-" + UUID.randomUUID().toString().substring(0, 8)); // DNI temporal único
+                c.setNombre("Conductor " + email.split("@")[0]);
+                c.setDni("TEMP-" + UUID.randomUUID().toString().substring(0, 8));
                 c.setTelefono("000000000");
-                c.setCiudadBase("Madrid"); // Base por defecto
+                c.setCiudadBase("Madrid");
                 c.setLatitudBase(40.416);
                 c.setLongitudBase(-3.703);
                 conductorService.guardarOActualizar(c);
@@ -50,7 +52,7 @@ public class AuthController {
                 Cliente cli = new Cliente();
                 cli.setUsuario(nuevoUsuario);
                 cli.setNombreEmpresa("Empresa " + email.split("@")[0]);
-                cli.setCif("TEMP-" + UUID.randomUUID().toString().substring(0, 8)); // CIF temporal
+                cli.setCif("TEMP-" + UUID.randomUUID().toString().substring(0, 8));
                 cli.setEmailContacto(email);
                 cli.setDireccionFiscal("Dirección pendiente");
                 clienteService.guardarCliente(cli);
@@ -62,12 +64,14 @@ public class AuthController {
         }
     }
 
-    // --- 2. LOGIN (Igual que antes) ---
+    // --- LOGIN SEGURO ---
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
         Optional<Usuario> userOpt = usuarioService.buscarPorEmail(email);
 
-        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
+        // CAMBIO: Usamos .matches(raw, hash) en lugar de .equals()
+        if (userOpt.isPresent() && passwordEncoder.matches(password, userOpt.get().getPassword())) {
+
             Usuario usuario = userOpt.get();
             if (!usuario.isActivo()) return ResponseEntity.badRequest().body("Usuario inactivo");
 
@@ -76,6 +80,7 @@ public class AuthController {
             respuesta.put("email", usuario.getEmail());
             respuesta.put("rol", usuario.getRol());
 
+            // Rellenar datos extra según rol
             if (usuario.getRol() == RolUsuario.CONDUCTOR) {
                 try {
                     Conductor c = conductorService.obtenerPorEmailUsuario(usuario.getEmail());

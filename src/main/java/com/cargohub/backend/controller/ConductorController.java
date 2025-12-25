@@ -49,4 +49,10 @@ public class ConductorController {
     public ResponseEntity<Conductor> verPerfil(@PathVariable Long id) {
         return ResponseEntity.ok(conductorService.obtenerPorId(id));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> darDeBaja(@PathVariable Long id) {
+        conductorService.darDeBajaConductor(id);
+        return ResponseEntity.ok("Conductor dado de baja (Historial conservado)");
+    }
 }
