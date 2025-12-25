@@ -13,22 +13,16 @@ import java.util.List;
 @Repository
 public interface PorteRepository extends JpaRepository<Porte, Long> {
 
-    // --- 1. MARKETPLACE (Escaparate para conductores) ---
-    // Muestra viajes en estado "PENDIENTE" (o BUSCANDO_CONDUCTOR) ordenados por urgencia.
-    // Los más próximos a recoger salen primero.
+    // 1. Marketplace
     List<Porte> findByEstadoOrderByFechaRecogidaAsc(EstadoPorte estado);
 
-    // --- 2. PANELES DE USUARIO ---
-
-    // Para la App del Conductor: "Mis Viajes" (Historial y Activos)
+    // 2. Mis Viajes (Búsqueda directa por Conductor)
     List<Porte> findByConductorId(Long conductorId);
 
-    // Para la Web del Cliente: "Mis Envíos"
     List<Porte> findByClienteId(Long clienteId);
 
-    // --- 3. VALIDACIÓN DE SOLAPAMIENTO (Evitar Doblete) ---
-    // Devuelve TRUE si el conductor ya tiene un viaje ACTIVO (Asignado o En Ruta)
-    // que coincida con las fechas del nuevo porte que quiere coger.
+    // 3. Validación de Solapamiento
+    // Comprobamos si EL CONDUCTOR ya tiene viaje (independiente del camión)
     @Query("SELECT COUNT(p) > 0 FROM Porte p " +
             "WHERE p.conductor.id = :conductorId " +
             "AND p.estado IN ('ASIGNADO', 'EN_TRANSITO') " +

@@ -22,33 +22,31 @@ public class Porte {
     // --- RUTA ---
     private String origen;
     private String destino;
-
-    // ESTOS SON LOS CAMPOS QUE TE FALTAN Y CAUSAN EL ERROR
     private Double latitudOrigen;
     private Double longitudOrigen;
     private Double latitudDestino;
     private Double longitudDestino;
 
     private Double distanciaKm;
-    private boolean distanciaEstimada = false;
+    private boolean distanciaEstimada = true;
 
     // --- ECONOMÍA ---
     private Double precio;
-    private Double ajustePrecio = 0.0; // <-- Campo para penalizaciones
-    private String motivoAjuste;       // <-- Motivo del ajuste
+    private Double ajustePrecio = 0.0;
+    private String motivoAjuste;
 
     // --- CARGA ---
     @Column(columnDefinition = "TEXT")
     private String descripcionCliente;
+
     private Double pesoTotalKg;
     private Double volumenTotalM3;
     private Double largoMaxPaquete;
 
     @Enumerated(EnumType.STRING)
     private TipoVehiculo tipoVehiculoRequerido;
-    private boolean requiereFrio = false;
 
-    // --- SEGURIDAD ---
+    // --- CONTROL ---
     private boolean revisionManual = false;
     private String motivoRevision;
 
@@ -62,6 +60,7 @@ public class Porte {
     private LocalDateTime fechaRecogida;
     private LocalDateTime fechaEntrega;
 
+    // --- RELACIONES ---
     @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
@@ -70,12 +69,6 @@ public class Porte {
     @JoinColumn(name = "conductor_id")
     private Conductor conductor;
 
-    // El vehículo es opcional, así que no da error si falta
-    @ManyToOne
-    @JoinColumn(name = "vehiculo_id")
-    private Vehiculo vehiculo;
-
-    // Helper para el precio final
     public Double getPrecioFinal() {
         Double p = this.precio != null ? this.precio : 0.0;
         Double a = this.ajustePrecio != null ? this.ajustePrecio : 0.0;
