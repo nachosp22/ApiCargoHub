@@ -21,7 +21,6 @@ public class CalculadoraPrecioService {
     // --- SUPLEMENTOS (PORCENTAJES) ---
     private static final double PLUS_NOCTURNO = 0.20;
     private static final double PLUS_FIN_SEMANA = 0.25;
-    private static final double PLUS_REFRIGERADO = 0.15;
 
     // --- TARIFAS MÍNIMAS (SEGÚN VEHÍCULO) ---
     private static final double MINIMO_TRAILER = 90.0;
@@ -49,10 +48,6 @@ public class CalculadoraPrecioService {
 
         if (esFinDeSemana(porte.getFechaRecogida()) || esFinDeSemana(porte.getFechaEntrega())) {
             multiplicador += PLUS_FIN_SEMANA;
-        }
-
-        if (porte.isRequiereFrio()) {
-            multiplicador += PLUS_REFRIGERADO;
         }
 
         precioTotal = precioTotal * multiplicador;

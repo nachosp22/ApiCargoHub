@@ -44,6 +44,12 @@ public class ConductorController {
         return ResponseEntity.ok(conductorService.agregarBloqueo(id, bloqueo));
     }
 
+    @DeleteMapping("/agenda/{bloqueoId}")
+    public ResponseEntity<?> eliminarBloqueo(@PathVariable Long bloqueoId) {
+        conductorService.eliminarBloqueo(bloqueoId);
+        return ResponseEntity.ok("Bloqueo de agenda eliminado correctamente");
+    }
+
     // Perfil completo
     @GetMapping("/{id}")
     public ResponseEntity<Conductor> verPerfil(@PathVariable Long id) {
