@@ -64,4 +64,14 @@ public class IncidenciaService {
     public List<Incidencia> listarPorPorte(Long porteId) {
         return incidenciaRepository.findByPorteId(porteId);
     }
+
+    // --- 4. MÉTODOS ADICIONALES ---
+    public List<Incidencia> listarTodas() {
+        return incidenciaRepository.findAll();
+    }
+
+    public Incidencia obtenerPorId(Long id) {
+        return incidenciaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Incidencia no encontrada"));
+    }
 }

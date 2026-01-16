@@ -65,4 +65,16 @@ public class PorteController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // 7. Obtener Porte por ID (Admin/Cliente/Conductor)
+    @GetMapping("/{porteId}")
+    public ResponseEntity<?> obtenerPorte(@PathVariable Long porteId) {
+        return ResponseEntity.ok(porteService.obtenerPorId(porteId));
+    }
+
+    // 8. Listar Portes por Conductor (Conductor)
+    @GetMapping("/conductor/{conductorId}")
+    public ResponseEntity<List<Porte>> listarPortesConductor(@PathVariable Long conductorId) {
+        return ResponseEntity.ok(porteService.listarPortesPorConductor(conductorId));
+    }
 }
