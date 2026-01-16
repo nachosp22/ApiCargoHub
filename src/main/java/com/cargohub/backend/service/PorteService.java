@@ -140,4 +140,15 @@ public class PorteService {
 
         return nuevaFactura;
     }
+
+    // 7. Obtener Porte por ID
+    public Porte obtenerPorId(Long porteId) {
+        return porteRepository.findById(porteId)
+                .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
+    }
+
+    // 8. Listar Portes por Conductor
+    public List<Porte> listarPortesPorConductor(Long conductorId) {
+        return porteRepository.findByConductorId(conductorId);
+    }
 }

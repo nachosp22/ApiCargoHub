@@ -56,6 +56,24 @@ public class ConductorController {
         return ResponseEntity.ok(conductorService.obtenerPorId(id));
     }
 
+    // Actualizar perfil
+    @PutMapping("/{id}")
+    public ResponseEntity<Conductor> actualizarPerfil(@PathVariable Long id, @RequestBody Conductor datosNuevos) {
+        Conductor conductor = conductorService.obtenerPorId(id);
+
+        // Actualizamos solo lo editable
+        if (datosNuevos.getNombre() != null) conductor.setNombre(datosNuevos.getNombre());
+        if (datosNuevos.getApellidos() != null) conductor.setApellidos(datosNuevos.getApellidos());
+        if (datosNuevos.getTelefono() != null) conductor.setTelefono(datosNuevos.getTelefono());
+        if (datosNuevos.getCiudadBase() != null) conductor.setCiudadBase(datosNuevos.getCiudadBase());
+        if (datosNuevos.getLatitudBase() != null) conductor.setLatitudBase(datosNuevos.getLatitudBase());
+        if (datosNuevos.getLongitudBase() != null) conductor.setLongitudBase(datosNuevos.getLongitudBase());
+        if (datosNuevos.getRadioAccionKm() != null) conductor.setRadioAccionKm(datosNuevos.getRadioAccionKm());
+        if (datosNuevos.getDiasLaborables() != null) conductor.setDiasLaborables(datosNuevos.getDiasLaborables());
+
+        return ResponseEntity.ok(conductorService.guardarOActualizar(conductor));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> darDeBaja(@PathVariable Long id) {
         conductorService.darDeBajaConductor(id);

@@ -39,4 +39,22 @@ public class IncidenciaController {
     public ResponseEntity<List<Incidencia>> listarPendientes() {
         return ResponseEntity.ok(incidenciaService.listarPendientes());
     }
+
+    // 4. Listar Todas
+    @GetMapping
+    public ResponseEntity<List<Incidencia>> listarTodas() {
+        return ResponseEntity.ok(incidenciaService.listarTodas());
+    }
+
+    // 5. Obtener por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Incidencia> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(incidenciaService.obtenerPorId(id));
+    }
+
+    // 6. Listar por Porte
+    @GetMapping("/porte/{porteId}")
+    public ResponseEntity<List<Incidencia>> listarPorPorte(@PathVariable Long porteId) {
+        return ResponseEntity.ok(incidenciaService.listarPorPorte(porteId));
+    }
 }
