@@ -33,4 +33,14 @@ public class Cliente {
     private String emailContacto; // Email de contacto para notificaciones
 
     private String sector;
+    
+    // Normalize CIF/DNI to uppercase
+    public void setCif(String cif) {
+        this.cif = cif != null ? cif.toUpperCase() : null;
+    }
+    
+    // Normalize email to lowercase
+    public void setEmailContacto(String emailContacto) {
+        this.emailContacto = emailContacto != null ? emailContacto.toLowerCase() : null;
+    }
 }
