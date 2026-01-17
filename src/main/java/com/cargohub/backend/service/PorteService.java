@@ -10,6 +10,7 @@ import com.cargohub.backend.repository.ConductorRepository;
 import com.cargohub.backend.repository.PorteRepository;
 import com.cargohub.backend.repository.VehiculoRepository;
 import com.cargohub.backend.util.CalculadoraDistancia;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class PorteService {
 
@@ -90,7 +92,7 @@ public class PorteService {
             Vehiculo v = candidatos.get(0);
             porte.setConductor(v.getConductor());
             porte.setEstado(EstadoPorte.ASIGNADO);
-            System.out.println("Asignado a conductor: " + v.getConductor().getNombre());
+            log.info("Asignado a conductor: {}", v.getConductor().getNombre());
         } else {
             // NO MATCH: Se queda pendiente y marcamos revisión (solo si no está ya marcado)
             if (!porte.isRevisionManual()) {

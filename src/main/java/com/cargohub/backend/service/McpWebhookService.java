@@ -3,6 +3,7 @@ package com.cargohub.backend.service;
 import com.cargohub.backend.dto.McpWebhookRequest;
 import com.cargohub.backend.dto.McpWebhookResponse;
 import com.cargohub.backend.entity.enums.TipoVehiculo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+@Slf4j
 @Service
 public class McpWebhookService {
 
@@ -59,7 +61,7 @@ public class McpWebhookService {
             
         } catch (Exception e) {
             // If webhook fails, return a default response with manual review flag
-            System.err.println("Error calling MCP webhook: " + e.getMessage());
+            log.error("Error calling MCP webhook: {}", e.getMessage(), e);
             return createDefaultResponse("Error al conectar con el webhook: " + e.getMessage());
         }
     }
