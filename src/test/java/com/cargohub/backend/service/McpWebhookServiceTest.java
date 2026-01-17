@@ -5,19 +5,24 @@ import com.cargohub.backend.entity.enums.TipoVehiculo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class McpWebhookServiceTest {
 
+    @Mock
+    private RestTemplate restTemplate;
+
     private McpWebhookService mcpWebhookService;
 
     @BeforeEach
     void setUp() {
-        mcpWebhookService = new McpWebhookService();
+        mcpWebhookService = new McpWebhookService(restTemplate);
     }
 
     @Test

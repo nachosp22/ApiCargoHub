@@ -4,6 +4,7 @@ import com.cargohub.backend.dto.McpWebhookRequest;
 import com.cargohub.backend.dto.McpWebhookResponse;
 import com.cargohub.backend.entity.enums.TipoVehiculo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,8 +22,9 @@ public class McpWebhookService {
 
     private final RestTemplate restTemplate;
 
-    public McpWebhookService() {
-        this.restTemplate = new RestTemplate();
+    @Autowired
+    public McpWebhookService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     /**

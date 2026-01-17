@@ -1,5 +1,6 @@
 package com.cargohub.backend.service;
 
+import com.cargohub.backend.dto.McpWebhookResponse;
 import com.cargohub.backend.entity.Conductor;
 import com.cargohub.backend.entity.Porte;
 import com.cargohub.backend.entity.Vehiculo;
@@ -170,7 +171,7 @@ class PorteServiceTest {
         // Given
         porte.setDescripcionCliente("10 cajas de 50kg cada una, medidas 1x1x1 metros");
         
-        com.cargohub.backend.dto.McpWebhookResponse mcpResponse = new com.cargohub.backend.dto.McpWebhookResponse();
+        McpWebhookResponse mcpResponse = new McpWebhookResponse();
         mcpResponse.setPesoTotalKg(525.0); // 500kg + 5% margen
         mcpResponse.setVolumenTotalM3(10.5); // 10m3 + 5% margen
         mcpResponse.setLargoMaxPaquete(1.05); // 1m + 5% margen
@@ -211,7 +212,7 @@ class PorteServiceTest {
         // Given
         porte.setDescripcionCliente("Carga con medidas no claras");
         
-        com.cargohub.backend.dto.McpWebhookResponse mcpResponse = new com.cargohub.backend.dto.McpWebhookResponse();
+        McpWebhookResponse mcpResponse = new McpWebhookResponse();
         mcpResponse.setPesoTotalKg(0.0);
         mcpResponse.setVolumenTotalM3(0.0);
         mcpResponse.setLargoMaxPaquete(0.0);
