@@ -92,9 +92,11 @@ public class PorteService {
             porte.setEstado(EstadoPorte.ASIGNADO);
             System.out.println("Asignado a conductor: " + v.getConductor().getNombre());
         } else {
-            // NO MATCH: Se queda pendiente y marcamos revisión
-            porte.setRevisionManual(true);
-            porte.setMotivoRevision("No hay vehículo compatible (Peso/Largo)");
+            // NO MATCH: Se queda pendiente y marcamos revisión (solo si no está ya marcado)
+            if (!porte.isRevisionManual()) {
+                porte.setRevisionManual(true);
+                porte.setMotivoRevision("No hay vehículo compatible (Peso/Largo)");
+            }
         }
 
         return porteRepository.save(porte);

@@ -178,10 +178,17 @@ class PorteServiceTest {
         mcpResponse.setRevisionManual(false);
         mcpResponse.setMotivoRevision(null);
         
+        // Mock vehiculo compatible
+        Vehiculo vehiculo = new Vehiculo();
+        vehiculo.setId(1L);
+        vehiculo.setConductor(conductor);
+        
         when(mcpWebhookService.calcularDimensiones(anyString())).thenReturn(mcpResponse);
         when(mcpWebhookService.convertirTipoVehiculo("FURGONETA")).thenReturn(TipoVehiculo.FURGONETA);
         when(calculadoraPrecio.calcularPrecioTotal(any(Porte.class))).thenReturn(150.0);
-        when(porteRepository.save(any(Porte.class))).thenReturn(porte);
+        when(vehiculoRepository.findCandidatos(any(TipoVehiculo.class), anyDouble(), anyInt()))
+                .thenReturn(java.util.List.of(vehiculo));
+        when(porteRepository.save(any(Porte.class))).thenAnswer(invocation -> invocation.getArgument(0));
         
         // When
         Porte resultado = porteService.crearPorte(porte);
@@ -193,6 +200,8 @@ class PorteServiceTest {
         assertEquals(1.05, resultado.getLargoMaxPaquete());
         assertEquals(TipoVehiculo.FURGONETA, resultado.getTipoVehiculoRequerido());
         assertFalse(resultado.isRevisionManual());
+        assertEquals(EstadoPorte.ASIGNADO, resultado.getEstado());
+        assertEquals(conductor, resultado.getConductor());
         verify(mcpWebhookService, times(1)).calcularDimensiones(anyString());
         verify(porteRepository, times(1)).save(any(Porte.class));
     }
@@ -212,7 +221,9 @@ class PorteServiceTest {
         
         when(mcpWebhookService.calcularDimensiones(anyString())).thenReturn(mcpResponse);
         when(calculadoraPrecio.calcularPrecioTotal(any(Porte.class))).thenReturn(150.0);
-        when(porteRepository.save(any(Porte.class))).thenReturn(porte);
+        when(vehiculoRepository.findCandidatos(any(), anyDouble(), anyInt()))
+                .thenReturn(java.util.Collections.emptyList());
+        when(porteRepository.save(any(Porte.class))).thenAnswer(invocation -> invocation.getArgument(0));
         
         // When
         Porte resultado = porteService.crearPorte(porte);
@@ -221,6 +232,7 @@ class PorteServiceTest {
         assertNotNull(resultado);
         assertTrue(resultado.isRevisionManual());
         assertEquals("Medidas no claras en la descripción", resultado.getMotivoRevision());
+        assertEquals(EstadoPorte.PENDIENTE, resultado.getEstado());
         verify(mcpWebhookService, times(1)).calcularDimensiones(anyString());
         verify(porteRepository, times(1)).save(any(Porte.class));
     }
