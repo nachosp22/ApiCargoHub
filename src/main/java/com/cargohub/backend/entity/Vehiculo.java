@@ -23,6 +23,11 @@ public class Vehiculo {
     private String marca;
     private String modelo;
 
+    // Normalize matricula (license plate) to uppercase
+    public void setMatricula(String matricula) {
+        this.matricula = matricula != null ? matricula.toUpperCase() : null;
+    }
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoVehiculo tipo;

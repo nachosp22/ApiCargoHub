@@ -22,6 +22,11 @@ public class Usuario {
     @Column(unique = true, nullable = false)
     private String email;
 
+    // Normalize email to lowercase to avoid case-sensitivity issues
+    public void setEmail(String email) {
+        this.email = email != null ? email.toLowerCase() : null;
+    }
+
     @Column(nullable = false)
     private String password; // Aquí guardaremos la contraseña encriptada
 

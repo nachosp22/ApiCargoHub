@@ -29,6 +29,11 @@ public class Conductor {
     private String dni;
     private String telefono;
 
+    // Normalize DNI to uppercase
+    public void setDni(String dni) {
+        this.dni = dni != null ? dni.toUpperCase() : null;
+    }
+
     // --- 1. UBICACIÓN "CASA" (ESTÁTICA) ---
     // Se rellena al registrarse. Sirve para calcular retornos a casa.
     private String ciudadBase;       // Para mostrar: "Madrid"

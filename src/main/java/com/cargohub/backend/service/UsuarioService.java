@@ -22,12 +22,15 @@ public class UsuarioService {
 
     @Transactional
     public Usuario registrarUsuario(String email, String password, RolUsuario rol) {
-        if (usuarioRepository.existsByEmail(email)) {
-            throw new RuntimeException("El email " + email + " ya está registrado.");
+        // Normalize email to lowercase
+        String normalizedEmail = email != null ? email.toLowerCase() : null;
+        
+        if (usuarioRepository.existsByEmail(normalizedEmail)) {
+            throw new RuntimeException("El email " + normalizedEmail + " ya está registrado.");
         }
 
         Usuario usuario = new Usuario();
-        usuario.setEmail(email);
+        usuario.setEmail(normalizedEmail);
 
         // CAMBIO CLAVE: Encriptamos la contraseña "1234" -> "$2a$10$..."
         usuario.setPassword(passwordEncoder.encode(password));
@@ -40,6 +43,8 @@ public class UsuarioService {
     }
 
     public Optional<Usuario> buscarPorEmail(String email) {
-        return usuarioRepository.findByEmail(email);
+        // Normalize email to lowercase for search
+        String normalizedEmail = email != null ? email.toLowerCase() : null;
+        return usuarioRepository.findByEmail(normalizedEmail);
     }
 }

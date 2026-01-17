@@ -34,13 +34,17 @@ public class ClienteService {
      * Vital para el Login: Permite saber qué ID de cliente tiene un usuario logueado.
      */
     public Cliente obtenerPorEmailUsuario(String email) {
-        return clienteRepository.findByUsuarioEmail(email)
+        // Normalize email to lowercase for search
+        String normalizedEmail = email != null ? email.toLowerCase() : null;
+        return clienteRepository.findByUsuarioEmail(normalizedEmail)
                 .orElseThrow(() -> new RuntimeException("No existe perfil de cliente para este usuario"));
     }
 
     // --- 2. UTILIDADES ---
 
     public boolean existeClienteParaUsuario(String email) {
-        return clienteRepository.findByUsuarioEmail(email).isPresent();
+        // Normalize email to lowercase for search
+        String normalizedEmail = email != null ? email.toLowerCase() : null;
+        return clienteRepository.findByUsuarioEmail(normalizedEmail).isPresent();
     }
 }

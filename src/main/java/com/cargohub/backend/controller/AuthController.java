@@ -67,7 +67,9 @@ public class AuthController {
     // --- LOGIN SEGURO ---
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
-        Optional<Usuario> userOpt = usuarioService.buscarPorEmail(email);
+        // Normalize email to lowercase for login
+        String normalizedEmail = email != null ? email.toLowerCase() : null;
+        Optional<Usuario> userOpt = usuarioService.buscarPorEmail(normalizedEmail);
 
         // CAMBIO: Usamos .matches(raw, hash) en lugar de .equals()
         if (userOpt.isPresent() && passwordEncoder.matches(password, userOpt.get().getPassword())) {

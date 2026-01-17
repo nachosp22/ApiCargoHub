@@ -36,7 +36,9 @@ public class ConductorService {
     }
 
     public Conductor obtenerPorEmailUsuario(String email) {
-        return conductorRepository.findByUsuarioEmail(email)
+        // Normalize email to lowercase for search
+        String normalizedEmail = email != null ? email.toLowerCase() : null;
+        return conductorRepository.findByUsuarioEmail(normalizedEmail)
                 .orElseThrow(() -> new RuntimeException("No existe conductor asociado a este email"));
     }
 
