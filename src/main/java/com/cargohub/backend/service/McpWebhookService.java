@@ -34,7 +34,7 @@ public class McpWebhookService {
      */
     public McpWebhookResponse calcularDimensiones(String descripcionCliente) {
         // If webhook URL is not configured or description is empty, return null
-        if (webhookUrl == null || webhookUrl.isEmpty() || descripcionCliente == null || descripcionCliente.isEmpty()) {
+        if (webhookUrl == null || webhookUrl.isBlank() || descripcionCliente == null || descripcionCliente.isBlank()) {
             return createDefaultResponse("Webhook no configurado o descripción vacía");
         }
 
