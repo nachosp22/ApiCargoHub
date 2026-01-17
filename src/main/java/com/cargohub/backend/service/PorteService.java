@@ -1,9 +1,11 @@
 package com.cargohub.backend.service;
 
+import com.cargohub.backend.dto.McpWebhookResponse;
 import com.cargohub.backend.entity.Factura;
 import com.cargohub.backend.entity.Porte;
 import com.cargohub.backend.entity.Vehiculo;
 import com.cargohub.backend.entity.enums.EstadoPorte;
+import com.cargohub.backend.entity.enums.TipoVehiculo;
 import com.cargohub.backend.repository.ConductorRepository;
 import com.cargohub.backend.repository.PorteRepository;
 import com.cargohub.backend.repository.VehiculoRepository;
@@ -25,9 +27,42 @@ public class PorteService {
     // --- NUEVAS DEPENDENCIAS NECESARIAS ---
     @Autowired private FacturaService facturaService;
     @Autowired private ConductorRepository conductorRepository;
+    @Autowired private McpWebhookService mcpWebhookService;
 
     @Transactional
     public Porte crearPorte(Porte porte) {
+        // 0. LLAMAR AL MCP WEBHOOK PARA CALCULAR DIMENSIONES
+        if (porte.getDescripcionCliente() != null && !porte.getDescripcionCliente().isEmpty()) {
+            McpWebhookResponse mcpResponse = mcpWebhookService.calcularDimensiones(porte.getDescripcionCliente());
+            
+            if (mcpResponse != null) {
+                // Aplicar dimensiones calculadas por el MCP
+                if (mcpResponse.getPesoTotalKg() != null && mcpResponse.getPesoTotalKg() > 0) {
+                    porte.setPesoTotalKg(mcpResponse.getPesoTotalKg());
+                }
+                if (mcpResponse.getVolumenTotalM3() != null && mcpResponse.getVolumenTotalM3() > 0) {
+                    porte.setVolumenTotalM3(mcpResponse.getVolumenTotalM3());
+                }
+                if (mcpResponse.getLargoMaxPaquete() != null && mcpResponse.getLargoMaxPaquete() > 0) {
+                    porte.setLargoMaxPaquete(mcpResponse.getLargoMaxPaquete());
+                }
+                
+                // Aplicar tipo de vehículo si fue calculado
+                if (mcpResponse.getTipoVehiculoRequerido() != null && !mcpResponse.getTipoVehiculoRequerido().isEmpty()) {
+                    TipoVehiculo tipoCalculado = mcpWebhookService.convertirTipoVehiculo(mcpResponse.getTipoVehiculoRequerido());
+                    if (tipoCalculado != null) {
+                        porte.setTipoVehiculoRequerido(tipoCalculado);
+                    }
+                }
+                
+                // Aplicar flags de revisión manual
+                if (mcpResponse.getRevisionManual() != null && mcpResponse.getRevisionManual()) {
+                    porte.setRevisionManual(true);
+                    porte.setMotivoRevision(mcpResponse.getMotivoRevision());
+                }
+            }
+        }
+
         // 1. Distancia
         double km = CalculadoraDistancia.calcularKm(
                 porte.getLatitudOrigen(), porte.getLongitudOrigen(),

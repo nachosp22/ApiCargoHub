@@ -40,6 +40,9 @@ class PorteServiceTest {
     @Mock
     private ConductorRepository conductorRepository;
 
+    @Mock
+    private McpWebhookService mcpWebhookService;
+
     @InjectMocks
     private PorteService porteService;
 
@@ -160,5 +163,65 @@ class PorteServiceTest {
             porteService.obtenerPorId(999L);
         });
         assertEquals("Porte no encontrado", exception.getMessage());
+    }
+
+    @Test
+    void testCrearPorte_ConMcpWebhook() {
+        // Given
+        porte.setDescripcionCliente("10 cajas de 50kg cada una, medidas 1x1x1 metros");
+        
+        com.cargohub.backend.dto.McpWebhookResponse mcpResponse = new com.cargohub.backend.dto.McpWebhookResponse();
+        mcpResponse.setPesoTotalKg(525.0); // 500kg + 5% margen
+        mcpResponse.setVolumenTotalM3(10.5); // 10m3 + 5% margen
+        mcpResponse.setLargoMaxPaquete(1.05); // 1m + 5% margen
+        mcpResponse.setTipoVehiculoRequerido("FURGONETA");
+        mcpResponse.setRevisionManual(false);
+        mcpResponse.setMotivoRevision(null);
+        
+        when(mcpWebhookService.calcularDimensiones(anyString())).thenReturn(mcpResponse);
+        when(mcpWebhookService.convertirTipoVehiculo("FURGONETA")).thenReturn(TipoVehiculo.FURGONETA);
+        when(calculadoraPrecio.calcularPrecioTotal(any(Porte.class))).thenReturn(150.0);
+        when(porteRepository.save(any(Porte.class))).thenReturn(porte);
+        
+        // When
+        Porte resultado = porteService.crearPorte(porte);
+        
+        // Then
+        assertNotNull(resultado);
+        assertEquals(525.0, resultado.getPesoTotalKg());
+        assertEquals(10.5, resultado.getVolumenTotalM3());
+        assertEquals(1.05, resultado.getLargoMaxPaquete());
+        assertEquals(TipoVehiculo.FURGONETA, resultado.getTipoVehiculoRequerido());
+        assertFalse(resultado.isRevisionManual());
+        verify(mcpWebhookService, times(1)).calcularDimensiones(anyString());
+        verify(porteRepository, times(1)).save(any(Porte.class));
+    }
+
+    @Test
+    void testCrearPorte_ConMcpWebhook_RevisionManual() {
+        // Given
+        porte.setDescripcionCliente("Carga con medidas no claras");
+        
+        com.cargohub.backend.dto.McpWebhookResponse mcpResponse = new com.cargohub.backend.dto.McpWebhookResponse();
+        mcpResponse.setPesoTotalKg(0.0);
+        mcpResponse.setVolumenTotalM3(0.0);
+        mcpResponse.setLargoMaxPaquete(0.0);
+        mcpResponse.setTipoVehiculoRequerido(null);
+        mcpResponse.setRevisionManual(true);
+        mcpResponse.setMotivoRevision("Medidas no claras en la descripción");
+        
+        when(mcpWebhookService.calcularDimensiones(anyString())).thenReturn(mcpResponse);
+        when(calculadoraPrecio.calcularPrecioTotal(any(Porte.class))).thenReturn(150.0);
+        when(porteRepository.save(any(Porte.class))).thenReturn(porte);
+        
+        // When
+        Porte resultado = porteService.crearPorte(porte);
+        
+        // Then
+        assertNotNull(resultado);
+        assertTrue(resultado.isRevisionManual());
+        assertEquals("Medidas no claras en la descripción", resultado.getMotivoRevision());
+        verify(mcpWebhookService, times(1)).calcularDimensiones(anyString());
+        verify(porteRepository, times(1)).save(any(Porte.class));
     }
 }
