@@ -1,12 +1,13 @@
-package com.cargohub.backend.controller;
+package com.cargohub. backend.controller;
 
-import com.cargohub.backend.entity.Factura;
-import com.cargohub.backend.entity.Porte;
-import com.cargohub.backend.entity.enums.EstadoPorte;
+import com. cargohub.backend.dto.CrearPorteRequest;
+import com.cargohub. backend.entity.Factura;
+import com.cargohub.backend.entity. Porte;
+import com.cargohub.backend.entity. enums.EstadoPorte;
 import com.cargohub.backend.service.PorteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework. web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,22 +19,22 @@ public class PorteController {
     @Autowired
     private PorteService porteService;
 
-    // 1. Crear Porte (Admin/IA)
+    // 1. Crear Porte (Admin/IA) - MODIFICADO PARA USAR DTO
     @PostMapping
-    public ResponseEntity<Porte> crearPorte(@RequestBody Porte porte) {
-        return ResponseEntity.ok(porteService.crearPorte(porte));
+    public ResponseEntity<Porte> crearPorte(@RequestBody CrearPorteRequest request) {
+        return ResponseEntity.ok(porteService.crearPorteDesdeRequest(request));
     }
 
     // 2. Ver Ofertas (Conductor)
     @GetMapping("/ofertas/{conductorId}")
     public ResponseEntity<List<Porte>> verOfertas(@PathVariable Long conductorId) {
-        return ResponseEntity.ok(porteService.listarOfertasParaConductor(conductorId));
+        return ResponseEntity.ok(porteService. listarOfertasParaConductor(conductorId));
     }
 
     // 3. Aceptar Porte (Conductor)
     @PostMapping("/{porteId}/aceptar")
-    public ResponseEntity<?> aceptarPorte(@PathVariable Long porteId,
-                                          @RequestParam Long conductorId) {
+    public ResponseEntity<? > aceptarPorte(@PathVariable Long porteId,
+                                           @RequestParam Long conductorId) {
         try {
             return ResponseEntity.ok(porteService.aceptarPorte(porteId, conductorId));
         } catch (RuntimeException e) {
@@ -45,7 +46,7 @@ public class PorteController {
     @PutMapping("/{porteId}/estado")
     public ResponseEntity<Porte> cambiarEstado(@PathVariable Long porteId,
                                                @RequestParam EstadoPorte nuevo) {
-        return ResponseEntity.ok(porteService.cambiarEstado(porteId, nuevo));
+        return ResponseEntity. ok(porteService.cambiarEstado(porteId, nuevo));
     }
 
     // 5. Ajuste Manual de Precio (Admin)
@@ -58,7 +59,7 @@ public class PorteController {
 
     // 6. Facturar (Admin)
     @PostMapping("/{porteId}/facturar")
-    public ResponseEntity<?> generarFactura(@PathVariable Long porteId) {
+    public ResponseEntity<? > generarFactura(@PathVariable Long porteId) {
         try {
             return ResponseEntity.ok(porteService.facturarManualmente(porteId));
         } catch (RuntimeException e) {
@@ -68,7 +69,7 @@ public class PorteController {
 
     // 7. Obtener Porte por ID (Admin/Cliente/Conductor)
     @GetMapping("/{porteId}")
-    public ResponseEntity<?> obtenerPorte(@PathVariable Long porteId) {
+    public ResponseEntity<? > obtenerPorte(@PathVariable Long porteId) {
         return ResponseEntity.ok(porteService.obtenerPorId(porteId));
     }
 

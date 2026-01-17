@@ -1,6 +1,6 @@
 package com.cargohub.backend.entity;
 
-import com.cargohub.backend.entity.enums.EstadoPorte;
+import com.cargohub.backend. entity.enums.EstadoPorte;
 import com.cargohub.backend.entity.enums.TipoVehiculo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class Porte {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType. IDENTITY)
     private Long id;
 
     // --- RUTA ---
@@ -43,8 +43,11 @@ public class Porte {
     private Double volumenTotalM3;
     private Double largoMaxPaquete;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType. STRING)
     private TipoVehiculo tipoVehiculoRequerido;
+
+    // ⭐ AGREGAR ESTE CAMPO ⭐
+    private boolean requiereFrio = false;
 
     // --- CONTROL ---
     private boolean revisionManual = false;
