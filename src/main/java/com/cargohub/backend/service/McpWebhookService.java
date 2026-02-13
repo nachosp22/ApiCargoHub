@@ -50,25 +50,21 @@ public class McpWebhookService {
      * @return McpWebhookResponse with calculated dimensions
      */
     public McpWebhookResponse calcularDimensiones(String descripcionCliente, Porte porte) {
-        N8nWebhook webhookLog = new N8nWebhook();
-        webhookLog.setRequestTimestamp(LocalDateTime.now());
-        webhookLog.setPorte(porte);
-
         // If webhook URL is not configured or description is empty, return null
         if (webhookUrl == null || webhookUrl.isBlank() || descripcionCliente == null || descripcionCliente.isBlank()) {
             String errorMsg = "Webhook no configurado o descripción vacía";
-            webhookLog.setRequestData(descripcionCliente);
-            webhookLog.setSuccess(false);
-            webhookLog.setErrorMessage(errorMsg);
-            webhookLog.setResponseTimestamp(LocalDateTime.now());
-            n8nWebhookRepository.save(webhookLog);
+            saveWebhookLog(null, null, descripcionCliente, null, false, errorMsg, porte);
             return createDefaultResponse(errorMsg);
         }
+
+        N8nWebhook webhookLog = new N8nWebhook();
+        webhookLog.setRequestTimestamp(LocalDateTime.now());
+        webhookLog.setRequestData(descripcionCliente);
+        webhookLog.setPorte(porte);
 
         try {
             // Prepare request
             McpWebhookRequest request = new McpWebhookRequest(descripcionCliente);
-            webhookLog.setRequestData(descripcionCliente);
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -108,10 +104,10 @@ public class McpWebhookService {
             // If webhook fails, return a default response with manual review flag
             log.error("Error calling MCP webhook: {}", e.getMessage(), e);
             webhookLog.setSuccess(false);
-            webhookLog.setErrorMessage("Error al conectar con el webhook: " + e.getMessage());
+            webhookLog.setErrorMessage(buildWebhookErrorMessage(e.getMessage()));
             webhookLog.setResponseTimestamp(LocalDateTime.now());
             n8nWebhookRepository.save(webhookLog);
-            return createDefaultResponse("Error al conectar con el webhook: " + e.getMessage());
+            return createDefaultResponse(buildWebhookErrorMessage(e.getMessage()));
         }
     }
 
@@ -153,5 +149,28 @@ public class McpWebhookService {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    /**
+     * Helper method to save webhook log
+     */
+    private void saveWebhookLog(LocalDateTime requestTime, LocalDateTime responseTime, String requestData, 
+                                String responseData, boolean success, String errorMessage, Porte porte) {
+        N8nWebhook webhookLog = new N8nWebhook();
+        webhookLog.setRequestTimestamp(requestTime != null ? requestTime : LocalDateTime.now());
+        webhookLog.setResponseTimestamp(responseTime != null ? responseTime : LocalDateTime.now());
+        webhookLog.setRequestData(requestData);
+        webhookLog.setResponseData(responseData);
+        webhookLog.setSuccess(success);
+        webhookLog.setErrorMessage(errorMessage);
+        webhookLog.setPorte(porte);
+        n8nWebhookRepository.save(webhookLog);
+    }
+
+    /**
+     * Builds error message for webhook failures
+     */
+    private String buildWebhookErrorMessage(String details) {
+        return "Error al conectar con el webhook: " + details;
     }
 }

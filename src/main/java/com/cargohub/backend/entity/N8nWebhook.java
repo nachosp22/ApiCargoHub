@@ -22,7 +22,7 @@ public class N8nWebhook {
     private String requestData;
 
     @Column(nullable = false)
-    private LocalDateTime requestTimestamp = LocalDateTime.now();
+    private LocalDateTime requestTimestamp;
 
     // --- RESPONSE DATA ---
     @Column(columnDefinition = "TEXT")
@@ -32,7 +32,7 @@ public class N8nWebhook {
 
     // --- STATUS ---
     @Column(nullable = false)
-    private Boolean success = false;
+    private Boolean success;
 
     @Column(columnDefinition = "TEXT")
     private String errorMessage;
