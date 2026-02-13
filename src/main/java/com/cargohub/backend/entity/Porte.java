@@ -51,6 +51,7 @@ public class Porte {
 
     // --- CONTROL ---
     private boolean revisionManual = false;
+    @Column(columnDefinition = "TEXT")
     private String motivoRevision;
 
     @Enumerated(EnumType.STRING)
