@@ -2,7 +2,10 @@ package com.cargohub.backend.service;
 
 import com.cargohub.backend.dto.McpWebhookRequest;
 import com.cargohub.backend.dto.McpWebhookResponse;
+import com.cargohub.backend.entity.N8nWebhook;
+import com.cargohub.backend.entity.Porte;
 import com.cargohub.backend.entity.enums.TipoVehiculo;
+import com.cargohub.backend.repository.N8nWebhookRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @Service
 public class McpWebhookService {
@@ -21,10 +26,12 @@ public class McpWebhookService {
     private String webhookUrl;
 
     private final RestTemplate restTemplate;
+    private final N8nWebhookRepository n8nWebhookRepository;
 
     @Autowired
-    public McpWebhookService(RestTemplate restTemplate) {
+    public McpWebhookService(RestTemplate restTemplate, N8nWebhookRepository n8nWebhookRepository) {
         this.restTemplate = restTemplate;
+        this.n8nWebhookRepository = n8nWebhookRepository;
     }
 
     /**
@@ -33,10 +40,27 @@ public class McpWebhookService {
      * @return McpWebhookResponse with calculated dimensions
      */
     public McpWebhookResponse calcularDimensiones(String descripcionCliente) {
+        return calcularDimensiones(descripcionCliente, null);
+    }
+
+    /**
+     * Calls the MCP n8n webhook to calculate order dimensions and saves execution history
+     * @param descripcionCliente The customer's order description
+     * @param porte Optional porte to associate with this webhook call
+     * @return McpWebhookResponse with calculated dimensions
+     */
+    public McpWebhookResponse calcularDimensiones(String descripcionCliente, Porte porte) {
         // If webhook URL is not configured or description is empty, return null
         if (webhookUrl == null || webhookUrl.isBlank() || descripcionCliente == null || descripcionCliente.isBlank()) {
-            return createDefaultResponse("Webhook no configurado o descripción vacía");
+            String errorMsg = "Webhook no configurado o descripción vacía";
+            saveWebhookLog(null, null, descripcionCliente, null, false, errorMsg, porte);
+            return createDefaultResponse(errorMsg);
         }
+
+        N8nWebhook webhookLog = new N8nWebhook();
+        webhookLog.setRequestTimestamp(LocalDateTime.now());
+        webhookLog.setRequestData(descripcionCliente);
+        webhookLog.setPorte(porte);
 
         try {
             // Prepare request
@@ -54,17 +78,36 @@ public class McpWebhookService {
                 McpWebhookResponse.class
             );
             
+            webhookLog.setResponseTimestamp(LocalDateTime.now());
+            
             // Return response
             if (response.getBody() != null) {
-                return response.getBody();
+                McpWebhookResponse responseBody = response.getBody();
+                webhookLog.setResponseData(formatResponse(responseBody));
+                webhookLog.setSuccess(true);
+                webhookLog.setPesoTotalKg(responseBody.getPesoTotalKg());
+                webhookLog.setVolumenTotalM3(responseBody.getVolumenTotalM3());
+                webhookLog.setLargoMaxPaquete(responseBody.getLargoMaxPaquete());
+                webhookLog.setTipoVehiculoRequerido(responseBody.getTipoVehiculoRequerido());
+                webhookLog.setRevisionManual(responseBody.getRevisionManual());
+                n8nWebhookRepository.save(webhookLog);
+                return responseBody;
             } else {
-                return createDefaultResponse("Respuesta vacía del webhook");
+                String errorMsg = "Respuesta vacía del webhook";
+                webhookLog.setSuccess(false);
+                webhookLog.setErrorMessage(errorMsg);
+                n8nWebhookRepository.save(webhookLog);
+                return createDefaultResponse(errorMsg);
             }
             
         } catch (Exception e) {
             // If webhook fails, return a default response with manual review flag
             log.error("Error calling MCP webhook: {}", e.getMessage(), e);
-            return createDefaultResponse("Error al conectar con el webhook: " + e.getMessage());
+            webhookLog.setSuccess(false);
+            webhookLog.setErrorMessage(buildWebhookErrorMessage(e.getMessage()));
+            webhookLog.setResponseTimestamp(LocalDateTime.now());
+            n8nWebhookRepository.save(webhookLog);
+            return createDefaultResponse(buildWebhookErrorMessage(e.getMessage()));
         }
     }
 
@@ -83,6 +126,18 @@ public class McpWebhookService {
     }
 
     /**
+     * Formats the response data as a simple string for logging
+     */
+    private String formatResponse(McpWebhookResponse response) {
+        return String.format("peso=%s kg, volumen=%s m3, largo=%s, vehiculo=%s, revision=%s",
+            response.getPesoTotalKg(),
+            response.getVolumenTotalM3(),
+            response.getLargoMaxPaquete(),
+            response.getTipoVehiculoRequerido(),
+            response.getRevisionManual());
+    }
+
+    /**
      * Converts string vehicle type to enum
      */
     public TipoVehiculo convertirTipoVehiculo(String tipoStr) {
@@ -94,5 +149,28 @@ public class McpWebhookService {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    /**
+     * Helper method to save webhook log
+     */
+    private void saveWebhookLog(LocalDateTime requestTime, LocalDateTime responseTime, String requestData, 
+                                String responseData, boolean success, String errorMessage, Porte porte) {
+        N8nWebhook webhookLog = new N8nWebhook();
+        webhookLog.setRequestTimestamp(requestTime != null ? requestTime : LocalDateTime.now());
+        webhookLog.setResponseTimestamp(responseTime != null ? responseTime : LocalDateTime.now());
+        webhookLog.setRequestData(requestData);
+        webhookLog.setResponseData(responseData);
+        webhookLog.setSuccess(success);
+        webhookLog.setErrorMessage(errorMessage);
+        webhookLog.setPorte(porte);
+        n8nWebhookRepository.save(webhookLog);
+    }
+
+    /**
+     * Builds error message for webhook failures
+     */
+    private String buildWebhookErrorMessage(String details) {
+        return "Error al conectar con el webhook: " + details;
     }
 }
