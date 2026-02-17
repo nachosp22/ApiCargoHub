@@ -8,12 +8,12 @@ import java.util.List;
 @Repository
 public interface N8nWebhookRepository extends JpaRepository<N8nWebhook, Long> {
 
-    // Find all webhook calls for a specific porte
+    // Encuentra todas las llamadas al webhook para un porte específico
     List<N8nWebhook> findByPorteId(Long porteId);
 
-    // Find all successful webhook calls
+    // Encuentra todas las llamadas al webhook exitosas
     List<N8nWebhook> findBySuccessTrue();
 
-    // Find all failed webhook calls
+    // Encuentra todas las llamadas al webhook fallidas
     List<N8nWebhook> findBySuccessFalse();
 }
