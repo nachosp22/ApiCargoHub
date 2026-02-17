@@ -35,22 +35,22 @@ public class McpWebhookService {
     }
 
     /**
-     * Calls the MCP n8n webhook to calculate order dimensions
-     * @param descripcionCliente The customer's order description
-     * @return McpWebhookResponse with calculated dimensions
+     * Llama al webhook MCP n8n para calcular las dimensiones del pedido
+     * @param descripcionCliente La descripción del pedido del cliente
+     * @return McpWebhookResponse con las dimensiones calculadas
      */
     public McpWebhookResponse calcularDimensiones(String descripcionCliente) {
         return calcularDimensiones(descripcionCliente, null);
     }
 
     /**
-     * Calls the MCP n8n webhook to calculate order dimensions and saves execution history
-     * @param descripcionCliente The customer's order description
-     * @param porte Optional porte to associate with this webhook call
-     * @return McpWebhookResponse with calculated dimensions
+     * Llama al webhook MCP n8n para calcular las dimensiones del pedido y guarda el historial de ejecución
+     * @param descripcionCliente La descripción del pedido del cliente
+     * @param porte Porte opcional para asociar con esta llamada al webhook
+     * @return McpWebhookResponse con las dimensiones calculadas
      */
     public McpWebhookResponse calcularDimensiones(String descripcionCliente, Porte porte) {
-        // If webhook URL is not configured or description is empty, return null
+        // Si la URL del webhook no está configurada o la descripción está vacía, devuelve null
         if (webhookUrl == null || webhookUrl.isBlank() || descripcionCliente == null || descripcionCliente.isBlank()) {
             String errorMsg = "Webhook no configurado o descripción vacía";
             saveWebhookLog(null, null, descripcionCliente, null, false, errorMsg, porte);
@@ -63,7 +63,7 @@ public class McpWebhookService {
         webhookLog.setPorte(porte);
 
         try {
-            // Prepare request
+            // Preparar solicitud
             McpWebhookRequest request = new McpWebhookRequest(descripcionCliente);
             
             HttpHeaders headers = new HttpHeaders();
@@ -71,7 +71,7 @@ public class McpWebhookService {
             
             HttpEntity<McpWebhookRequest> entity = new HttpEntity<>(request, headers);
             
-            // Call webhook
+            // Llamar al webhook
             ResponseEntity<McpWebhookResponse> response = restTemplate.postForEntity(
                 webhookUrl, 
                 entity, 
@@ -80,7 +80,7 @@ public class McpWebhookService {
             
             webhookLog.setResponseTimestamp(LocalDateTime.now());
             
-            // Return response
+            // Devolver respuesta
             if (response.getBody() != null) {
                 McpWebhookResponse responseBody = response.getBody();
                 webhookLog.setResponseData(formatResponse(responseBody));
@@ -101,7 +101,7 @@ public class McpWebhookService {
             }
             
         } catch (Exception e) {
-            // If webhook fails, return a default response with manual review flag
+            // Si el webhook falla, devuelve una respuesta predeterminada con bandera de revisión manual
             log.error("Error calling MCP webhook: {}", e.getMessage(), e);
             webhookLog.setSuccess(false);
             webhookLog.setErrorMessage(buildWebhookErrorMessage(e.getMessage()));
@@ -112,7 +112,7 @@ public class McpWebhookService {
     }
 
     /**
-     * Creates a default response when webhook is unavailable or fails
+     * Crea una respuesta predeterminada cuando el webhook no está disponible o falla
      */
     private McpWebhookResponse createDefaultResponse(String motivo) {
         McpWebhookResponse response = new McpWebhookResponse();
@@ -126,7 +126,7 @@ public class McpWebhookService {
     }
 
     /**
-     * Formats the response data as a simple string for logging
+     * Formatea los datos de respuesta como una cadena simple para registro
      */
     private String formatResponse(McpWebhookResponse response) {
         return String.format("peso=%s kg, volumen=%s m3, largo=%s, vehiculo=%s, revision=%s",
@@ -138,7 +138,7 @@ public class McpWebhookService {
     }
 
     /**
-     * Converts string vehicle type to enum
+     * Convierte el tipo de vehículo de cadena a enumeración
      */
     public TipoVehiculo convertirTipoVehiculo(String tipoStr) {
         if (tipoStr == null || tipoStr.isEmpty()) {
@@ -152,7 +152,7 @@ public class McpWebhookService {
     }
 
     /**
-     * Helper method to save webhook log
+     * Método auxiliar para guardar el registro del webhook
      */
     private void saveWebhookLog(LocalDateTime requestTime, LocalDateTime responseTime, String requestData, 
                                 String responseData, boolean success, String errorMessage, Porte porte) {
@@ -168,7 +168,7 @@ public class McpWebhookService {
     }
 
     /**
-     * Builds error message for webhook failures
+     * Construye el mensaje de error para fallos del webhook
      */
     private String buildWebhookErrorMessage(String details) {
         return "Error al conectar con el webhook: " + details;
