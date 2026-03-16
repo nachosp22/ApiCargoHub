@@ -134,6 +134,11 @@ public class PorteService {
 
     // ...  resto de métodos sin cambios ...
 
+    // Listado general para panel administrativo
+    public List<Porte> listarTodos() {
+        return porteRepository.findAll();
+    }
+
     // 2. Ver Ofertas (Para que el conductor vea viajes disponibles)
     public List<Porte> listarOfertasParaConductor(Long conductorId) {
         return porteRepository.findByEstadoOrderByFechaRecogidaAsc(EstadoPorte. PENDIENTE);

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,6 +29,10 @@ public class ClienteService {
     public Cliente obtenerPorId(Long id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+    }
+
+    public List<Cliente> listarTodos() {
+        return clienteRepository.findAll();
     }
 
     /**

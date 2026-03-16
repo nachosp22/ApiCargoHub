@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+.atl/
+
+### Temporary validation files (JSON responses, logs, txt snippets) ###
+*.log
+*.json
+*.txt
+nul
+
+### Agent/tool directories ###
+.agent/
+.agents/
+.junie/

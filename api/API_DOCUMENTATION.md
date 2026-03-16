@@ -5,7 +5,7 @@ Sistema de gestión de transporte de carga que conecta clientes, conductores y v
 
 ## Arquitectura
 - **Framework**: Spring Boot 4.0.1
-- **Base de Datos**: MySQL
+- **Base de Datos**: PostgreSQL
 - **Patrón**: MVC con capas Service y Repository
 - **Seguridad**: Spring Security con BCrypt para contraseñas
 
@@ -39,13 +39,36 @@ Respuesta: Usuario creado + perfil según rol
 ```
 
 #### POST `/api/auth/login`
-Iniciar sesión
+Iniciar sesión y obtener token JWT Bearer
 ```
 Parámetros:
 - email: string
 - password: string
 
-Respuesta: {id, email, rol, [conductorId/clienteId], [nombre/nombreEmpresa]}
+Respuesta (200): {
+  accessToken: string,
+  tokenType: "Bearer",
+  expiresIn: number (segundos),
+  expiresAt: ISO-8601 datetime,
+  id: number,
+  email: string,
+  rol: ADMIN | CONDUCTOR | CLIENTE | SUPERADMIN,
+  conductorId?: number,
+  clienteId?: number,
+  nombre?: string,
+  nombreEmpresa?: string
+}
+```
+
+#### Uso del Bearer Token
+Para cualquier endpoint protegido bajo `/api/**` (excepto `/api/auth/register` y `/api/auth/login`), enviar:
+```
+Authorization: Bearer <accessToken>
+```
+
+Ejemplo:
+```bash
+curl -H "Authorization: Bearer eyJhbGciOiJI..." http://localhost:8080/api/facturas
 ```
 
 ---
@@ -222,32 +245,113 @@ Parámetros:
 - porteId: Long
 
 Body: {
-  titulo: string,
-  descripcion: string
+  titulo: string (obligatorio, no vacío, máx 150 chars),
+  descripcion: string (obligatorio, no vacío, máx 4000 chars),
+  severidad?: BAJA | MEDIA | ALTA (opcional, default MEDIA),
+  prioridad?: BAJA | MEDIA | ALTA (opcional, default MEDIA)
 }
+
+Validación:
+- Si faltan/son inválidos los campos del body => 400 Bad Request
+
+Campos automáticos al crear:
+- `estado=ABIERTA`
+- `fechaReporte=now`
+- `fechaLimiteSla` calculada por regla SLA (ver sección Reglas SLA)
 ```
 
 #### GET `/api/incidencias`
-Listar todas las incidencias
+Listar todas las incidencias (**ADMIN/SUPERADMIN**)
+
+Respuesta: lista de `IncidenciaResponse`:
+- `id`
+- `porteId`
+- `titulo`
+- `descripcion`
+- `estado`
+- `severidad`
+- `prioridad`
+- `fechaReporte`
+- `fechaLimiteSla`
+- `resolucion`
+- `fechaResolucion`
+- `adminId`
+
+> Nota: no se exponen entidades anidadas completas (`porte`, `admin`) para evitar fugas innecesarias de datos internos.
 
 #### GET `/api/incidencias/{id}`
-Obtener detalles de una incidencia
+Obtener detalles de una incidencia (**owner del porte relacionado o ADMIN/SUPERADMIN**)
+
+Respuesta: `IncidenciaResponse` (mismo contrato indicado arriba).
 
 #### GET `/api/incidencias/pendientes`
-Listar incidencias pendientes (ABIERTA)
+Listar incidencias pendientes (ABIERTA y EN_REVISION) (**ADMIN/SUPERADMIN**)
+
+Respuesta: lista de `IncidenciaResponse`.
 
 #### GET `/api/incidencias/porte/{porteId}`
-Listar incidencias de un porte específico
+Listar incidencias de un porte específico (**owner del porte o ADMIN/SUPERADMIN**)
+
+Respuesta: lista de `IncidenciaResponse`.
+
+#### GET `/api/incidencias/{id}/historial`
+Ver historial/auditoría de cambios de estado (**owner del porte relacionado o ADMIN/SUPERADMIN**)
+
+Respuesta: lista de eventos `IncidenciaEventoResponse` con:
+- `id`
+- `incidenciaId`
+- `actorId` (puede ser `null` si no había usuario autenticado al crear)
+- `estadoAnterior`
+- `estadoNuevo`
+- `fecha`
+- `accion` (ej. `CREADA`, `TRANSICION_ESTADO`)
+- `comentario`
+
+> Nota: no se exponen objetos anidados completos (`incidencia`, `actor`) en la respuesta.
+
+#### GET `/api/incidencias/vencidas-sla`
+Listar incidencias vencidas por SLA (**ADMIN/SUPERADMIN**)
+
+Definición de vencida: incidencia en estado `ABIERTA` o `EN_REVISION` con `fechaLimiteSla < now`.
+
+Respuesta: lista de `IncidenciaResponse`.
 
 #### PUT `/api/incidencias/{id}/resolver`
 Resolver incidencia (Admin)
 ```
-Parámetros:
-- adminId: Long
-- estado: RESUELTA | DESESTIMADA
+Body: {
+  resolucion: string (obligatoria si estadoFinal es RESUELTA o DESESTIMADA; máx 4000 chars),
+  estadoFinal: EN_REVISION | RESUELTA | DESESTIMADA
+}
 
-Body: string (resolución/comentario)
+Nota: el admin resolvedor se toma del principal autenticado (JWT), no de un parámetro de request.
+
+Errores:
+- 400 Bad Request: payload inválido (campos faltantes/formato inválido)
+- 409 Conflict: transición de estado no permitida por reglas de ciclo de vida
+
+Respuesta (200): `IncidenciaResponse`.
 ```
+
+Reglas de transición de estado de Incidencia:
+```
+ABIERTA -> EN_REVISION | RESUELTA | DESESTIMADA
+EN_REVISION -> RESUELTA | DESESTIMADA
+RESUELTA -> (terminal, sin transiciones permitidas)
+DESESTIMADA -> (terminal, sin transiciones permitidas)
+```
+
+Reglas SLA de Incidencia:
+```
+ALTA  -> 24h
+MEDIA -> 72h
+BAJA  -> 120h
+```
+
+La regla se evalúa usando el mayor nivel entre `severidad` y `prioridad`:
+- Si cualquiera es `ALTA` => 24h
+- Si no hay ALTA pero cualquiera es `MEDIA` => 72h
+- Solo si ambas son `BAJA` => 120h
 
 ---
 
@@ -291,16 +395,181 @@ PENDIENTE → ASIGNADO → EN_TRANSITO → ENTREGADO → FACTURADO
 
 ## Seguridad
 
-### Encriptación de Contraseñas
-Todas las contraseñas se almacenan encriptadas usando BCrypt.
+### Modelo de autenticación/autorización (JWT + RBAC)
 
-### Roles de Usuario
-- **SUPERADMIN**: Acceso total
-- **ADMIN**: Gestión de operaciones y facturación
-- **CONDUCTOR**: Ver ofertas, aceptar portes, reportar ubicación
-- **CLIENTE**: Crear portes, ver historial
+Implementación actual (según `SecurityConfig` + `@PreAuthorize`):
+
+- Autenticación **JWT Bearer** stateless.
+- Endpoints públicos:
+  - `POST /api/auth/register`
+  - `POST /api/auth/login`
+- `OPTIONS /**` público (preflight CORS).
+- Todo endpoint bajo `/api/**` (excepto auth) requiere usuario autenticado.
+- La autorización por rol se resuelve con `@PreAuthorize` en controladores/métodos.
+- En endpoints con `{id}`/`{porteId}` críticos se aplica además **ownership** (propiedad del recurso) con expresiones centralizadas (`@ownership...`).
+- HTTP Basic está deshabilitado para operación normal.
+
+### Ownership (control incremental implementado)
+
+- **CLIENTE**
+  - Puede acceder a `GET/PUT /api/clientes/{id}` y `GET /api/clientes/{id}/portes` **solo** cuando `{id}` coincide con su propio perfil.
+  - Puede acceder a `GET /api/portes/{porteId}` **solo** si el porte pertenece a su cliente.
+- **CONDUCTOR**
+  - Puede operar `GET/PUT /api/conductores/{id}`, `POST /api/conductores/{id}/ubicacion`, `GET/POST /api/conductores/{id}/agenda`, `DELETE /api/conductores/agenda/{bloqueoId}` **solo** sobre su propio conductor.
+  - Puede operar `GET /api/portes/ofertas/{conductorId}`, `GET /api/portes/conductor/{conductorId}`, `POST /api/portes/{porteId}/aceptar?conductorId=...` **solo** con su propio `conductorId`.
+  - Puede operar `PUT /api/portes/{porteId}/estado` y `GET /api/portes/{porteId}` **solo** sobre portes asociados a su conductor.
+- **ADMIN / SUPERADMIN**
+  - Mantienen bypass de ownership en estos checks y conservan acceso operativo amplio según RBAC.
+
+Violaciones de ownership devuelven **403 Forbidden** (token válido sin permiso sobre ese recurso).
+
+### Definición de roles
+
+- **CLIENTE**: usuario autenticado sin privilegios administrativos; acceso a endpoints sin restricción de rol explícita.
+- **CONDUCTOR**: como CLIENTE + acceso a endpoints operativos de portes marcados para conductor.
+- **ADMIN**: permisos administrativos de operación/facturación y endpoints marcados como admin.
+- **SUPERADMIN**: mismo alcance que ADMIN en la configuración actual (todos los `hasAnyRole` de admin incluyen SUPERADMIN).
+
+### Matriz de autorización por endpoint (estado actual)
+
+> Convención:
+> - **Público** = sin token.
+> - **Autenticado (cualquier rol)** = requiere JWT válido; válido para CLIENTE/CONDUCTOR/ADMIN/SUPERADMIN.
+
+#### Módulo Auth (`/api/auth`)
+
+| Método | Endpoint | Acceso |
+|---|---|---|
+| POST | `/api/auth/register` | Público |
+| POST | `/api/auth/login` | Público |
+
+#### Módulo Conductor (`/api/conductores`)
+
+| Método | Endpoint | Acceso |
+|---|---|---|
+| POST | `/api/conductores/{id}/ubicacion` | CONDUCTOR (own `{id}`), ADMIN, SUPERADMIN |
+| GET | `/api/conductores/{id}/agenda` | CONDUCTOR (own `{id}`), ADMIN, SUPERADMIN |
+| POST | `/api/conductores/{id}/agenda` | CONDUCTOR (own `{id}`), ADMIN, SUPERADMIN |
+| DELETE | `/api/conductores/agenda/{bloqueoId}` | CONDUCTOR (own bloqueo), ADMIN, SUPERADMIN |
+| GET | `/api/conductores/{id}` | CONDUCTOR (own `{id}`), ADMIN, SUPERADMIN |
+| PUT | `/api/conductores/{id}` | CONDUCTOR (own `{id}`), ADMIN, SUPERADMIN |
+| DELETE | `/api/conductores/{id}` | CONDUCTOR (own `{id}`), ADMIN, SUPERADMIN |
+
+#### Módulo Cliente (`/api/clientes`)
+
+| Método | Endpoint | Acceso |
+|---|---|---|
+| GET | `/api/clientes/{id}` | CLIENTE (own `{id}`), ADMIN, SUPERADMIN |
+| PUT | `/api/clientes/{id}` | CLIENTE (own `{id}`), ADMIN, SUPERADMIN |
+| GET | `/api/clientes/{id}/portes` | CLIENTE (own `{id}`), ADMIN, SUPERADMIN |
+
+#### Módulo Vehículo (`/api/vehiculos`)
+
+> `@PreAuthorize` a nivel de clase: `hasAnyRole('ADMIN','SUPERADMIN')`
+
+| Método | Endpoint | Acceso |
+|---|---|---|
+| GET | `/api/vehiculos` | ADMIN, SUPERADMIN |
+| POST | `/api/vehiculos` | ADMIN, SUPERADMIN |
+| DELETE | `/api/vehiculos/{id}` | ADMIN, SUPERADMIN |
+| PUT | `/api/vehiculos/{id}/reactivar` | ADMIN, SUPERADMIN |
+
+#### Módulo Porte (`/api/portes`)
+
+| Método | Endpoint | Acceso |
+|---|---|---|
+| POST | `/api/portes` | ADMIN, SUPERADMIN |
+| GET | `/api/portes/ofertas/{conductorId}` | CONDUCTOR (own `{conductorId}`), ADMIN, SUPERADMIN |
+| POST | `/api/portes/{porteId}/aceptar` | CONDUCTOR (own `conductorId` param), ADMIN, SUPERADMIN |
+| PUT | `/api/portes/{porteId}/estado` | CONDUCTOR (porte propio), ADMIN, SUPERADMIN |
+| POST | `/api/portes/{porteId}/ajuste` | ADMIN, SUPERADMIN |
+| POST | `/api/portes/{porteId}/facturar` | ADMIN, SUPERADMIN |
+| GET | `/api/portes/{porteId}` | CLIENTE (porte propio), CONDUCTOR (porte propio), ADMIN, SUPERADMIN |
+| GET | `/api/portes/conductor/{conductorId}` | CONDUCTOR (own `{conductorId}`), ADMIN, SUPERADMIN |
+
+#### Módulo Factura (`/api/facturas`)
+
+> `@PreAuthorize` a nivel de clase: `hasAnyRole('ADMIN','SUPERADMIN')`
+
+| Método | Endpoint | Acceso |
+|---|---|---|
+| GET | `/api/facturas` | ADMIN, SUPERADMIN |
+| GET | `/api/facturas/{id}` | ADMIN, SUPERADMIN |
+| GET | `/api/facturas/porte/{porteId}` | ADMIN, SUPERADMIN |
+
+#### Módulo Incidencia (`/api/incidencias`)
+
+| Método | Endpoint | Acceso |
+|---|---|---|
+| POST | `/api/incidencias` | Autenticado (cualquier rol) |
+| PUT | `/api/incidencias/{id}/resolver` | ADMIN, SUPERADMIN |
+| GET | `/api/incidencias/pendientes` | ADMIN, SUPERADMIN |
+| GET | `/api/incidencias` | ADMIN, SUPERADMIN |
+| GET | `/api/incidencias/{id}` | CLIENTE (incidencia de porte propio), CONDUCTOR (incidencia de porte propio), ADMIN, SUPERADMIN |
+| GET | `/api/incidencias/porte/{porteId}` | CLIENTE (porte propio), CONDUCTOR (porte propio), ADMIN, SUPERADMIN |
+| GET | `/api/incidencias/{id}/historial` | CLIENTE (incidencia de porte propio), CONDUCTOR (incidencia de porte propio), ADMIN, SUPERADMIN |
+| GET | `/api/incidencias/vencidas-sla` | ADMIN, SUPERADMIN |
+
+### Respuestas de seguridad (401 vs 403)
+
+- **401 Unauthorized**
+  - Sin token JWT en un endpoint protegido `/api/**`
+  - Token inválido, mal formado o expirado
+  - Lo gestiona `authenticationEntryPoint` devolviendo 401
+- **403 Forbidden**
+  - Token válido, pero el rol no cumple `@PreAuthorize`
+  - Ejemplo típico: CLIENTE en `/api/facturas`
+
+### Ejemplos prácticos con `Authorization: Bearer`
+
+```bash
+# Login para obtener token
+curl -X POST "http://localhost:8080/api/auth/login?email=admin@admin.com&password=admin"
+
+# Usar token en endpoint protegido
+curl -H "Authorization: Bearer <accessToken>" "http://localhost:8080/api/portes/1"
+
+# Esperado 401: sin token en endpoint protegido
+curl -i "http://localhost:8080/api/facturas"
+
+# Esperado 403: token CLIENTE en endpoint ADMIN/SUPERADMIN
+curl -i -H "Authorization: Bearer <tokenCliente>" "http://localhost:8080/api/facturas"
+```
+
+### Configuración JWT
+
+```properties
+# Recomendado en entorno: variable de entorno JWT_SECRET
+security.jwt.secret=${JWT_SECRET:}
+
+# Expiración configurable (milisegundos)
+security.jwt.expiration-ms=${JWT_EXPIRATION_MS:3600000}
+```
+
+> Obligatorio: definir `JWT_SECRET` con valor aleatorio robusto (>=32 chars). Si no está definido, la aplicación falla al arrancar por seguridad.
+
+### Smoke test (JWT/RBAC)
+
+Script disponible: `scripts/smoke-jwt.ps1`
+
+Uso rápido:
+
+```powershell
+# API ya levantada
+pwsh -File .\scripts\smoke-jwt.ps1
+
+# Levantar API automáticamente antes del smoke
+pwsh -File .\scripts\smoke-jwt.ps1 -StartApi
+```
+
+El script verifica, entre otros checks:
+- registro/login
+- `GET /api/facturas` sin token => **401**
+- `GET /api/facturas` con token CLIENTE => **403**
+- `GET /api/facturas` con token ADMIN => **200**
 
 ### CORS
+
 Configurado para permitir peticiones desde cualquier origen (`*`) para desarrollo.
 En producción, restringir a dominios específicos.
 
@@ -326,16 +595,34 @@ En producción, restringir a dominios específicos.
 ### Requisitos
 - Java 17+
 - Maven 3.6+
-- MySQL 8.0+
-- XAMPP o servidor MySQL local
+- PostgreSQL 14+ (recomendado)
 
 ### Configuración Base de Datos
 ```properties
 # src/main/resources/application.properties
-spring.datasource.url=jdbc:mysql://localhost:3306/cargohub_db?createDatabaseIfNotExist=true&serverTimezone=UTC
-spring.datasource.username=root
-spring.datasource.password=
+spring.datasource.url=jdbc:postgresql://localhost:5432/cargohub
+spring.datasource.username=postgres
+spring.datasource.password=postgres
 ```
+
+### Estrategia `ddl-auto` en desarrollo (PostgreSQL)
+
+- Valor por defecto (modo estable):
+
+```properties
+spring.jpa.hibernate.ddl-auto=${JPA_DDL_AUTO:update}
+```
+
+Esto evita que Hibernate borre el esquema al apagar/arrancar la API.
+
+- Para forzar un reset puntual del schema en local:
+
+```powershell
+$env:JPA_DDL_AUTO="create-drop"
+./mvnw spring-boot:run
+```
+
+Al cerrar esa shell o quitar la variable, vuelve el modo estable (`update`).
 
 ### Compilar
 ```bash

@@ -8,7 +8,7 @@ class BackendApplicationTests {
 	@Test
 	@Disabled("Requires database configuration - integration test should be run separately")
 	void contextLoads() {
-		// This test requires a running MySQL database
+		// This test requires a running PostgreSQL database
 		// Run it manually with: mvn -Dtest=BackendApplicationTests test
 	}
 

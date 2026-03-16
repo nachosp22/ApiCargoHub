@@ -1,5 +1,7 @@
 package com.cargohub.backend.controller;
 
+import com.cargohub.backend.config.JwtService;
+import com.cargohub.backend.dto.LoginResponse;
 import com.cargohub.backend.entity.Cliente;
 import com.cargohub.backend.entity.Conductor;
 import com.cargohub.backend.entity.Usuario;
@@ -9,13 +11,16 @@ import com.cargohub.backend.service.ConductorService;
 import com.cargohub.backend.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder; // <--- Importante
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.Instant;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,8 +30,8 @@ public class AuthController {
     @Autowired private UsuarioService usuarioService;
     @Autowired private ConductorService conductorService;
     @Autowired private ClienteService clienteService;
-
-    @Autowired private PasswordEncoder passwordEncoder; // <--- Inyectamos el codificador
+    @Autowired private AuthenticationManager authenticationManager;
+    @Autowired private JwtService jwtService;
 
     // --- EL REGISTRO NO CAMBIA (El servicio ya encripta) ---
     @PostMapping("/register")
@@ -64,41 +69,57 @@ public class AuthController {
         }
     }
 
-    // --- LOGIN SEGURO ---
+    // --- LOGIN JWT ---
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
         // Normalize email to lowercase for login
         String normalizedEmail = email != null ? email.toLowerCase() : null;
         Optional<Usuario> userOpt = usuarioService.buscarPorEmail(normalizedEmail);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(401).body("Credenciales incorrectas");
+        }
 
-        // CAMBIO: Usamos .matches(raw, hash) en lugar de .equals()
-        if (userOpt.isPresent() && passwordEncoder.matches(password, userOpt.get().getPassword())) {
+        Usuario usuario = userOpt.get();
 
-            Usuario usuario = userOpt.get();
-            if (!usuario.isActivo()) return ResponseEntity.badRequest().body("Usuario inactivo");
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(normalizedEmail, password)
+            );
 
-            Map<String, Object> respuesta = new HashMap<>();
-            respuesta.put("id", usuario.getId());
-            respuesta.put("email", usuario.getEmail());
-            respuesta.put("rol", usuario.getRol());
+            String accessToken = jwtService.generateAccessToken(usuario, authentication);
 
-            // Rellenar datos extra según rol
+            LoginResponse response = new LoginResponse();
+            response.setAccessToken(accessToken);
+            response.setExpiresIn(jwtService.getExpirationMs() / 1000);
+            response.setExpiresAt(Instant.now().plusMillis(jwtService.getExpirationMs()));
+            response.setId(usuario.getId());
+            response.setEmail(usuario.getEmail());
+            response.setRol(usuario.getRol());
+
             if (usuario.getRol() == RolUsuario.CONDUCTOR) {
                 try {
                     Conductor c = conductorService.obtenerPorEmailUsuario(usuario.getEmail());
-                    respuesta.put("conductorId", c.getId());
-                    respuesta.put("nombre", c.getNombre());
-                } catch (Exception e) {}
+                    response.setConductorId(c.getId());
+                    response.setNombre(c.getNombre());
+                } catch (Exception ignored) {
+                }
             }
             if (usuario.getRol() == RolUsuario.CLIENTE) {
                 try {
                     Cliente cli = clienteService.obtenerPorEmailUsuario(usuario.getEmail());
-                    respuesta.put("clienteId", cli.getId());
-                    respuesta.put("nombreEmpresa", cli.getNombreEmpresa());
-                } catch (Exception e) {}
+                    response.setClienteId(cli.getId());
+                    response.setNombreEmpresa(cli.getNombreEmpresa());
+                } catch (Exception ignored) {
+                }
             }
-            return ResponseEntity.ok(respuesta);
+
+            return ResponseEntity.ok(response);
+        } catch (DisabledException e) {
+            return ResponseEntity.status(401).body("Usuario inactivo");
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(401).body("Credenciales incorrectas");
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("No autorizado");
         }
-        return ResponseEntity.status(401).body("Credenciales incorrectas");
     }
 }

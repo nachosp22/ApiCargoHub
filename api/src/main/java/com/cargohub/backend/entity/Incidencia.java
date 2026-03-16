@@ -1,6 +1,8 @@
 package com.cargohub.backend.entity;
 
 import com.cargohub.backend.entity.enums.EstadoIncidencia; // <-- Importamos el Enum
+import com.cargohub.backend.entity.enums.PrioridadIncidencia;
+import com.cargohub.backend.entity.enums.SeveridadIncidencia;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,6 +33,16 @@ public class Incidencia {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoIncidencia estado = EstadoIncidencia.ABIERTA;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SeveridadIncidencia severidad = SeveridadIncidencia.MEDIA;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PrioridadIncidencia prioridad = PrioridadIncidencia.MEDIA;
+
+    private LocalDateTime fechaLimiteSla;
 
     // --- RESOLUCIÓN ---
     @Column(columnDefinition = "TEXT")

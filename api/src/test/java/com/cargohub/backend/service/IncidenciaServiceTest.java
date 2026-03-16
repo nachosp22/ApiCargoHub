@@ -1,9 +1,13 @@
 package com.cargohub.backend.service;
 
 import com.cargohub.backend.entity.Incidencia;
+import com.cargohub.backend.entity.IncidenciaEvento;
 import com.cargohub.backend.entity.Porte;
 import com.cargohub.backend.entity.Usuario;
 import com.cargohub.backend.entity.enums.EstadoIncidencia;
+import com.cargohub.backend.entity.enums.PrioridadIncidencia;
+import com.cargohub.backend.entity.enums.SeveridadIncidencia;
+import com.cargohub.backend.repository.IncidenciaEventoRepository;
 import com.cargohub.backend.repository.IncidenciaRepository;
 import com.cargohub.backend.repository.PorteRepository;
 import com.cargohub.backend.repository.UsuarioRepository;
@@ -12,14 +16,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +38,9 @@ class IncidenciaServiceTest {
 
     @Mock
     private IncidenciaRepository incidenciaRepository;
+
+    @Mock
+    private IncidenciaEventoRepository incidenciaEventoRepository;
 
     @Mock
     private PorteRepository porteRepository;
@@ -64,7 +78,8 @@ class IncidenciaServiceTest {
     void testReportarIncidencia() {
         // Given
         when(porteRepository.findById(1L)).thenReturn(Optional.of(porte));
-        when(incidenciaRepository.save(any(Incidencia.class))).thenReturn(incidencia);
+        when(incidenciaRepository.save(any(Incidencia.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(incidenciaEventoRepository.save(any(IncidenciaEvento.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         Incidencia resultado = incidenciaService.reportarIncidencia(1L, "Retraso en la entrega", "El camión llegó 2 horas tarde");
@@ -72,8 +87,31 @@ class IncidenciaServiceTest {
         // Then
         assertNotNull(resultado);
         assertEquals(EstadoIncidencia.ABIERTA, resultado.getEstado());
+        assertEquals(SeveridadIncidencia.MEDIA, resultado.getSeveridad());
+        assertEquals(PrioridadIncidencia.MEDIA, resultado.getPrioridad());
         assertNotNull(resultado.getFechaReporte());
+        assertNotNull(resultado.getFechaLimiteSla());
         verify(incidenciaRepository, times(1)).save(any(Incidencia.class));
+        verify(incidenciaEventoRepository, times(1)).save(any(IncidenciaEvento.class));
+    }
+
+    @Test
+    void testReportarIncidencia_SlaAlta24Horas() {
+        when(porteRepository.findById(1L)).thenReturn(Optional.of(porte));
+        when(incidenciaRepository.save(any(Incidencia.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(incidenciaEventoRepository.save(any(IncidenciaEvento.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Incidencia resultado = incidenciaService.reportarIncidencia(
+                1L,
+                "Caida de servicio",
+                "No hay entregas",
+                SeveridadIncidencia.ALTA,
+                PrioridadIncidencia.BAJA,
+                null
+        );
+
+        long horas = java.time.Duration.between(resultado.getFechaReporte(), resultado.getFechaLimiteSla()).toHours();
+        assertEquals(24, horas);
     }
 
     @Test
@@ -92,11 +130,13 @@ class IncidenciaServiceTest {
     void testResolverIncidencia() {
         // Given
         when(incidenciaRepository.findById(1L)).thenReturn(Optional.of(incidencia));
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(admin));
+        when(usuarioRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
         when(incidenciaRepository.save(any(Incidencia.class))).thenReturn(incidencia);
+        when(incidenciaEventoRepository.save(any(IncidenciaEvento.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        Authentication authentication = new UsernamePasswordAuthenticationToken("admin@test.com", null, List.of());
 
         // When
-        Incidencia resultado = incidenciaService.resolverIncidencia(1L, 1L, "Se ha compensado al cliente", EstadoIncidencia.RESUELTA);
+        Incidencia resultado = incidenciaService.resolverIncidencia(1L, authentication, "Se ha compensado al cliente", EstadoIncidencia.RESUELTA);
 
         // Then
         assertNotNull(resultado);
@@ -105,13 +145,71 @@ class IncidenciaServiceTest {
         assertEquals(admin, resultado.getAdmin());
         assertNotNull(resultado.getFechaResolucion());
         verify(incidenciaRepository, times(1)).save(incidencia);
+        verify(incidenciaEventoRepository, times(1)).save(any(IncidenciaEvento.class));
+    }
+
+    @Test
+    void testResolverIncidencia_TransicionAEnRevisionPermitida() {
+        when(incidenciaRepository.findById(1L)).thenReturn(Optional.of(incidencia));
+        when(usuarioRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
+        when(incidenciaRepository.save(any(Incidencia.class))).thenReturn(incidencia);
+        when(incidenciaEventoRepository.save(any(IncidenciaEvento.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        Authentication authentication = new UsernamePasswordAuthenticationToken("admin@test.com", null, List.of());
+
+        Incidencia resultado = incidenciaService.resolverIncidencia(1L, authentication, null, EstadoIncidencia.EN_REVISION);
+
+        assertNotNull(resultado);
+        assertEquals(EstadoIncidencia.EN_REVISION, resultado.getEstado());
+        assertNull(resultado.getResolucion());
+        verify(incidenciaRepository, times(1)).save(incidencia);
+        verify(incidenciaEventoRepository, times(1)).save(any(IncidenciaEvento.class));
+    }
+
+    @Test
+    void testResolverIncidencia_TransicionInvalidaDesdeAbierta() {
+        when(incidenciaRepository.findById(1L)).thenReturn(Optional.of(incidencia));
+        Authentication authentication = new UsernamePasswordAuthenticationToken("admin@test.com", null, List.of());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                incidenciaService.resolverIncidencia(1L, authentication, "comentario", EstadoIncidencia.ABIERTA)
+        );
+
+        assertEquals("Estado final no permitido para resolver incidencias: ABIERTA", exception.getMessage());
+        verify(incidenciaRepository, never()).save(any(Incidencia.class));
+    }
+
+    @Test
+    void testResolverIncidencia_NoPermiteReaperturaDesdeTerminal() {
+        incidencia.setEstado(EstadoIncidencia.RESUELTA);
+        when(incidenciaRepository.findById(1L)).thenReturn(Optional.of(incidencia));
+        Authentication authentication = new UsernamePasswordAuthenticationToken("admin@test.com", null, List.of());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                incidenciaService.resolverIncidencia(1L, authentication, "reabrir", EstadoIncidencia.EN_REVISION)
+        );
+
+        assertEquals("Transición no permitida: RESUELTA -> EN_REVISION", exception.getMessage());
+        verify(incidenciaRepository, never()).save(any(Incidencia.class));
+    }
+
+    @Test
+    void testResolverIncidencia_ResolucionObligatoriaParaEstadoTerminal() {
+        when(incidenciaRepository.findById(1L)).thenReturn(Optional.of(incidencia));
+        Authentication authentication = new UsernamePasswordAuthenticationToken("admin@test.com", null, List.of());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                incidenciaService.resolverIncidencia(1L, authentication, "  ", EstadoIncidencia.RESUELTA)
+        );
+
+        assertEquals("La resolución es obligatoria para estados finales RESUELTA/DESESTIMADA", exception.getMessage());
+        verify(incidenciaRepository, never()).save(any(Incidencia.class));
     }
 
     @Test
     void testListarPendientes() {
         // Given
         List<Incidencia> incidencias = Arrays.asList(incidencia);
-        when(incidenciaRepository.findByEstado(EstadoIncidencia.ABIERTA)).thenReturn(incidencias);
+        when(incidenciaRepository.findByEstadoIn(anyCollection())).thenReturn(incidencias);
 
         // When
         List<Incidencia> resultado = incidenciaService.listarPendientes();
@@ -120,7 +218,49 @@ class IncidenciaServiceTest {
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
         assertEquals("Retraso en la entrega", resultado.get(0).getTitulo());
-        verify(incidenciaRepository, times(1)).findByEstado(EstadoIncidencia.ABIERTA);
+        ArgumentCaptor<Collection<EstadoIncidencia>> estadosCaptor = ArgumentCaptor.forClass(Collection.class);
+        verify(incidenciaRepository, times(1)).findByEstadoIn(estadosCaptor.capture());
+        Collection<EstadoIncidencia> estadosConsultados = estadosCaptor.getValue();
+        assertTrue(estadosConsultados.contains(EstadoIncidencia.ABIERTA));
+        assertTrue(estadosConsultados.contains(EstadoIncidencia.EN_REVISION));
+    }
+
+    @Test
+    void testListarVencidasSla() {
+        List<Incidencia> incidencias = Arrays.asList(incidencia);
+        when(incidenciaRepository.findByEstadoInAndFechaLimiteSlaBefore(anyCollection(), any(LocalDateTime.class)))
+                .thenReturn(incidencias);
+
+        List<Incidencia> resultado = incidenciaService.listarVencidasSla();
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+
+        ArgumentCaptor<Collection<EstadoIncidencia>> estadosCaptor = ArgumentCaptor.forClass(Collection.class);
+        verify(incidenciaRepository).findByEstadoInAndFechaLimiteSlaBefore(estadosCaptor.capture(), any(LocalDateTime.class));
+        Collection<EstadoIncidencia> estadosConsultados = estadosCaptor.getValue();
+        assertTrue(estadosConsultados.contains(EstadoIncidencia.ABIERTA));
+        assertTrue(estadosConsultados.contains(EstadoIncidencia.EN_REVISION));
+    }
+
+    @Test
+    void testListarHistorial() {
+        when(incidenciaRepository.existsById(1L)).thenReturn(true);
+        when(incidenciaEventoRepository.findByIncidenciaIdOrderByFechaAsc(1L)).thenReturn(List.of(new IncidenciaEvento()));
+
+        List<IncidenciaEvento> resultado = incidenciaService.listarHistorial(1L);
+
+        assertEquals(1, resultado.size());
+        verify(incidenciaEventoRepository).findByIncidenciaIdOrderByFechaAsc(1L);
+    }
+
+    @Test
+    void testListarHistorial_IncidenciaNoEncontrada() {
+        when(incidenciaRepository.existsById(anyLong())).thenReturn(false);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> incidenciaService.listarHistorial(55L));
+        assertEquals("Incidencia no encontrada", exception.getMessage());
+        verify(incidenciaEventoRepository, never()).findByIncidenciaIdOrderByFechaAsc(anyLong());
     }
 
     @Test

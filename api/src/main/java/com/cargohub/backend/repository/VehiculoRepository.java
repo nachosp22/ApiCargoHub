@@ -7,9 +7,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface VehiculoRepository extends JpaRepository<Vehiculo, Long> {
+
+    Optional<Vehiculo> findByMatricula(String matricula);
 
     // Gestión de flota (Ver camiones de un conductor)
     List<Vehiculo> findByConductorId(Long conductorId);

@@ -6,6 +6,7 @@ import com.cargohub.backend.repository.PorteRepository;
 import com.cargohub.backend.service.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,14 +19,22 @@ public class ClienteController {
     @Autowired private ClienteService clienteService;
     @Autowired private PorteRepository porteRepository; // Acceso directo para lectura rápida
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<List<Cliente>> listarTodos() {
+        return ResponseEntity.ok(clienteService.listarTodos());
+    }
+
     // 1. Ver mi perfil
     @GetMapping("/{id}")
+    @PreAuthorize("@ownership.canAccessCliente(authentication, #id)")
     public ResponseEntity<Cliente> verPerfil(@PathVariable Long id) {
         return ResponseEntity.ok(clienteService.obtenerPorId(id));
     }
 
     // 2. Actualizar datos (Empresa, teléfono, dirección...)
     @PutMapping("/{id}")
+    @PreAuthorize("@ownership.canAccessCliente(authentication, #id)")
     public ResponseEntity<Cliente> actualizarPerfil(@PathVariable Long id, @RequestBody Cliente datosNuevos) {
         Cliente cliente = clienteService.obtenerPorId(id);
 
@@ -40,6 +49,7 @@ public class ClienteController {
 
     // 3. Mis Envíos (Historial)
     @GetMapping("/{id}/portes")
+    @PreAuthorize("@ownership.canAccessCliente(authentication, #id)")
     public ResponseEntity<List<Porte>> misEnvios(@PathVariable Long id) {
         List<Porte> misPortes = porteRepository.findByClienteId(id);
         return ResponseEntity.ok(misPortes);

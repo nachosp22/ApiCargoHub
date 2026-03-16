@@ -21,6 +21,10 @@ public interface PorteRepository extends JpaRepository<Porte, Long> {
 
     List<Porte> findByClienteId(Long clienteId);
 
+    boolean existsByIdAndClienteId(Long id, Long clienteId);
+
+    boolean existsByIdAndConductorId(Long id, Long conductorId);
+
     // 3. Validación de Solapamiento
     // Comprobamos si EL CONDUCTOR ya tiene viaje (independiente del camión)
     @Query("SELECT COUNT(p) > 0 FROM Porte p " +

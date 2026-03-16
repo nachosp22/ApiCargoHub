@@ -4,6 +4,7 @@ import com.cargohub.backend.entity.Factura;
 import com.cargohub.backend.repository.FacturaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/facturas")
 @CrossOrigin(origins = "*")
+@PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
 public class FacturaController {
 
     @Autowired

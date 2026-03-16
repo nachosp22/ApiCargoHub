@@ -42,6 +42,10 @@ public class ConductorService {
                 .orElseThrow(() -> new RuntimeException("No existe conductor asociado a este email"));
     }
 
+    public List<Conductor> listarTodos() {
+        return conductorRepository.findAll();
+    }
+
     // --- NUEVO: DAR DE BAJA (SOFT DELETE) ---
     @Transactional
     public void darDeBajaConductor(Long conductorId) {

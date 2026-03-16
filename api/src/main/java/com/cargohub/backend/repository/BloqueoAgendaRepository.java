@@ -24,4 +24,6 @@ public interface BloqueoAgendaRepository extends JpaRepository<BloqueoAgenda, Lo
     boolean estaBloqueado(@Param("conductorId") Long conductorId,
                           @Param("inicioPorte") LocalDateTime inicioPorte,
                           @Param("finPorte") LocalDateTime finPorte);
+
+    boolean existsByIdAndConductorId(Long bloqueoId, Long conductorId);
 }

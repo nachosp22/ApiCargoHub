@@ -5,6 +5,7 @@ import com.cargohub.backend.entity.Conductor;
 import com.cargohub.backend.service.ConductorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -18,8 +19,15 @@ public class ConductorController {
     @Autowired
     private ConductorService conductorService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<List<Conductor>> listarTodos() {
+        return ResponseEntity.ok(conductorService.listarTodos());
+    }
+
     // Reportar GPS: POST /api/conductores/1/ubicacion?lat=40.4&lon=-3.7
     @PostMapping("/{id}/ubicacion")
+    @PreAuthorize("@ownership.canAccessConductor(authentication, #id)")
     public ResponseEntity<?> reportarUbicacion(@PathVariable Long id,
                                                @RequestParam Double lat,
                                                @RequestParam Double lon) {
@@ -29,6 +37,7 @@ public class ConductorController {
 
     // Ver Agenda: GET /api/conductores/1/agenda?desde=2025-01-01&hasta=2025-01-31
     @GetMapping("/{id}/agenda")
+    @PreAuthorize("@ownership.canAccessConductor(authentication, #id)")
     public ResponseEntity<List<BloqueoAgenda>> verAgenda(@PathVariable Long id,
                                                          @RequestParam String desde,
                                                          @RequestParam String hasta) {
@@ -39,12 +48,14 @@ public class ConductorController {
 
     // Crear Vacaciones: POST /api/conductores/1/agenda
     @PostMapping("/{id}/agenda")
+    @PreAuthorize("@ownership.canAccessConductor(authentication, #id)")
     public ResponseEntity<BloqueoAgenda> crearBloqueo(@PathVariable Long id,
                                                       @RequestBody BloqueoAgenda bloqueo) {
         return ResponseEntity.ok(conductorService.agregarBloqueo(id, bloqueo));
     }
 
     @DeleteMapping("/agenda/{bloqueoId}")
+    @PreAuthorize("@ownership.canDeleteBloqueo(authentication, #bloqueoId)")
     public ResponseEntity<?> eliminarBloqueo(@PathVariable Long bloqueoId) {
         conductorService.eliminarBloqueo(bloqueoId);
         return ResponseEntity.ok("Bloqueo de agenda eliminado correctamente");
@@ -52,12 +63,14 @@ public class ConductorController {
 
     // Perfil completo
     @GetMapping("/{id}")
+    @PreAuthorize("@ownership.canAccessConductor(authentication, #id)")
     public ResponseEntity<Conductor> verPerfil(@PathVariable Long id) {
         return ResponseEntity.ok(conductorService.obtenerPorId(id));
     }
 
     // Actualizar perfil
     @PutMapping("/{id}")
+    @PreAuthorize("@ownership.canAccessConductor(authentication, #id)")
     public ResponseEntity<Conductor> actualizarPerfil(@PathVariable Long id, @RequestBody Conductor datosNuevos) {
         Conductor conductor = conductorService.obtenerPorId(id);
 
@@ -75,6 +88,7 @@ public class ConductorController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@ownership.canAccessConductor(authentication, #id)")
     public ResponseEntity<?> darDeBaja(@PathVariable Long id) {
         conductorService.darDeBajaConductor(id);
         return ResponseEntity.ok("Conductor dado de baja (Historial conservado)");

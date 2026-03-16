@@ -4,6 +4,7 @@ import com.cargohub.backend.entity.Incidencia;
 import com.cargohub.backend.entity.enums.EstadoIncidencia;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -14,4 +15,12 @@ public interface IncidenciaRepository extends JpaRepository<Incidencia, Long> {
 
     // Panel de Admin: Ver todas las incidencias "ABIERTA" o "EN_REVISION"
     List<Incidencia> findByEstado(EstadoIncidencia estado);
+
+    List<Incidencia> findByEstadoIn(Collection<EstadoIncidencia> estados);
+
+    List<Incidencia> findByEstadoInAndFechaLimiteSlaBefore(Collection<EstadoIncidencia> estados, java.time.LocalDateTime fechaLimiteSla);
+
+    boolean existsByIdAndPorteClienteId(Long incidenciaId, Long clienteId);
+
+    boolean existsByIdAndPorteConductorId(Long incidenciaId, Long conductorId);
 }
