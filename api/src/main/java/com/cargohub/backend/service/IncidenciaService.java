@@ -173,6 +173,11 @@ public class IncidenciaService {
                 .orElseThrow(() -> new RuntimeException("Incidencia no encontrada"));
     }
 
+    public Map<String, Long> contarPendientes() {
+        long count = incidenciaRepository.countByEstadoIn(EnumSet.of(EstadoIncidencia.ABIERTA, EstadoIncidencia.EN_REVISION));
+        return Map.of("pendientes", count);
+    }
+
     private void validarTransicion(EstadoIncidencia estadoActual, EstadoIncidencia estadoFinal) {
         Set<EstadoIncidencia> permitidos = TRANSICIONES_VALIDAS.getOrDefault(estadoActual, Set.of());
         if (!permitidos.contains(estadoFinal)) {

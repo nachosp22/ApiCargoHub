@@ -2,6 +2,8 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+const fleetRealtimeEnabled = import.meta.env.VITE_FEATURE_FLEET_REALTIME === 'true'
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
@@ -54,6 +56,15 @@ const routes: RouteRecordRaw[] = [
         name: 'clientes',
         component: () => import('@/views/ClientesView.vue'),
       },
+      ...(fleetRealtimeEnabled
+        ? [
+            {
+              path: 'fleet-map',
+              name: 'fleet-map',
+              component: () => import('@/views/FleetMapView.vue'),
+            },
+          ]
+        : []),
     ],
   },
 ]

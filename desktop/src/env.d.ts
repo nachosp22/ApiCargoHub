@@ -18,3 +18,11 @@ interface ElectronAPI {
 interface Window {
   electronAPI?: ElectronAPI
 }
+
+interface ImportMetaEnv {
+  readonly VITE_FEATURE_FLEET_REALTIME?: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}

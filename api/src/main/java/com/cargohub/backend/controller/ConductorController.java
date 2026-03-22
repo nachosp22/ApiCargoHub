@@ -2,7 +2,10 @@ package com.cargohub.backend.controller;
 
 import com.cargohub.backend.entity.BloqueoAgenda;
 import com.cargohub.backend.entity.Conductor;
+import com.cargohub.backend.entity.Vehiculo;
 import com.cargohub.backend.service.ConductorService;
+import com.cargohub.backend.service.VehiculoService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +21,9 @@ public class ConductorController {
 
     @Autowired
     private ConductorService conductorService;
+
+    @Autowired
+    private VehiculoService vehiculoService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
@@ -92,5 +98,34 @@ public class ConductorController {
     public ResponseEntity<?> darDeBaja(@PathVariable Long id) {
         conductorService.darDeBajaConductor(id);
         return ResponseEntity.ok("Conductor dado de baja (Historial conservado)");
+    }
+
+    @PostMapping("/{conductorId}/vehiculos")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','CONDUCTOR') and @ownership.canAccessConductor(authentication, #conductorId)")
+    public ResponseEntity<Vehiculo> crearVehiculo(@PathVariable Long conductorId, @Valid @RequestBody Vehiculo vehiculo) {
+        Conductor conductor = conductorService.obtenerPorId(conductorId);
+        vehiculo.setConductor(conductor);
+        vehiculo.setEstado(com.cargohub.backend.entity.enums.EstadoVehiculo.BAJA);
+        return ResponseEntity.ok(vehiculoService.guardar(vehiculo));
+    }
+
+    @PutMapping("/{conductorId}/vehiculos/{vehiculoId}/activar")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','CONDUCTOR') and @ownership.canAccessConductor(authentication, #conductorId)")
+    public ResponseEntity<Void> activarVehiculo(@PathVariable Long conductorId, @PathVariable Long vehiculoId) {
+        vehiculoService.activarVehiculo(vehiculoId, conductorId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{conductorId}/vehiculos/{vehiculoId}/desactivar")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','CONDUCTOR') and @ownership.canAccessConductor(authentication, #conductorId)")
+    public ResponseEntity<Void> desactivarVehiculo(@PathVariable Long conductorId, @PathVariable Long vehiculoId) {
+        vehiculoService.desactivarVehiculo(vehiculoId, conductorId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{conductorId}/vehiculos")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','CONDUCTOR') and @ownership.canAccessConductor(authentication, #conductorId)")
+    public ResponseEntity<List<Vehiculo>> getMisVehiculos(@PathVariable Long conductorId) {
+        return ResponseEntity.ok(vehiculoService.listarPorConductor(conductorId));
     }
 }

@@ -10,6 +10,8 @@ const dashboardStore = useDashboardStore()
 
 onMounted(() => {
   dashboardStore.fetchDashboardData()
+  dashboardStore.fetchResumen()
+  dashboardStore.fetchIncidenciasPendientes()
 })
 </script>
 
@@ -35,40 +37,32 @@ onMounted(() => {
     <!-- KPI Cards Row -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       <KpiCard
-        title="Portes Activos"
-        :value="dashboardStore.kpis.portesActivos"
+        title="Portes Este Mes"
+        :value="dashboardStore.resumen?.portesMes ?? 0"
         icon="pi-truck"
         icon-bg-color="bg-blue-50"
         icon-text-color="text-blue-600"
-        :trend="dashboardStore.trends.portesActivos?.value"
-        :trend-positive="dashboardStore.trends.portesActivos?.positive"
       />
       <KpiCard
-        title="Conductores"
-        :value="dashboardStore.kpis.conductores"
-        icon="pi-users"
+        title="Portes Activos"
+        :value="dashboardStore.resumen?.portesActivos ?? 0"
+        icon="pi-send"
         icon-bg-color="bg-emerald-50"
         icon-text-color="text-emerald-600"
-        :trend="dashboardStore.trends.conductores?.value"
-        :trend-positive="dashboardStore.trends.conductores?.positive"
       />
       <KpiCard
-        title="Incidencias Abiertas"
-        :value="dashboardStore.kpis.incidenciasAbiertas"
+        title="Portes Mañana"
+        :value="dashboardStore.resumen?.portesManana ?? 0"
+        icon="pi-calendar"
+        icon-bg-color="bg-indigo-50"
+        icon-text-color="text-indigo-600"
+      />
+      <KpiCard
+        title="Incidencias Pendientes"
+        :value="dashboardStore.incidenciasPendientes"
         icon="pi-exclamation-triangle"
         icon-bg-color="bg-amber-50"
         icon-text-color="text-amber-600"
-        :trend="dashboardStore.trends.incidenciasAbiertas?.value"
-        :trend-positive="dashboardStore.trends.incidenciasAbiertas?.positive"
-      />
-      <KpiCard
-        title="Vehículos Disponibles"
-        :value="dashboardStore.kpis.vehiculosDisponibles"
-        icon="pi-car"
-        icon-bg-color="bg-purple-50"
-        icon-text-color="text-purple-600"
-        :trend="dashboardStore.trends.vehiculosDisponibles?.value"
-        :trend-positive="dashboardStore.trends.vehiculosDisponibles?.positive"
       />
     </div>
 

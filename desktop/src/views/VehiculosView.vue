@@ -1,29 +1,17 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useVehiculosStore } from '@/stores/vehiculos'
 import { useConductoresStore } from '@/stores/conductores'
-import { useToast } from 'primevue/usetoast'
-import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import VehiculoTable from '@/components/vehiculos/VehiculoTable.vue'
-import VehiculoDialog from '@/components/vehiculos/VehiculoDialog.vue'
-import type { Vehiculo, CreateVehiculoRequest } from '@/stores/vehiculos'
+import type { Vehiculo } from '@/stores/vehiculos'
 
 const vehiculosStore = useVehiculosStore()
 const conductoresStore = useConductoresStore()
-const toast = useToast()
-
-// --- Dialog state ---
-const showDialog = ref(false)
-const editingVehiculo = ref<Vehiculo | null>(null)
 
 // --- Detail panel state ---
 const showDetail = ref(false)
 const detailVehiculo = ref<Vehiculo | null>(null)
-
-// --- Toggle confirmation ---
-const showToggleConfirm = ref(false)
-const togglingVehiculo = ref<Vehiculo | null>(null)
 
 // --- Lifecycle ---
 onMounted(async () => {
@@ -35,96 +23,12 @@ onMounted(async () => {
 
 // --- Handlers ---
 
-function onNewVehiculo(): void {
-  editingVehiculo.value = null
-  showDialog.value = true
-}
-
-function onEditVehiculo(vehiculo: Vehiculo): void {
-  editingVehiculo.value = vehiculo
-  showDialog.value = true
-}
-
 function onViewVehiculo(vehiculo: Vehiculo): void {
   detailVehiculo.value = vehiculo
   showDetail.value = true
 }
 
-function onConfirmToggle(vehiculo: Vehiculo): void {
-  togglingVehiculo.value = vehiculo
-  showToggleConfirm.value = true
-}
 
-async function onSaveVehiculo(data: CreateVehiculoRequest): Promise<void> {
-  try {
-    if (editingVehiculo.value) {
-      await vehiculosStore.updateVehiculo(editingVehiculo.value.id, {
-        matricula: data.matricula,
-        marca: data.marca,
-        modelo: data.modelo,
-        tipo: data.tipo,
-        capacidadCargaKg: data.capacidadCargaKg,
-        largoUtilMm: data.largoUtilMm,
-        anchoUtilMm: data.anchoUtilMm,
-        altoUtilMm: data.altoUtilMm,
-        trampillaElevadora: data.trampillaElevadora,
-        conductor: data.conductor,
-      })
-      toast.add({
-        severity: 'success',
-        summary: 'Vehículo actualizado',
-        detail: `El vehículo ${data.matricula} se ha actualizado correctamente.`,
-        life: 3000,
-      })
-    } else {
-      const created = await vehiculosStore.createVehiculo(data)
-      toast.add({
-        severity: 'success',
-        summary: 'Vehículo creado',
-        detail: `El vehículo ${created.matricula} se ha dado de alta correctamente.`,
-        life: 3000,
-      })
-    }
-    showDialog.value = false
-  } catch {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'No se pudo guardar el vehículo. Inténtalo de nuevo.',
-      life: 5000,
-    })
-  }
-}
-
-async function onToggleEstado(): Promise<void> {
-  if (!togglingVehiculo.value) return
-  try {
-    const vehiculo = togglingVehiculo.value
-    const wasBaja = vehiculo.estado === 'BAJA'
-    await vehiculosStore.toggleEstado(vehiculo.id)
-    toast.add({
-      severity: 'success',
-      summary: wasBaja ? 'Vehículo reactivado' : 'Vehículo dado de baja',
-      detail: wasBaja
-        ? `${vehiculo.matricula} ha sido reactivado y está disponible.`
-        : `${vehiculo.matricula} ha sido dado de baja.`,
-      life: 3000,
-    })
-    showToggleConfirm.value = false
-    togglingVehiculo.value = null
-    // Also update detail if viewing the toggled vehiculo
-    if (detailVehiculo.value?.id === vehiculo.id) {
-      detailVehiculo.value = vehiculosStore.vehiculos.find((v) => v.id === vehiculo.id) ?? null
-    }
-  } catch {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'No se pudo cambiar el estado del vehículo. Inténtalo de nuevo.',
-      life: 5000,
-    })
-  }
-}
 
 // --- Helpers ---
 
@@ -178,15 +82,6 @@ const tipoConfig: Record<string, StyleConfig> = {
 function getTipoConfig(tipo: string): StyleConfig {
   return tipoConfig[tipo] ?? { ...defaultConfig, label: tipo }
 }
-
-// Conductor list for the dialog dropdown (computed for reactivity)
-const conductorOptions = computed(() =>
-  conductoresStore.conductores.map((c) => ({
-    id: c.id,
-    nombre: c.nombre,
-    apellidos: c.apellidos,
-  }))
-)
 </script>
 
 <template>
@@ -202,11 +97,6 @@ const conductorOptions = computed(() =>
           <p class="text-sm text-gray-500 mt-0.5">Gestión de flota y mantenimiento</p>
         </div>
       </div>
-      <Button
-        label="Nuevo Vehículo"
-        icon="pi pi-plus"
-        @click="onNewVehiculo"
-      />
     </div>
 
     <!-- Mock Data Banner -->
@@ -271,17 +161,6 @@ const conductorOptions = computed(() =>
       :vehiculos="vehiculosStore.vehiculos"
       :loading="vehiculosStore.loading"
       @view="onViewVehiculo"
-      @edit="onEditVehiculo"
-      @toggle-estado="onConfirmToggle"
-    />
-
-    <!-- Create/Edit Dialog -->
-    <VehiculoDialog
-      v-model:visible="showDialog"
-      :vehiculo="editingVehiculo"
-      :saving="vehiculosStore.saving"
-      :conductores="conductorOptions"
-      @save="onSaveVehiculo"
     />
 
     <!-- Detail Panel Dialog -->
@@ -331,15 +210,6 @@ const conductorOptions = computed(() =>
             >
               {{ getTipoConfig(detailVehiculo.tipo).label }}
             </span>
-            <Button
-              icon="pi pi-pencil"
-              severity="secondary"
-              text
-              rounded
-              size="small"
-              v-tooltip.top="'Editar'"
-              @click="showDetail = false; onEditVehiculo(detailVehiculo!)"
-            />
           </div>
         </div>
 
@@ -470,61 +340,6 @@ const conductorOptions = computed(() =>
           </div>
         </div>
       </div>
-    </Dialog>
-
-    <!-- Toggle Estado Confirmation Dialog -->
-    <Dialog
-      v-model:visible="showToggleConfirm"
-      :header="togglingVehiculo?.estado === 'BAJA' ? 'Reactivar Vehículo' : 'Dar de Baja Vehículo'"
-      :modal="true"
-      :closable="true"
-      :style="{ width: '450px' }"
-    >
-      <div class="flex items-start gap-4 py-2">
-        <div
-          class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-          :class="togglingVehiculo?.estado === 'BAJA' ? 'bg-emerald-50' : 'bg-red-50'"
-        >
-          <i
-            :class="togglingVehiculo?.estado === 'BAJA'
-              ? 'pi pi-check-circle text-emerald-500'
-              : 'pi pi-ban text-red-500'
-            "
-          ></i>
-        </div>
-        <div>
-          <p class="text-gray-800 font-medium">
-            {{ togglingVehiculo?.estado === 'BAJA'
-              ? `¿Reactivar vehículo ${togglingVehiculo?.matricula}?`
-              : `¿Dar de baja vehículo ${togglingVehiculo?.matricula}?`
-            }}
-          </p>
-          <p class="text-sm text-gray-500 mt-1">
-            {{ togglingVehiculo?.estado === 'BAJA'
-              ? 'El vehículo volverá a estar disponible para asignación de portes.'
-              : 'El vehículo no podrá ser asignado a nuevos portes y quedará fuera de servicio.'
-            }}
-          </p>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex items-center justify-end gap-3">
-          <Button
-            label="Cancelar"
-            severity="secondary"
-            text
-            @click="showToggleConfirm = false"
-          />
-          <Button
-            :label="togglingVehiculo?.estado === 'BAJA' ? 'Reactivar' : 'Dar de Baja'"
-            :severity="togglingVehiculo?.estado === 'BAJA' ? 'success' : 'danger'"
-            :icon="togglingVehiculo?.estado === 'BAJA' ? 'pi pi-check-circle' : 'pi pi-ban'"
-            :loading="vehiculosStore.saving"
-            @click="onToggleEstado"
-          />
-        </div>
-      </template>
     </Dialog>
   </div>
 </template>

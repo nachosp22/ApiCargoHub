@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { api } from '@/services/api'
+import { api, getResumenPortes, getIncidenciasPendientes } from '@/services/api'
 
 // --- TypeScript Interfaces ---
 
@@ -68,6 +68,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const trends = ref<Record<string, KpiTrend>>(MOCK_TRENDS)
   const loading = ref(false)
   const usingMockData = ref(false)
+  const resumen = ref<{ portesMes: number; portesActivos: number; portesManana: number } | null>(null)
+  const incidenciasPendientes = ref<number>(0)
 
   // --- Getters ---
   const totalPortes = computed(() => recentPortes.value.length)
@@ -150,6 +152,24 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  async function fetchResumen(): Promise<void> {
+    try {
+      const res = await getResumenPortes()
+      resumen.value = res.data
+    } catch {
+      resumen.value = null
+    }
+  }
+
+  async function fetchIncidenciasPendientes(): Promise<void> {
+    try {
+      const res = await getIncidenciasPendientes()
+      incidenciasPendientes.value = res.data.pendientes ?? 0
+    } catch {
+      incidenciasPendientes.value = 0
+    }
+  }
+
   // --- Helpers ---
 
   function extractArray(data: unknown): Record<string, unknown>[] {
@@ -190,9 +210,13 @@ export const useDashboardStore = defineStore('dashboard', () => {
     trends,
     loading,
     usingMockData,
+    resumen,
+    incidenciasPendientes,
     // Getters
     totalPortes,
     // Actions
     fetchDashboardData,
+    fetchResumen,
+    fetchIncidenciasPendientes,
   }
 })

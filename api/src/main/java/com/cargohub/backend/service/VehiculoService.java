@@ -43,4 +43,42 @@ public class VehiculoService {
         v.setEstado(EstadoVehiculo.DISPONIBLE);
         vehiculoRepository.save(v);
     }
+
+    @Transactional
+    public void activarVehiculo(Long vehiculoId, Long conductorId) {
+        Vehiculo vehiculo = vehiculoRepository.findById(vehiculoId)
+                .orElseThrow(() -> new RuntimeException("Vehículo no encontrado"));
+
+        if (vehiculo.getConductor() == null || !vehiculo.getConductor().getId().equals(conductorId)) {
+            throw new RuntimeException("El vehículo no pertenece a este conductor");
+        }
+
+        List<Vehiculo> vehiculosConductor = vehiculoRepository.findByConductorId(conductorId);
+        for (Vehiculo v : vehiculosConductor) {
+            if (!v.getId().equals(vehiculoId) && v.getEstado() == EstadoVehiculo.DISPONIBLE) {
+                v.setEstado(EstadoVehiculo.BAJA);
+                vehiculoRepository.save(v);
+            }
+        }
+
+        vehiculo.setEstado(EstadoVehiculo.DISPONIBLE);
+        vehiculoRepository.save(vehiculo);
+    }
+
+    @Transactional
+    public void desactivarVehiculo(Long vehiculoId, Long conductorId) {
+        Vehiculo vehiculo = vehiculoRepository.findById(vehiculoId)
+                .orElseThrow(() -> new RuntimeException("Vehículo no encontrado"));
+
+        if (vehiculo.getConductor() == null || !vehiculo.getConductor().getId().equals(conductorId)) {
+            throw new RuntimeException("El vehículo no pertenece a este conductor");
+        }
+
+        vehiculo.setEstado(EstadoVehiculo.BAJA);
+        vehiculoRepository.save(vehiculo);
+    }
+
+    public List<Vehiculo> listarPorConductor(Long conductorId) {
+        return vehiculoRepository.findByConductorId(conductorId);
+    }
 }

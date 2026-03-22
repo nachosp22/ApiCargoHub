@@ -47,6 +47,8 @@ public class Conductor {
     private Double latitudActual;
     private Double longitudActual;
     private LocalDateTime ultimaActualizacionUbicacion;
+    private Double velocidadKphActual;
+    private Integer rumboActualDeg;
 
     // --- PREFERENCIAS Y ESTADO ---
     private boolean buscarRetorno = true;

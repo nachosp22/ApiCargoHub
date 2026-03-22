@@ -35,4 +35,14 @@ public interface PorteRepository extends JpaRepository<Porte, Long> {
     boolean tieneViajeEnFecha(@Param("conductorId") Long conductorId,
                               @Param("nuevoInicio") LocalDateTime nuevoInicio,
                               @Param("nuevoFin") LocalDateTime nuevoFin);
+
+    long countByFechaRecogidaBetween(LocalDateTime start, LocalDateTime end);
+
+    long countByFechaRecogidaBetweenAndEstadoIn(LocalDateTime start, LocalDateTime end, List<EstadoPorte> estados);
+
+    @Query("SELECT COUNT(p) FROM Porte p WHERE YEAR(p.fechaRecogida) = :anio AND MONTH(p.fechaRecogida) = :mes")
+    long countByYearAndMonth(@Param("anio") int anio, @Param("mes") int mes);
+
+    @Query("SELECT COUNT(p) FROM Porte p WHERE YEAR(p.fechaRecogida) = :anio AND MONTH(p.fechaRecogida) = :mes AND p.estado IN :estados")
+    long countByYearAndMonthAndEstadoIn(@Param("anio") int anio, @Param("mes") int mes, @Param("estados") List<EstadoPorte> estados);
 }

@@ -75,13 +75,25 @@ public class ConductorService {
     // --- 2. OPERATIVA DIARIA ---
     @Transactional
     public void actualizarUbicacion(Long conductorId, Double lat, Double lon) {
+        actualizarUbicacion(conductorId, lat, lon, null, null, null);
+    }
+
+    @Transactional
+    public void actualizarUbicacion(Long conductorId,
+                                    Double lat,
+                                    Double lon,
+                                    LocalDateTime recordedAt,
+                                    Double speedKph,
+                                    Integer headingDeg) {
         Conductor c = obtenerPorId(conductorId);
         // Si está dado de baja, no debería poder reportar ubicación
         if (c.getUsuario() != null && !c.getUsuario().isActivo()) return;
 
         c.setLatitudActual(lat);
         c.setLongitudActual(lon);
-        c.setUltimaActualizacionUbicacion(LocalDateTime.now());
+        c.setUltimaActualizacionUbicacion(recordedAt != null ? recordedAt : LocalDateTime.now());
+        c.setVelocidadKphActual(speedKph);
+        c.setRumboActualDeg(headingDeg);
         c.setDisponible(true);
         conductorRepository.save(c);
     }
