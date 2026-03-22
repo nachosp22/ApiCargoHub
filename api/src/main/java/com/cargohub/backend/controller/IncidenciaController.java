@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/incidencias")
@@ -55,6 +56,12 @@ public class IncidenciaController {
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<List<IncidenciaResponse>> listarPendientes() {
         return ResponseEntity.ok(incidenciaService.listarPendientes().stream().map(IncidenciaMapper::toResponse).toList());
+    }
+
+    @GetMapping("/contador")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<Map<String, Long>> getContadorPendientes() {
+        return ResponseEntity.ok(incidenciaService.contarPendientes());
     }
 
     // 4. Listar Todas

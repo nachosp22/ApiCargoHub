@@ -16,8 +16,6 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'view', vehiculo: Vehiculo): void
-  (e: 'edit', vehiculo: Vehiculo): void
-  (e: 'toggle-estado', vehiculo: Vehiculo): void
 }>()
 
 // --- Filters ---
@@ -283,7 +281,7 @@ function getTipoConfig(tipo: string): StyleConfig {
       </Column>
 
       <!-- Acciones -->
-      <Column header="Acciones" style="min-width: 140px; text-align: center" :exportable="false">
+      <Column header="Acciones" style="min-width: 80px; text-align: center" :exportable="false">
         <template #body="slotProps">
           <div class="flex items-center justify-center gap-1" @click.stop>
             <Button
@@ -294,24 +292,6 @@ function getTipoConfig(tipo: string): StyleConfig {
               size="small"
               v-tooltip.top="'Ver detalle'"
               @click="emit('view', slotProps.data)"
-            />
-            <Button
-              icon="pi pi-pencil"
-              severity="secondary"
-              text
-              rounded
-              size="small"
-              v-tooltip.top="'Editar'"
-              @click="emit('edit', slotProps.data)"
-            />
-            <Button
-              :icon="slotProps.data.estado === 'BAJA' ? 'pi pi-check-circle' : 'pi pi-ban'"
-              :severity="slotProps.data.estado === 'BAJA' ? 'success' : 'danger'"
-              text
-              rounded
-              size="small"
-              v-tooltip.top="slotProps.data.estado === 'BAJA' ? 'Reactivar' : 'Dar de baja'"
-              @click="emit('toggle-estado', slotProps.data)"
             />
           </div>
         </template>

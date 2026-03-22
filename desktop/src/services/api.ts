@@ -23,6 +23,73 @@ export const api = axios.create({
   },
 })
 
+export type DriverState = 'ONLINE' | 'STALE' | 'OFFLINE'
+export type EtaMethod = 'ROUTE_PROVIDER' | 'HAVERSINE_FALLBACK'
+export type EtaConfidence = 'LOW' | 'MEDIUM'
+
+export interface DriverLocationPoint {
+  driverId: string
+  lat: number
+  lon: number
+  recordedAt: string
+  speedKph?: number
+  headingDeg?: number
+  state: DriverState
+}
+
+export interface FleetSnapshotResponse {
+  snapshotAt: string
+  drivers: DriverLocationPoint[]
+  meta: {
+    pollingSuggestedSec: number
+    degraded: boolean
+    degradedReason?: string
+  }
+}
+
+export interface DriverLocationUpsertRequest {
+  lat: number
+  lon: number
+  recordedAt?: string
+  speedKph?: number
+  headingDeg?: number
+}
+
+export interface EtaEstimateResponse {
+  etaMinutes: number
+  method: EtaMethod
+  estimatedAt: string
+  confidence: EtaConfidence
+}
+
+export async function getFleetSnapshot(): Promise<FleetSnapshotResponse> {
+  const response = await api.get<FleetSnapshotResponse>('/v1/fleet/snapshot')
+  return response.data
+}
+
+export async function postDriverLocation(
+  driverId: number,
+  payload: DriverLocationUpsertRequest
+): Promise<void> {
+  await api.post(`/v1/tracking/drivers/${driverId}/locations`, payload)
+}
+
+export async function getEtaEstimate(
+  driverId: number,
+  jobId: number
+): Promise<EtaEstimateResponse> {
+  const response = await api.get<EtaEstimateResponse>('/v1/eta/estimate', {
+    params: { driverId, jobId },
+  })
+  return response.data
+}
+
+export const getResumenPortes = (anio?: number, mes?: number) =>
+  api.get('/portes/resumen', { params: { anio, mes } })
+
+export const getIncidenciasPendientes = () =>
+  api.get('/incidencias/contador')
+
 // --- Request Interceptor: attach Bearer token ---
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {

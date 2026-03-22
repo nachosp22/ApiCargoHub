@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework. web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/portes")
@@ -25,6 +26,14 @@ public class PorteController {
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<List<Porte>> listarTodos() {
         return ResponseEntity.ok(porteService.listarTodos());
+    }
+
+    @GetMapping("/resumen")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<Map<String, Object>> getResumen(
+            @RequestParam(required = false) Integer anio,
+            @RequestParam(required = false) Integer mes) {
+        return ResponseEntity.ok(porteService.getResumen(anio, mes));
     }
 
     // 1. Crear Porte (Admin/IA) - MODIFICADO PARA USAR DTO

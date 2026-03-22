@@ -48,7 +48,7 @@ public class Vehiculo {
     private boolean trampillaElevadora;
 
     @ManyToOne
-    @JoinColumn(name = "conductor_id", nullable = false)
+    @JoinColumn(name = "conductor_id")
     private Conductor conductor;
 
     @PrePersist

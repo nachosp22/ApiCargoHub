@@ -1,0 +1,158 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.ApiCargoHub" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/ch_blue_600</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/ch_blue_100</item>
+        <item name="colorOnPrimaryContainer">@color/ch_blue_900</item>
+        <item name="colorSecondary">@color/ch_blue_700</item>
+        <item name="colorTertiary">@color/ch_success</item>
+        <item name="colorSurface">@color/ch_surface</item>
+        <item name="colorSurfaceVariant">@color/ch_surface_alt</item>
+        <item name="colorOnSurface">@color/ch_text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/ch_text_secondary</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.ApiCargoHub.HeadlineLarge</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.ApiCargoHub.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.ApiCargoHub.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.ApiCargoHub.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.ApiCargoHub.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.ApiCargoHub.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.ApiCargoHub.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.ApiCargoHub.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.ApiCargoHub.LabelMedium</item>
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.ApiCargoHub.SmallComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.ApiCargoHub.MediumComponent</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.ApiCargoHub.LargeComponent</item>
+        <item name="materialButtonStyle">@style/Widget.ApiCargoHub.Button</item>
+        <item name="materialCardViewStyle">@style/Widget.ApiCargoHub.Card</item>
+        <item name="toolbarStyle">@style/Widget.ApiCargoHub.Toolbar</item>
+        <item name="navigationViewStyle">@style/Widget.ApiCargoHub.NavigationView</item>
+        <item name="bottomNavigationStyle">@style/Widget.ApiCargoHub.BottomNavigation</item>
+        <item name="textInputStyle">@style/Widget.ApiCargoHub.TextInputLayout</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/ch_surface</item>
+        <item name="android:windowBackground">@color/ch_surface</item>
+        <item name="android:navigationBarColor">@color/white</item>
+    </style>
+
+    <style name="TextAppearance.ApiCargoHub.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:textSize">@dimen/ch_text_size_display</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:lineHeight">@dimen/ch_line_height_display</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.ApiCargoHub.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">@dimen/ch_text_size_title_large</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:lineHeight">@dimen/ch_line_height_title_large</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.ApiCargoHub.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">@dimen/ch_text_size_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:lineHeight">@dimen/ch_line_height_title</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.ApiCargoHub.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textSize">@dimen/ch_text_size_label</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:lineHeight">@dimen/ch_line_height_label</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.ApiCargoHub.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">@dimen/ch_text_size_body_large</item>
+        <item name="android:lineHeight">@dimen/ch_line_height_body_large</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.ApiCargoHub.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">@dimen/ch_text_size_body</item>
+        <item name="android:lineHeight">@dimen/ch_line_height_body</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="TextAppearance.ApiCargoHub.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">@dimen/ch_text_size_caption</item>
+        <item name="android:lineHeight">@dimen/ch_line_height_caption</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="TextAppearance.ApiCargoHub.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">@dimen/ch_text_size_label</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:lineHeight">@dimen/ch_line_height_label</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.ApiCargoHub.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">@dimen/ch_text_size_caption</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:lineHeight">@dimen/ch_line_height_caption</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="ShapeAppearance.ApiCargoHub.SmallComponent" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="ShapeAppearance.ApiCargoHub.MediumComponent" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="ShapeAppearance.ApiCargoHub.LargeComponent" parent="ShapeAppearance.Material3.Corner.Large">
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <style name="Widget.ApiCargoHub.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">52dp</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.ApiCargoHub.MediumComponent</item>
+        <item name="backgroundTint">@color/ch_blue_600</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/ch_text_size_label</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.ApiCargoHub.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/ch_surface_card</item>
+        <item name="strokeColor">@color/ch_blue_100</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">0dp</item>
+    </style>
+
+    <style name="Widget.ApiCargoHub.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:elevation">0dp</item>
+        <item name="titleTextColor">@color/ch_text_primary</item>
+        <item name="subtitleTextColor">@color/ch_text_secondary</item>
+    </style>
+
+    <style name="Widget.ApiCargoHub.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconTint">@color/ch_blue_700</item>
+        <item name="itemTextColor">@color/ch_text_primary</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.ApiCargoHub.LabelMedium</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.ApiCargoHub.LabelMedium</item>
+        <item name="itemRippleColor">@color/ch_blue_100</item>
+    </style>
+
+    <style name="Widget.ApiCargoHub.NavigationView" parent="Widget.Material3.NavigationView">
+        <item name="itemTextAppearance">@style/TextAppearance.ApiCargoHub.LabelLarge</item>
+    </style>
+
+    <style name="Widget.ApiCargoHub.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/ch_blue_500</item>
+        <item name="boxBackgroundColor">@color/white</item>
+        <item name="hintTextColor">@color/ch_text_secondary</item>
+        <item name="errorTextColor">@color/ch_error</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.ApiCargoHub.MediumComponent</item>
+    </style>
+
+    <style name="Widget.ApiCargoHub.TextInputEditText" parent="Widget.Material3.TextInputEditText.OutlinedBox">
+        <item name="android:textSize">@dimen/ch_text_size_body_large</item>
+        <item name="android:lineHeight">@dimen/ch_line_height_body_large</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+</resources>

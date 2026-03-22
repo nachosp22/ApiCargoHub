@@ -3,6 +3,21 @@ node_modules/
 .vscode/
 .DS_Store
 
+### Environment and secrets ###
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.sample
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*credentials*.json
+*secret*.*
+secrets/
+
 ### Agent/tool directories ###
 .agent/
 .agents/
@@ -12,3 +27,19 @@ node_modules/
 ### Logs and temporary files ###
 *.log
 nul
+
+### Android / mobile ###
+mobile/.gradle/
+mobile/local.properties
+mobile/**/build/
+mobile/*.iml
+mobile/.idea/
+
+### Build / cache outputs ###
+**/dist/
+**/build/
+**/target/
+**/.cache/
+**/.pytest_cache/
+**/.mypy_cache/
+**/coverage/

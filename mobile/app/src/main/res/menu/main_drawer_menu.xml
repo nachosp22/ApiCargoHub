@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_nav_home"
+            android:title="@string/home_menu_section_home"
+            android:checked="true" />
+        <item
+            android:id="@+id/nav_profile"
+            android:icon="@drawable/ic_nav_profile"
+            android:title="@string/home_menu_section_profile" />
+        <item
+            android:id="@+id/nav_ports"
+            android:icon="@drawable/ic_nav_ports"
+            android:title="@string/home_menu_section_ports" />
+        <item
+            android:id="@+id/nav_incidents"
+            android:icon="@drawable/ic_nav_incidents"
+            android:title="@string/home_menu_section_incidents" />
+        <item
+            android:id="@+id/nav_agenda"
+            android:icon="@drawable/ic_nav_agenda"
+            android:title="@string/home_menu_section_agenda" />
+        <item
+            android:id="@+id/nav_vehicle"
+            android:icon="@drawable/ic_nav_vehicle"
+            android:title="@string/home_menu_section_vehicle" />
+        <item
+            android:id="@+id/nav_billing"
+            android:icon="@drawable/ic_nav_billing"
+            android:title="@string/home_menu_section_billing" />
+    </group>
+</menu>

@@ -18,6 +18,8 @@ public interface IncidenciaRepository extends JpaRepository<Incidencia, Long> {
 
     List<Incidencia> findByEstadoIn(Collection<EstadoIncidencia> estados);
 
+    long countByEstadoIn(Collection<EstadoIncidencia> estados);
+
     List<Incidencia> findByEstadoInAndFechaLimiteSlaBefore(Collection<EstadoIncidencia> estados, java.time.LocalDateTime fechaLimiteSla);
 
     boolean existsByIdAndPorteClienteId(Long incidenciaId, Long clienteId);

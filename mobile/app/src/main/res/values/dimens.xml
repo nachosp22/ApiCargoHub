@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Typography scale: ~12-15% global increase while preserving hierarchy. -->
+    <dimen name="ch_text_size_caption">15sp</dimen>
+    <dimen name="ch_text_size_label">16sp</dimen>
+    <dimen name="ch_text_size_body">17sp</dimen>
+    <dimen name="ch_text_size_body_large">18sp</dimen>
+    <dimen name="ch_text_size_title">20sp</dimen>
+    <dimen name="ch_text_size_title_large">25sp</dimen>
+    <dimen name="ch_text_size_display">34sp</dimen>
+    <dimen name="ch_text_size_hero">35sp</dimen>
+
+    <dimen name="ch_line_height_caption">20sp</dimen>
+    <dimen name="ch_line_height_label">22sp</dimen>
+    <dimen name="ch_line_height_body">24sp</dimen>
+    <dimen name="ch_line_height_body_large">27sp</dimen>
+    <dimen name="ch_line_height_title">28sp</dimen>
+    <dimen name="ch_line_height_title_large">34sp</dimen>
+    <dimen name="ch_line_height_display">42sp</dimen>
+</resources>

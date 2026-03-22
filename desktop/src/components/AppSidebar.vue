@@ -11,6 +11,8 @@ interface NavItem {
   route: string
 }
 
+const fleetRealtimeEnabled = import.meta.env.VITE_FEATURE_FLEET_REALTIME === 'true'
+
 const navItems: NavItem[] = [
   { label: 'Dashboard', icon: 'pi-chart-bar', route: '/dashboard' },
   { label: 'Portes', icon: 'pi-truck', route: '/portes' },
@@ -19,6 +21,9 @@ const navItems: NavItem[] = [
   { label: 'Incidencias', icon: 'pi-exclamation-triangle', route: '/incidencias' },
   { label: 'Facturas', icon: 'pi-file', route: '/facturas' },
   { label: 'Clientes', icon: 'pi-building', route: '/clientes' },
+  ...(fleetRealtimeEnabled
+    ? [{ label: 'Mapa flota', icon: 'pi-map', route: '/fleet-map' }]
+    : []),
 ]
 
 async function handleLogout(): Promise<void> {

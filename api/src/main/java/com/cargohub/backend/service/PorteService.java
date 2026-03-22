@@ -19,7 +19,11 @@ import org. springframework.stereotype.Service;
 import org.springframework.transaction.annotation. Transactional;
 
 import java.time.LocalDateTime;
-import java.util. List;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -216,5 +220,26 @@ public class PorteService {
     // 8. Listar Portes por Conductor
     public List<Porte> listarPortesPorConductor(Long conductorId) {
         return porteRepository.findByConductorId(conductorId);
+    }
+
+    // 9. Resumen de portes para dashboard
+    public Map<String, Object> getResumen(Integer anio, Integer mes) {
+        int year = anio != null ? anio : LocalDateTime.now().getYear();
+        int month = mes != null ? mes : LocalDateTime.now().getMonthValue();
+
+        Set<EstadoPorte> estadosActivos = EnumSet.of(EstadoPorte.PENDIENTE, EstadoPorte.ASIGNADO, EstadoPorte.EN_TRANSITO);
+
+        long portesMes = porteRepository.countByYearAndMonth(year, month);
+        long portesActivos = porteRepository.countByYearAndMonthAndEstadoIn(year, month, new java.util.ArrayList<>(estadosActivos));
+
+        LocalDateTime mananaStart = LocalDateTime.now().plusDays(1).withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime mananaEnd = mananaStart.plusDays(1).minusSeconds(1);
+        long portesManana = porteRepository.countByFechaRecogidaBetween(mananaStart, mananaEnd);
+
+        Map<String, Object> resumen = new HashMap<>();
+        resumen.put("portesMes", portesMes);
+        resumen.put("portesActivos", portesActivos);
+        resumen.put("portesManana", portesManana);
+        return resumen;
     }
 }
