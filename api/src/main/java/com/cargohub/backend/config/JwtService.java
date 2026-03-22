@@ -25,8 +25,8 @@ public class JwtService {
         this.jwtProperties = jwtProperties;
 
         String secret = jwtProperties.getSecret();
-        if (secret == null || secret.length() < 32) {
-            throw new IllegalStateException("security.jwt.secret must be configured and be at least 32 characters");
+        if (secret == null || secret.trim().length() < 32) {
+            throw new IllegalStateException("JWT_SECRET (security.jwt.secret) is required and must be at least 32 characters");
         }
         if (jwtProperties.getExpirationMs() <= 0) {
             throw new IllegalStateException("security.jwt.expiration-ms must be greater than 0");
