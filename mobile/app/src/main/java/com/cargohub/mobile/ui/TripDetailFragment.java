@@ -59,6 +59,7 @@ public class TripDetailFragment extends Fragment {
     private MaterialButton secondaryActionButton;
     private MaterialButton reportIncidentButton;
     private MaterialButton openTrackingButton;
+    private MaterialButton openFotosButton;
 
     public static TripDetailFragment newInstance(long porteId) {
         TripDetailFragment fragment = new TripDetailFragment();
@@ -100,6 +101,7 @@ public class TripDetailFragment extends Fragment {
         secondaryActionButton = view.findViewById(R.id.tripSecondaryActionButton);
         reportIncidentButton = view.findViewById(R.id.tripReportIncidentButton);
         openTrackingButton = view.findViewById(R.id.tripOpenTrackingButton);
+        openFotosButton = view.findViewById(R.id.tripOpenFotosButton);
         MaterialButton retryButton = view.findViewById(R.id.tripDetailRetryButton);
 
         incidenciaAdapter = new IncidenciaAdapter();
@@ -111,6 +113,7 @@ public class TripDetailFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(this::refreshAll);
         reportIncidentButton.setOnClickListener(v -> openNewIncident());
         openTrackingButton.setOnClickListener(v -> openTracking());
+        openFotosButton.setOnClickListener(v -> openFotos());
         retryButton.setOnClickListener(v -> refreshAll());
         refreshAll();
     }
@@ -263,6 +266,17 @@ public class TripDetailFragment extends Fragment {
         getParentFragmentManager()
                 .beginTransaction()
                 .replace(R.id.contentFragmentContainer, NuevaIncidenciaFragment.newInstance(currentPorte.getId()))
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void openFotos() {
+        if (currentPorte == null || currentPorte.getId() == null) {
+            return;
+        }
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFragmentContainer, FotoCargaFragment.newInstance(currentPorte.getId()))
                 .addToBackStack(null)
                 .commit();
     }

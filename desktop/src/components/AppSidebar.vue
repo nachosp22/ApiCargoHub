@@ -44,13 +44,13 @@ async function handleLogout(): Promise<void> {
 </script>
 
 <template>
-  <aside class="fixed top-0 left-0 h-screen w-60 bg-white border-r border-gray-200 flex flex-col z-30">
+  <aside class="fixed top-0 left-0 h-screen w-60 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col z-30">
     <!-- Logo -->
-    <div class="h-16 flex items-center gap-3 px-5 border-b border-gray-200 shrink-0">
+    <div class="h-16 flex items-center gap-3 px-5 border-b border-gray-200 dark:border-gray-700 shrink-0">
       <div class="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
         <i class="pi pi-truck text-white text-sm"></i>
       </div>
-      <span class="text-lg font-semibold text-gray-800">CargoHub</span>
+      <span class="text-lg font-semibold text-gray-800 dark:text-white">CargoHub</span>
     </div>
 
     <!-- Navigation -->
@@ -68,7 +68,7 @@ async function handleLogout(): Promise<void> {
               :class="
                 isActive
                   ? 'bg-primary text-white'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200'
               "
               @click="navigate"
             >
@@ -88,10 +88,10 @@ async function handleLogout(): Promise<void> {
     </nav>
 
     <!-- Logout -->
-    <div class="border-t border-gray-200 p-3 shrink-0">
+    <div class="border-t border-gray-200 dark:border-gray-700 p-3 shrink-0">
       <button
         type="button"
-        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors duration-150"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200 transition-colors duration-150"
         @click="handleLogout"
       >
         <i class="pi pi-sign-out text-base"></i>

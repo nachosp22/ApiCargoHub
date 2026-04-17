@@ -1,15 +1,26 @@
 package com.cargohub.mobile.data;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.cargohub.mobile.data.local.AppDatabase;
+import com.cargohub.mobile.data.local.EntityMapper;
+import com.cargohub.mobile.data.local.OfflineSupport;
+import com.cargohub.mobile.data.local.SyncManager;
+import com.cargohub.mobile.data.local.dao.PorteDao;
+import com.cargohub.mobile.data.local.entity.PorteEntity;
 import com.cargohub.mobile.data.model.EstadoPorte;
 import com.cargohub.mobile.data.model.Porte;
 import com.cargohub.mobile.network.ApiClient;
+import com.cargohub.mobile.network.ConnectivityObserver;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -18,13 +29,25 @@ import retrofit2.Response;
 public class PorteRepository {
 
     private final com.cargohub.mobile.network.ApiService apiService;
+    @Nullable private final PorteDao porteDao;
+    @Nullable private final Context context;
 
     public PorteRepository() {
-        this(ApiClient.getInstance());
+        this(ApiClient.getInstance(), null, null);
     }
 
-    PorteRepository(@NonNull com.cargohub.mobile.network.ApiService apiService) {
+    public PorteRepository(@NonNull Context context) {
+        this(ApiClient.getInstance(),
+             AppDatabase.getInstance(context).porteDao(),
+             context);
+    }
+
+    PorteRepository(@NonNull com.cargohub.mobile.network.ApiService apiService,
+                    @Nullable PorteDao porteDao,
+                    @Nullable Context context) {
         this.apiService = apiService;
+        this.porteDao = porteDao;
+        this.context = context;
     }
 
     public enum PorteAction {
@@ -35,10 +58,27 @@ public class PorteRepository {
     }
 
     public void getOffers(long conductorId, @NonNull RepositoryCallback<List<Porte>> callback) {
+        // Serve from cache if offline
+        if (context != null && porteDao != null) {
+            boolean served = OfflineSupport.serveCacheIfOffline(context,
+                    () -> {
+                        List<PorteEntity> cached = porteDao.getOffers(conductorId);
+                        return cached.isEmpty() ? null : EntityMapper.toPortes(cached);
+                    }, callback);
+            if (served) return;
+        }
+
         apiService.getPortesOferta(conductorId).enqueue(new Callback<List<Porte>>() {
             @Override
             public void onResponse(@NonNull Call<List<Porte>> call, @NonNull Response<List<Porte>> response) {
-                callback.onResult(RepositorySupport.fromResponse(response, "No se pudieron cargar las ofertas."));
+                RepositoryResult<List<Porte>> result = RepositorySupport.fromResponse(response, "No se pudieron cargar las ofertas.");
+                if (result.isSuccessful() && result.getData() != null && porteDao != null) {
+                    OfflineSupport.cacheInBackground(() -> {
+                        porteDao.deleteByConductorAndType(conductorId, true);
+                        porteDao.insertAll(EntityMapper.toEntities(result.getData(), conductorId, true));
+                    });
+                }
+                callback.onResult(result);
             }
 
             @Override
@@ -53,10 +93,27 @@ public class PorteRepository {
     }
 
     public void getAssignedTrips(long conductorId, @NonNull RepositoryCallback<List<Porte>> callback) {
+        // Serve from cache if offline
+        if (context != null && porteDao != null) {
+            boolean served = OfflineSupport.serveCacheIfOffline(context,
+                    () -> {
+                        List<PorteEntity> cached = porteDao.getAssignedTrips(conductorId);
+                        return cached.isEmpty() ? null : EntityMapper.toPortes(cached);
+                    }, callback);
+            if (served) return;
+        }
+
         apiService.getPortesDelConductor(conductorId).enqueue(new Callback<List<Porte>>() {
             @Override
             public void onResponse(@NonNull Call<List<Porte>> call, @NonNull Response<List<Porte>> response) {
-                callback.onResult(RepositorySupport.fromResponse(response, "No se pudieron cargar los portes."));
+                RepositoryResult<List<Porte>> result = RepositorySupport.fromResponse(response, "No se pudieron cargar los portes.");
+                if (result.isSuccessful() && result.getData() != null && porteDao != null) {
+                    OfflineSupport.cacheInBackground(() -> {
+                        porteDao.deleteByConductorAndType(conductorId, false);
+                        porteDao.insertAll(EntityMapper.toEntities(result.getData(), conductorId, false));
+                    });
+                }
+                callback.onResult(result);
             }
 
             @Override
@@ -71,10 +128,25 @@ public class PorteRepository {
     }
 
     public void getPorteDetail(long porteId, @NonNull RepositoryCallback<Porte> callback) {
+        // Serve from cache if offline
+        if (context != null && porteDao != null) {
+            boolean served = OfflineSupport.serveCacheIfOffline(context,
+                    () -> {
+                        PorteEntity cached = porteDao.getById(porteId);
+                        return cached != null ? EntityMapper.toPorte(cached) : null;
+                    }, callback);
+            if (served) return;
+        }
+
         apiService.getPorteDetail(porteId).enqueue(new Callback<Porte>() {
             @Override
             public void onResponse(@NonNull Call<Porte> call, @NonNull Response<Porte> response) {
-                callback.onResult(RepositorySupport.fromResponse(response, "No se pudo cargar el detalle del porte."));
+                RepositoryResult<Porte> result = RepositorySupport.fromResponse(response, "No se pudo cargar el detalle del porte.");
+                if (result.isSuccessful() && result.getData() != null && porteDao != null) {
+                    OfflineSupport.cacheInBackground(() ->
+                            porteDao.insert(EntityMapper.toEntity(result.getData(), 0, false)));
+                }
+                callback.onResult(result);
             }
 
             @Override
@@ -137,6 +209,27 @@ public class PorteRepository {
             return;
         }
 
+        // Queue offline if no connection
+        if (context != null && !ConnectivityObserver.getInstance(context).isOnline()) {
+            SyncManager.getInstance(context).queueStateChange(porteId, nextState.name());
+            // Optimistically update cache
+            if (porteDao != null) {
+                OfflineSupport.cacheInBackground(() -> {
+                    PorteEntity cached = porteDao.getById(porteId);
+                    if (cached != null) {
+                        cached.estado = nextState.name();
+                        porteDao.insert(cached);
+                    }
+                });
+            }
+            // Return a synthetic cached result
+            Porte optimistic = new Porte();
+            optimistic.setId(porteId);
+            optimistic.setEstado(nextState.name());
+            callback.onResult(RepositoryResult.cached(optimistic));
+            return;
+        }
+
         apiService.changePorteState(porteId, nextState.name()).enqueue(new Callback<Porte>() {
             @Override
             public void onResponse(@NonNull Call<Porte> call, @NonNull Response<Porte> response) {
@@ -195,6 +288,29 @@ public class PorteRepository {
             return true;
         }
         return currentState == EstadoPorte.EN_TRANSITO && nextState == EstadoPorte.ENTREGADO;
+    }
+
+    public void firmarEntrega(long porteId, @NonNull String firmaBase64, @NonNull String firmadoPor,
+                              @NonNull RepositoryCallback<Porte> callback) {
+        Map<String, String> body = new HashMap<>();
+        body.put("firmaBase64", firmaBase64);
+        body.put("firmadoPor", firmadoPor);
+
+        apiService.firmarEntrega(porteId, body).enqueue(new Callback<Porte>() {
+            @Override
+            public void onResponse(@NonNull Call<Porte> call, @NonNull Response<Porte> response) {
+                callback.onResult(RepositorySupport.fromResponse(response, "No se pudo registrar la firma de entrega."));
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Porte> call, @NonNull Throwable t) {
+                callback.onResult(RepositorySupport.fromFailure(
+                        t,
+                        "Tiempo de espera agotado al registrar la firma.",
+                        "Error de red al registrar la firma de entrega."
+                ));
+            }
+        });
     }
 
     private void refreshPorteDetail(long porteId,

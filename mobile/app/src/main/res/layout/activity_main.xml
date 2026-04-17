@@ -42,6 +42,21 @@
                 app:tint="@color/ch_on_surface" />
         </LinearLayout>
 
+        <!-- Offline banner -->
+        <TextView
+            android:id="@+id/offlineBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/ch_warning"
+            android:gravity="center"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="@string/offline_banner"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
         <!-- Full-bleed content area -->
         <FrameLayout
             android:id="@+id/contentSurfaceCard"

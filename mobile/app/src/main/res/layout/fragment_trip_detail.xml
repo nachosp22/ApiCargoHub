@@ -189,6 +189,18 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
+                    <!-- Fotos button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/tripOpenFotosButton"
+                        style="@style/Widget.ApiCargoHub.Button.Secondary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_sm"
+                        android:text="📷 Fotos"
+                        android:textAllCaps="false"
+                        app:icon="@drawable/ic_photo_placeholder"
+                        app:iconGravity="textStart" />
+
                     <!-- Incidents section -->
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"

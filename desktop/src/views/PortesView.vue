@@ -10,6 +10,7 @@ import Textarea from 'primevue/textarea'
 import PorteTable from '@/components/portes/PorteTable.vue'
 import PorteDialog from '@/components/portes/PorteDialog.vue'
 import PorteStatusBadge from '@/components/portes/PorteStatusBadge.vue'
+import PorteFotosSection from '@/components/portes/PorteFotosSection.vue'
 import type { Porte, CreatePorteRequest, EstadoPorte } from '@/stores/portes'
 
 const portesStore = usePortesStore()
@@ -399,6 +400,9 @@ void authStore
           <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Descripción</h4>
           <p class="text-gray-700 text-sm bg-gray-50 rounded-xl p-4">{{ detailPorte.descripcionCliente }}</p>
         </div>
+
+        <!-- Fotos de carga -->
+        <PorteFotosSection :porteId="detailPorte.id ?? null" />
       </div>
     </Dialog>
 

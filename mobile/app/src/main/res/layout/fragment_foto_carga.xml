@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ch_surface"
+    android:orientation="vertical">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/ch_space_md"
+        android:paddingTop="@dimen/ch_space_lg"
+        android:paddingBottom="@dimen/ch_space_sm">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fotos"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.SectionLabel"
+            android:textColor="@color/ch_text_secondary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_xs"
+            android:text="Fotos de Carga"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
+            android:textColor="@color/ch_text_primary"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- Loading -->
+        <LinearLayout
+            android:id="@+id/fotoCargaLoadingContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminateTint="@color/ch_accent_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_sm"
+                android:text="Cargando fotos..."
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+                android:textColor="@color/ch_text_secondary" />
+        </LinearLayout>
+
+        <!-- Empty -->
+        <LinearLayout
+            android:id="@+id/fotoCargaEmptyContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📷"
+                android:textSize="48sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_sm"
+                android:text="Sin fotos aun"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+                android:textColor="@color/ch_text_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_xs"
+                android:gravity="center"
+                android:text="Toca el boton + para tomar una foto de la carga"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+                android:textColor="@color/ch_text_secondary" />
+        </LinearLayout>
+
+        <!-- Error -->
+        <LinearLayout
+            android:id="@+id/fotoCargaErrorContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/fotoCargaErrorMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+                android:textColor="@color/ch_error" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/fotoCargaRetryButton"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_sm"
+                android:text="Reintentar"
+                android:textColor="@color/ch_accent_primary" />
+        </LinearLayout>
+
+        <!-- Content: Grid of photos -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/fotoCargaRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingHorizontal="@dimen/ch_space_sm"
+            android:paddingTop="@dimen/ch_space_xs"
+            android:paddingBottom="80dp"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- FAB -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fotoCargaFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/ch_space_md"
+        android:contentDescription="Tomar foto"
+        app:backgroundTint="@color/ch_accent_primary"
+        app:srcCompat="@android:drawable/ic_menu_camera"
+        app:tint="@android:color/white" />
+
+</LinearLayout>

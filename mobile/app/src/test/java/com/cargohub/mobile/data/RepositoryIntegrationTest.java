@@ -282,7 +282,7 @@ public class RepositoryIntegrationTest {
         server.enqueue(jsonResponse(200, "{\"id\":55,\"estado\":\"ASIGNADO\"}"));
         server.enqueue(jsonResponse(200, "{\"id\":55,\"origen\":\"Madrid\",\"destino\":\"Valencia\",\"estado\":\"ASIGNADO\"}"));
 
-        PorteRepository repository = new PorteRepository(createApiService());
+        PorteRepository repository = new PorteRepository(createApiService(), null, null);
         CallbackCapture<Porte> capture = new CallbackCapture<>();
 
         repository.acceptOffer(55L, 9L, capture);
@@ -306,7 +306,7 @@ public class RepositoryIntegrationTest {
     public void getOffers_parsesCurrentBackendPorteContract() throws Exception {
         server.enqueue(jsonResponse(200, "[{\"id\":3,\"origen\":\"Bilbao\",\"destino\":\"Zaragoza\",\"estado\":\"PENDIENTE\",\"descripcionCliente\":\"Materiales de construccion\",\"requiereFrio\":true,\"distanciaKm\":305.0,\"precioFinal\":520.0}]"));
 
-        PorteRepository repository = new PorteRepository(createApiService());
+        PorteRepository repository = new PorteRepository(createApiService(), null, null);
         CallbackCapture<List<Porte>> capture = new CallbackCapture<>();
 
         repository.getOffers(1L, capture);
@@ -330,7 +330,7 @@ public class RepositoryIntegrationTest {
     public void getPorteDetail_forbiddenResponseReturnsErrorWithoutCrashingCallback() throws Exception {
         server.enqueue(jsonResponse(403, "{\"message\":\"No autorizado para ver este porte\"}"));
 
-        PorteRepository repository = new PorteRepository(createApiService());
+        PorteRepository repository = new PorteRepository(createApiService(), null, null);
         CallbackCapture<Porte> capture = new CallbackCapture<>();
 
         repository.getPorteDetail(99L, capture);
@@ -350,7 +350,7 @@ public class RepositoryIntegrationTest {
     public void rejectOffer_postsDriverDecisionWithoutFollowupFetch() throws Exception {
         server.enqueue(new MockResponse().setResponseCode(204));
 
-        PorteRepository repository = new PorteRepository(createApiService());
+        PorteRepository repository = new PorteRepository(createApiService(), null, null);
         CallbackCapture<Void> capture = new CallbackCapture<>();
 
         repository.rejectOffer(55L, 9L, capture);
@@ -369,7 +369,7 @@ public class RepositoryIntegrationTest {
         server.enqueue(jsonResponse(200, "{\"id\":44,\"estado\":\"EN_TRANSITO\"}"));
         server.enqueue(jsonResponse(200, "{\"id\":44,\"origen\":\"Sevilla\",\"destino\":\"Malaga\",\"estado\":\"EN_TRANSITO\"}"));
 
-        PorteRepository repository = new PorteRepository(createApiService());
+        PorteRepository repository = new PorteRepository(createApiService(), null, null);
         CallbackCapture<Porte> capture = new CallbackCapture<>();
 
         repository.changeTripState(44L, EstadoPorte.ASIGNADO, EstadoPorte.EN_TRANSITO, capture);

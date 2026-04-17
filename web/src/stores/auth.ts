@@ -267,6 +267,46 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /**
+   * Update client profile data.
+   */
+  async function updateProfile(clienteId: number, data: Record<string, unknown>): Promise<void> {
+    await api.put(`/clientes/${clienteId}`, data)
+    if (user.value && typeof data.nombreEmpresa === 'string') {
+      user.value = { ...user.value, nombre: data.nombreEmpresa }
+      localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(user.value))
+    }
+  }
+
+  /**
+   * Change password for authenticated client.
+   */
+  async function changePassword(clienteId: number, currentPassword: string, newPassword: string): Promise<void> {
+    await api.put(`/clientes/${clienteId}/change-password`, { currentPassword, newPassword })
+  }
+
+  /**
+   * Request a password reset (forgot password).
+   */
+  async function forgotPassword(email: string): Promise<void> {
+    await api.post('/auth/forgot-password', { email })
+  }
+
+  /**
+   * Reset password with a token.
+   */
+  async function resetPassword(resetToken: string, newPassword: string): Promise<void> {
+    await api.post('/auth/reset-password', { token: resetToken, newPassword })
+  }
+
+  /**
+   * Fetch client profile data from API.
+   */
+  async function fetchProfile(clienteId: number): Promise<Record<string, unknown>> {
+    const response = await api.get(`/clientes/${clienteId}`)
+    return response.data
+  }
+
   return {
     token,
     user,
@@ -276,5 +316,10 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     logout,
     loadFromStorage,
+    updateProfile,
+    changePassword,
+    forgotPassword,
+    resetPassword,
+    fetchProfile,
   }
 })

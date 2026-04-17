@@ -35,6 +35,17 @@ public final class RepositoryResult<T> {
         return new RepositoryResult<>(null, message, false, unauthorized, code);
     }
 
+    /**
+     * Result served from offline cache. Successful but flagged as cached.
+     */
+    public static <T> RepositoryResult<T> cached(@NonNull T data) {
+        return new RepositoryResult<>(data, "Datos offline (sin conexion)", true, false, -2);
+    }
+
+    public boolean isCached() {
+        return code == -2;
+    }
+
     @Nullable
     public T getData() {
         return data;

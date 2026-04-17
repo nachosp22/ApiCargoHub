@@ -23,6 +23,10 @@
             android:icon="@drawable/ic_nav_portes"
             android:title="@string/home_menu_section_ports" />
         <item
+            android:id="@+id/nav_notifications"
+            android:icon="@drawable/ic_nav_notifications"
+            android:title="@string/home_menu_section_notifications" />
+        <item
             android:id="@+id/nav_incidents"
             android:icon="@drawable/ic_nav_incidents"
             android:title="@string/home_menu_section_incidents" />

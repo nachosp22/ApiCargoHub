@@ -4,13 +4,17 @@ import com.cargohub.mobile.data.model.EstadisticasConductor;
 import com.cargohub.mobile.data.model.FacturaPageResponse;
 import com.cargohub.mobile.data.model.FacturaResumen;
 import com.cargohub.mobile.data.model.LoginResponse;
+import com.cargohub.mobile.data.model.Notificacion;
+import com.cargohub.mobile.data.model.UnreadCountResponse;
 import com.cargohub.mobile.data.model.AgendaBloqueo;
 import com.cargohub.mobile.data.model.AgendaBloqueoRequest;
 import com.cargohub.mobile.data.model.BloqueoRecurrente;
 import com.cargohub.mobile.data.model.ConductorProfileResponse;
 import com.cargohub.mobile.data.model.ConductorProfileUpdateRequest;
+import com.cargohub.mobile.data.model.CrearFotoCargaRequest;
 import com.cargohub.mobile.data.model.CrearIncidenciaRequest;
 import com.cargohub.mobile.data.model.DriverLocationUpdateRequest;
+import com.cargohub.mobile.data.model.FotoCarga;
 import com.cargohub.mobile.data.model.IncidenciaEventoResponse;
 import com.cargohub.mobile.data.model.Porte;
 import com.cargohub.mobile.data.model.IncidenciaResponse;
@@ -139,10 +143,43 @@ public interface ApiService {
     Call<FacturaResumen> getFacturasResumen(@Path("id") long conductorId,
                                             @Query("periodo") String periodo);
 
+    // ── Notificaciones ──
+
+    @GET("api/notificaciones")
+    Call<List<Notificacion>> getNotificaciones();
+
+    @GET("api/notificaciones/count")
+    Call<UnreadCountResponse> getNotificacionesUnreadCount();
+
+    @PUT("api/notificaciones/{id}/leer")
+    Call<Notificacion> markNotificacionAsRead(@Path("id") long notificacionId);
+
+    @PUT("api/notificaciones/leer-todas")
+    Call<Void> markAllNotificacionesAsRead();
+
     // ── Estadísticas conductor ──
 
     @GET("api/conductores/{id}/estadisticas")
     Call<EstadisticasConductor> getEstadisticas(@Path("id") long conductorId,
                                                 @Query("desde") String desde,
                                                 @Query("hasta") String hasta);
+
+    // ── Fotos de carga ──
+
+    @GET("api/portes/{porteId}/fotos")
+    Call<List<FotoCarga>> getFotosCarga(@Path("porteId") long porteId);
+
+    @POST("api/portes/{porteId}/fotos")
+    Call<FotoCarga> subirFotoCarga(@Path("porteId") long porteId,
+                                   @Body CrearFotoCargaRequest request);
+
+    @DELETE("api/portes/{porteId}/fotos/{fotoId}")
+    Call<Void> eliminarFotoCarga(@Path("porteId") long porteId,
+                                 @Path("fotoId") long fotoId);
+
+    // ── Firma de entrega ──
+
+    @POST("api/portes/{porteId}/firma")
+    Call<Porte> firmarEntrega(@Path("porteId") long porteId,
+                              @Body java.util.Map<String, String> body);
 }

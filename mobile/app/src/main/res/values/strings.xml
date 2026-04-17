@@ -308,6 +308,22 @@
     <string name="stats_loading">Cargando estadísticas…</string>
     <string name="stats_no_data">Aún no hay datos suficientes.</string>
 
+    <!-- Notificaciones -->
+    <string name="home_menu_section_notifications">Notificaciones</string>
+    <string name="notificaciones_title">Notificaciones</string>
+    <string name="notificaciones_subtitle">Avisos sobre tus portes y ofertas.</string>
+    <string name="notificaciones_loading">Cargando notificaciones…</string>
+    <string name="notificaciones_empty">No tienes notificaciones.</string>
+    <string name="notificaciones_mark_all_read">Marcar todas leídas</string>
+    <string name="notificaciones_all_marked_read">Todas las notificaciones marcadas como leídas.</string>
+
     <!-- Placeholders -->
     <string name="placeholder_coming_soon">Próximamente</string>
+
+    <!-- Offline mode -->
+    <string name="offline_banner">Sin conexión — modo offline</string>
+    <string name="offline_feature_unavailable">Esta función requiere conexión a internet.</string>
+    <string name="offline_data_cached">Mostrando datos guardados localmente.</string>
+    <string name="offline_action_queued">Acción guardada. Se sincronizará cuando vuelva la conexión.</string>
+    <string name="offline_sync_complete">Sincronización completada.</string>
 </resources>

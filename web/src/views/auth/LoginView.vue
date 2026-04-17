@@ -1,27 +1,27 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-canvas px-4">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+  <div class="min-h-screen flex items-center justify-center bg-canvas dark:bg-gray-900 px-4">
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/50 p-8">
       <div class="text-center mb-8">
         <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center mx-auto mb-4">
           <i class="pi pi-truck text-white text-xl"></i>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">Iniciar Sesión</h1>
-        <p class="text-sm text-gray-500 mt-1">Accede a tu portal de cliente</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('auth.login.title') }}</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('auth.login.subtitle') }}</p>
       </div>
 
       <!-- Error message -->
-      <div v-if="errorMessage" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-        <p class="text-sm text-red-700">{{ errorMessage }}</p>
+      <div v-if="errorMessage" class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <p class="text-sm text-red-700 dark:text-red-400">{{ errorMessage }}</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('auth.login.email') }}</label>
           <InputText
             id="email"
             v-model="email"
             type="email"
-            placeholder="tu@email.com"
+            :placeholder="t('auth.login.emailPlaceholder')"
             class="w-full"
             :disabled="loading"
             required
@@ -29,12 +29,12 @@
         </div>
 
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+          <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('auth.login.password') }}</label>
           <InputText
             id="password"
             v-model="password"
             type="password"
-            placeholder="••••••••"
+            :placeholder="t('auth.login.passwordPlaceholder')"
             class="w-full"
             :disabled="loading"
             required
@@ -43,7 +43,7 @@
 
         <Button
           type="submit"
-          label="Iniciar Sesión"
+          :label="t('auth.login.submit')"
           :loading="loading"
           class="w-full"
           severity="primary"
@@ -52,7 +52,7 @@
 
       <div class="mt-6 text-center">
         <router-link to="/register" class="text-sm text-primary hover:underline">
-          ¿No tienes cuenta? Regístrate
+          {{ t('auth.login.noAccount') }}
         </router-link>
       </div>
     </div>
@@ -62,10 +62,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore, AuthLoginError } from '@/stores/auth'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 
+const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
@@ -88,7 +90,7 @@ async function handleLogin() {
     if (err instanceof AuthLoginError) {
       errorMessage.value = err.message
     } else {
-      errorMessage.value = 'Error inesperado al iniciar sesión.'
+      errorMessage.value = t('auth.login.unexpectedError')
     }
   } finally {
     loading.value = false

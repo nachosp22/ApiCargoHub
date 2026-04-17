@@ -58,7 +58,7 @@ async function handleLogin(): Promise<void> {
 </script>
 
 <template>
-  <div class="min-h-screen bg-canvas flex items-center justify-center px-4">
+  <div class="min-h-screen bg-canvas dark:bg-gray-900 flex items-center justify-center px-4">
     <div class="w-full max-w-md">
       <!-- Logo / Brand -->
       <div class="text-center mb-8">
@@ -67,18 +67,18 @@ async function handleLogin(): Promise<void> {
         >
           <i class="pi pi-truck text-white text-3xl"></i>
         </div>
-        <h1 class="text-2xl font-bold text-gray-800">CargoHub</h1>
-        <p class="text-gray-500 mt-1">Plataforma de Gestión Logística</p>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">CargoHub</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Plataforma de Gestión Logística</p>
       </div>
 
       <!-- Login Card -->
-      <div class="bg-white rounded-2xl shadow-lg p-8">
-        <h2 class="text-xl font-semibold text-gray-800 mb-6">Iniciar Sesión</h2>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/50 p-8">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-6">Iniciar Sesión</h2>
 
         <form @submit.prevent="handleLogin" class="space-y-5">
           <!-- Email -->
           <div class="flex flex-col gap-2">
-            <label for="email" class="text-sm font-medium text-gray-700">
+            <label for="email" class="text-sm font-medium text-gray-700 dark:text-gray-300">
               Correo electrónico
             </label>
             <InputText
@@ -93,7 +93,7 @@ async function handleLogin(): Promise<void> {
 
           <!-- Password -->
           <div class="flex flex-col gap-2">
-            <label for="password" class="text-sm font-medium text-gray-700">
+            <label for="password" class="text-sm font-medium text-gray-700 dark:text-gray-300">
               Contraseña
             </label>
             <Password
@@ -111,7 +111,7 @@ async function handleLogin(): Promise<void> {
           <!-- Error message -->
           <div
             v-if="errorMessage"
-            class="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg flex items-center gap-2"
+            class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-lg flex items-center gap-2"
           >
             <i class="pi pi-exclamation-circle"></i>
             {{ errorMessage }}

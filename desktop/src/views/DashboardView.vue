@@ -19,8 +19,8 @@ onMounted(() => {
   <div class="space-y-6">
     <!-- Page Header -->
     <div>
-      <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
-      <p class="text-sm text-gray-500 mt-1">
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
         Resumen general de la plataforma de transporte
       </p>
     </div>

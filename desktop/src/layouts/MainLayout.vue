@@ -4,7 +4,7 @@ import AppTopBar from '@/components/AppTopBar.vue'
 </script>
 
 <template>
-  <div class="min-h-screen bg-canvas">
+  <div class="min-h-screen bg-canvas dark:bg-gray-900">
     <!-- Sidebar -->
     <AppSidebar />
 

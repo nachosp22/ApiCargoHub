@@ -5,8 +5,8 @@
       <router-link to="/portal/mis-portes">
         <Button icon="pi pi-arrow-left" severity="secondary" text rounded />
       </router-link>
-      <h2 class="text-xl font-bold text-gray-800">
-        Tracking Porte #{{ porteId }}
+      <h2 class="text-xl font-bold text-gray-800 dark:text-white">
+        {{ t('portal.tracking.title', { id: porteId }) }}
       </h2>
       <span
         v-if="portesStore.tracking"
@@ -23,29 +23,29 @@
     <!-- Main content -->
     <div v-if="portesStore.tracking" class="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
       <!-- Map -->
-      <div class="flex-1 rounded-xl border border-gray-200 overflow-hidden min-h-[300px]">
+      <div class="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden min-h-[300px]">
         <div ref="mapContainer" class="w-full h-full" />
       </div>
 
       <!-- Info panel -->
       <div class="lg:w-80 space-y-4">
         <!-- ETA -->
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
-          <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Tiempo estimado</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">{{ t('portal.tracking.estimatedTime') }}</h3>
           <div v-if="portesStore.tracking.etaMinutes != null" class="text-3xl font-bold text-primary-600">
             {{ portesStore.tracking.etaMinutes }} min
           </div>
-          <div v-else class="text-lg text-gray-400">Sin estimación</div>
+          <div v-else class="text-lg text-gray-400">{{ t('portal.tracking.noEstimation') }}</div>
           <p v-if="portesStore.tracking.etaConfidence" class="text-xs text-gray-400 mt-1">
-            Confianza: {{ portesStore.tracking.etaConfidence }}
+            {{ t('portal.tracking.confidence', { value: portesStore.tracking.etaConfidence }) }}
           </p>
         </div>
 
         <!-- Driver -->
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
-          <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Conductor</h3>
-          <p class="text-gray-800 font-medium">
-            {{ portesStore.tracking.driverName ?? 'Sin asignar' }}
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">{{ t('portal.tracking.driver') }}</h3>
+          <p class="text-gray-800 dark:text-white font-medium">
+            {{ portesStore.tracking.driverName ?? t('portal.tracking.unassigned') }}
           </p>
           <p v-if="portesStore.tracking.vehicleInfo" class="text-sm text-gray-500">
             {{ portesStore.tracking.vehicleInfo }}
@@ -57,20 +57,20 @@
         </div>
 
         <!-- Route -->
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
-          <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Ruta</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">{{ t('portal.tracking.route') }}</h3>
           <div class="space-y-2">
             <div class="flex items-start gap-2">
               <span class="mt-1 w-3 h-3 rounded-full bg-green-500 flex-shrink-0" />
               <div>
-                <p class="text-xs text-gray-400">Origen</p>
+                <p class="text-xs text-gray-400">{{ t('portal.tracking.origin') }}</p>
                 <p class="text-sm text-gray-700">{{ portesStore.tracking.originName || '—' }}</p>
               </div>
             </div>
             <div class="flex items-start gap-2">
               <span class="mt-1 w-3 h-3 rounded-full bg-red-500 flex-shrink-0" />
               <div>
-                <p class="text-xs text-gray-400">Destino</p>
+                <p class="text-xs text-gray-400">{{ t('portal.tracking.destination') }}</p>
                 <p class="text-sm text-gray-700">{{ portesStore.tracking.destinationName || '—' }}</p>
               </div>
             </div>
@@ -79,9 +79,9 @@
 
         <!-- Last update -->
         <div v-if="portesStore.tracking.lastUpdate" class="text-xs text-gray-400 text-center">
-          Última actualización: {{ formatTime(portesStore.tracking.lastUpdate) }}
+          {{ t('portal.tracking.lastUpdate', { time: formatTime(portesStore.tracking.lastUpdate) }) }}
           <br />
-          <span class="text-gray-300">Auto-refresh cada 10s</span>
+          <span class="text-gray-300">{{ t('portal.tracking.autoRefresh') }}</span>
         </div>
       </div>
     </div>
@@ -94,8 +94,8 @@
     <!-- Error state -->
     <div v-else class="flex-1 flex flex-col items-center justify-center text-gray-400">
       <i class="pi pi-map-marker text-4xl mb-3"></i>
-      <p>No se pudo cargar la información de tracking</p>
-      <Button label="Reintentar" icon="pi pi-refresh" severity="secondary" class="mt-3"
+      <p>{{ t('portal.tracking.errorLoading') }}</p>
+      <Button :label="t('portal.tracking.retry')" icon="pi pi-refresh" severity="secondary" class="mt-3"
               @click="portesStore.fetchTracking(porteId)" />
     </div>
   </div>
@@ -104,11 +104,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { usePortesStore } from '@/stores/portes'
 import Button from 'primevue/button'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
+const { t } = useI18n()
 const route = useRoute()
 const portesStore = usePortesStore()
 const mapContainer = ref<HTMLElement | null>(null)
@@ -161,8 +163,8 @@ onBeforeUnmount(() => {
 
 watch(
   () => portesStore.tracking,
-  async (t) => {
-    if (!t) return
+  async (tracking) => {
+    if (!tracking) return
     await nextTick()
     if (!mapContainer.value) return
 
@@ -176,35 +178,35 @@ watch(
       const bounds: L.LatLngExpression[] = []
 
       // Origin marker
-      if (t.originLat != null && t.originLng != null) {
-        L.marker([t.originLat, t.originLng], { icon: originIcon })
-          .bindPopup(`<b>Origen</b><br/>${t.originName || ''}`)
+      if (tracking.originLat != null && tracking.originLng != null) {
+        L.marker([tracking.originLat, tracking.originLng], { icon: originIcon })
+          .bindPopup(`<b>${t('portal.tracking.mapOrigin')}</b><br/>${tracking.originName || ''}`)
           .addTo(map)
-        bounds.push([t.originLat, t.originLng])
+        bounds.push([tracking.originLat, tracking.originLng])
       }
 
       // Destination marker
-      if (t.destinationLat != null && t.destinationLng != null) {
-        L.marker([t.destinationLat, t.destinationLng], { icon: destinationIcon })
-          .bindPopup(`<b>Destino</b><br/>${t.destinationName || ''}`)
+      if (tracking.destinationLat != null && tracking.destinationLng != null) {
+        L.marker([tracking.destinationLat, tracking.destinationLng], { icon: destinationIcon })
+          .bindPopup(`<b>${t('portal.tracking.mapDestination')}</b><br/>${tracking.destinationName || ''}`)
           .addTo(map)
-        bounds.push([t.destinationLat, t.destinationLng])
+        bounds.push([tracking.destinationLat, tracking.destinationLng])
       }
 
       // Route line
-      if (t.originLat != null && t.originLng != null && t.destinationLat != null && t.destinationLng != null) {
+      if (tracking.originLat != null && tracking.originLng != null && tracking.destinationLat != null && tracking.destinationLng != null) {
         L.polyline(
-          [[t.originLat, t.originLng], [t.destinationLat, t.destinationLng]],
+          [[tracking.originLat, tracking.originLng], [tracking.destinationLat, tracking.destinationLng]],
           { color: '#6366F1', weight: 3, dashArray: '8 4', opacity: 0.6 }
         ).addTo(map)
       }
 
       // Driver marker
-      if (t.driverLat != null && t.driverLng != null) {
-        driverMarker = L.marker([t.driverLat, t.driverLng], { icon: driverIcon })
-          .bindPopup(`<b>${t.driverName ?? 'Conductor'}</b>`)
+      if (tracking.driverLat != null && tracking.driverLng != null) {
+        driverMarker = L.marker([tracking.driverLat, tracking.driverLng], { icon: driverIcon })
+          .bindPopup(`<b>${tracking.driverName ?? t('portal.tracking.driver')}</b>`)
           .addTo(map)
-        bounds.push([t.driverLat, t.driverLng])
+        bounds.push([tracking.driverLat, tracking.driverLng])
       }
 
       if (bounds.length >= 2) {
@@ -214,12 +216,12 @@ watch(
       }
     } else {
       // Update driver marker position
-      if (t.driverLat != null && t.driverLng != null) {
+      if (tracking.driverLat != null && tracking.driverLng != null) {
         if (driverMarker) {
-          driverMarker.setLatLng([t.driverLat, t.driverLng])
+          driverMarker.setLatLng([tracking.driverLat, tracking.driverLng])
         } else {
-          driverMarker = L.marker([t.driverLat, t.driverLng], { icon: driverIcon })
-            .bindPopup(`<b>${t.driverName ?? 'Conductor'}</b>`)
+          driverMarker = L.marker([tracking.driverLat, tracking.driverLng], { icon: driverIcon })
+            .bindPopup(`<b>${tracking.driverName ?? t('portal.tracking.driver')}</b>`)
             .addTo(map)
         }
       }
@@ -229,7 +231,7 @@ watch(
 )
 
 function estadoBadgeClass(estado: string): string {
-  const map: Record<string, string> = {
+  const m: Record<string, string> = {
     PENDIENTE: 'bg-yellow-100 text-yellow-700',
     SOLICITUD: 'bg-purple-100 text-purple-700',
     ASIGNADO: 'bg-blue-100 text-blue-700',
@@ -238,7 +240,7 @@ function estadoBadgeClass(estado: string): string {
     CANCELADO: 'bg-red-100 text-red-700',
     FACTURADO: 'bg-gray-100 text-gray-700',
   }
-  return map[estado] ?? 'bg-gray-100 text-gray-600'
+  return m[estado] ?? 'bg-gray-100 text-gray-600'
 }
 
 function formatTime(dateStr: string): string {

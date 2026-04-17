@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ch_surface"
+    android:orientation="vertical">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/ch_space_md"
+        android:paddingTop="@dimen/ch_space_lg"
+        android:paddingBottom="@dimen/ch_space_sm">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Confirmar Entrega"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
+            android:textColor="@color/ch_text_primary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_xs"
+            android:text="Solicita la firma del destinatario para confirmar la entrega"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+            android:textColor="@color/ch_text_secondary" />
+    </LinearLayout>
+
+    <!-- Recipient name -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/ch_space_md"
+        android:layout_marginTop="@dimen/ch_space_sm"
+        android:hint="Nombre del firmante"
+        app:boxStrokeColor="@color/ch_accent_primary"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/firmaFirmadoPorInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Signature area label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/ch_space_md"
+        android:layout_marginTop="@dimen/ch_space_md"
+        android:text="Firma"
+        android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
+        android:textColor="@color/ch_text_secondary"
+        android:textStyle="bold" />
+
+    <!-- Signature canvas -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginHorizontal="@dimen/ch_space_md"
+        android:layout_marginTop="@dimen/ch_space_xs"
+        app:cardCornerRadius="@dimen/ch_radius_md"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/ch_blue_100"
+        app:strokeWidth="1dp">
+
+        <com.cargohub.mobile.ui.SignatureView
+            android:id="@+id/firmaSignatureView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Progress bar (hidden by default) -->
+    <ProgressBar
+        android:id="@+id/firmaProgressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/ch_space_md"
+        android:layout_marginTop="@dimen/ch_space_sm"
+        android:visibility="gone"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:indeterminate="true" />
+
+    <!-- Bottom buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/ch_surface_card"
+        android:elevation="8dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/ch_space_md"
+        android:paddingTop="@dimen/ch_space_sm"
+        android:paddingBottom="@dimen/ch_space_md">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/firmaLimpiarButton"
+            style="@style/Widget.ApiCargoHub.Button.Secondary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/ch_space_xs"
+            android:text="Limpiar"
+            android:textAllCaps="false" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/firmaConfirmarButton"
+            style="@style/Widget.ApiCargoHub.Button.Primary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/ch_space_xs"
+            android:text="Confirmar entrega"
+            android:textAllCaps="false" />
+    </LinearLayout>
+</LinearLayout>

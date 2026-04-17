@@ -9,16 +9,16 @@
     <div v-else-if="portesStore.error" class="text-center py-12">
       <i class="pi pi-exclamation-triangle text-4xl text-amber-400 mb-4"></i>
       <p class="text-gray-600">{{ portesStore.error }}</p>
-      <Button label="Reintentar" icon="pi pi-refresh" severity="secondary" class="mt-4" @click="loadData" />
+      <Button :label="t('portal.portes.retry')" icon="pi pi-refresh" severity="secondary" class="mt-4" @click="loadData" />
     </div>
 
     <!-- Empty state -->
     <div v-else-if="portesStore.portes.length === 0" class="text-center py-12">
       <i class="pi pi-truck text-4xl text-gray-300 mb-4"></i>
-      <h3 class="text-lg font-semibold text-gray-700">No tienes portes aún</h3>
-      <p class="text-gray-400 mt-1">Solicita tu primer porte para empezar</p>
+      <h3 class="text-lg font-semibold text-gray-700">{{ t('portal.portes.noPortesTitle') }}</h3>
+      <p class="text-gray-400 mt-1">{{ t('portal.portes.noPortesDesc') }}</p>
       <router-link to="/portal/solicitar-porte">
-        <Button label="Solicitar Porte" icon="pi pi-plus" class="mt-4" severity="primary" />
+        <Button :label="t('portal.portes.requestPorte')" icon="pi pi-plus" class="mt-4" severity="primary" />
       </router-link>
     </div>
 
@@ -29,19 +29,19 @@
         :paginator="portesStore.portes.length > 10"
         :rows="10"
         stripedRows
-        class="rounded-xl border border-gray-200 overflow-hidden"
+        class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
         v-model:expandedRows="expandedRows"
         dataKey="id"
       >
         <Column expander style="width: 3rem" />
-        <Column field="id" header="ID" style="width: 5rem">
+        <Column field="id" :header="t('portal.portes.id')" style="width: 5rem">
           <template #body="{ data }">
             <span class="font-mono text-sm text-gray-500">#{{ data.id }}</span>
           </template>
         </Column>
-        <Column field="origen" header="Origen" />
-        <Column field="destino" header="Destino" />
-        <Column field="estado" header="Estado">
+        <Column field="origen" :header="t('portal.portes.origin')" />
+        <Column field="destino" :header="t('portal.portes.destination')" />
+        <Column field="estado" :header="t('portal.portes.status')">
           <template #body="{ data }">
             <span
               class="text-xs font-medium px-2.5 py-1 rounded-full"
@@ -51,12 +51,12 @@
             </span>
           </template>
         </Column>
-        <Column field="fechaCreacion" header="Fecha">
+        <Column field="fechaCreacion" :header="t('portal.portes.date')">
           <template #body="{ data }">
             <span class="text-sm text-gray-600">{{ formatDate(data.fechaCreacion) }}</span>
           </template>
         </Column>
-        <Column field="precio" header="Precio">
+        <Column field="precio" :header="t('portal.portes.price')">
           <template #body="{ data }">
             <span class="text-sm font-medium">{{ data.precio ? formatCurrency(data.precio) : '—' }}</span>
           </template>
@@ -67,46 +67,46 @@
               v-if="data.estado === 'EN_TRANSITO' || data.estado === 'ASIGNADO'"
               :to="`/portal/portes/${data.id}/tracking`"
             >
-              <Button label="Tracking" icon="pi pi-map-marker" severity="info" text size="small" />
+              <Button :label="t('portal.portes.tracking')" icon="pi pi-map-marker" severity="info" text size="small" />
             </router-link>
           </template>
         </Column>
 
         <!-- Expanded row detail -->
         <template #expansion="{ data }">
-          <div class="p-4 bg-gray-50">
+          <div class="p-4 bg-gray-50 dark:bg-gray-800/50">
             <div class="grid md:grid-cols-3 gap-4 text-sm">
               <div>
-                <p class="text-gray-500 mb-1">Descripción</p>
+                <p class="text-gray-500 mb-1">{{ t('portal.portes.description') }}</p>
                 <p class="text-gray-900">{{ data.descripcionCliente ?? '—' }}</p>
               </div>
               <div>
-                <p class="text-gray-500 mb-1">Recogida</p>
+                <p class="text-gray-500 mb-1">{{ t('portal.portes.pickup') }}</p>
                 <p class="text-gray-900">{{ formatDate(data.fechaRecogida) }}</p>
               </div>
               <div>
-                <p class="text-gray-500 mb-1">Entrega</p>
+                <p class="text-gray-500 mb-1">{{ t('portal.portes.delivery') }}</p>
                 <p class="text-gray-900">{{ formatDate(data.fechaEntrega) }}</p>
               </div>
               <div>
-                <p class="text-gray-500 mb-1">Conductor</p>
+                <p class="text-gray-500 mb-1">{{ t('portal.portes.driver') }}</p>
                 <p class="text-gray-900">
-                  {{ data.conductor ? `${data.conductor.nombre} ${data.conductor.apellidos ?? ''}`.trim() : 'Sin asignar' }}
+                  {{ data.conductor ? `${data.conductor.nombre} ${data.conductor.apellidos ?? ''}`.trim() : t('portal.portes.unassigned') }}
                 </p>
               </div>
               <div>
-                <p class="text-gray-500 mb-1">Peso</p>
+                <p class="text-gray-500 mb-1">{{ t('portal.portes.weight') }}</p>
                 <p class="text-gray-900">{{ data.pesoTotalKg ? `${data.pesoTotalKg} kg` : '—' }}</p>
               </div>
               <div>
-                <p class="text-gray-500 mb-1">Vehículo Requerido</p>
+                <p class="text-gray-500 mb-1">{{ t('portal.portes.requiredVehicle') }}</p>
                 <p class="text-gray-900">{{ data.tipoVehiculoRequerido ?? '—' }}</p>
               </div>
             </div>
             <div v-if="data.revisionManual" class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <p class="text-sm text-amber-700">
                 <i class="pi pi-exclamation-triangle mr-1"></i>
-                Revisión manual requerida: {{ data.motivoRevision ?? 'Sin motivo especificado' }}
+                {{ t('portal.portes.manualReview', { reason: data.motivoRevision ?? t('portal.portes.manualReviewNoReason') }) }}
               </p>
             </div>
           </div>
@@ -118,12 +118,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { usePortesStore } from '@/stores/portes'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const portesStore = usePortesStore()
 const expandedRows = ref({})

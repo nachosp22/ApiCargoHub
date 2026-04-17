@@ -8,6 +8,7 @@ import 'primeicons/primeicons.css'
 
 import App from './App.vue'
 import router from './router'
+import i18n from './i18n'
 import { useAuthStore } from './stores/auth'
 
 import './assets/main.css'
@@ -21,6 +22,9 @@ app.use(pinia)
 // Restore auth state from localStorage before router runs guards
 const authStore = useAuthStore()
 authStore.loadFromStorage()
+
+// Install i18n
+app.use(i18n)
 
 // Install Router (guards can now safely use auth store)
 app.use(router)
