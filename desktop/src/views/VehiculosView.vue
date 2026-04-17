@@ -2,12 +2,20 @@
 import { onMounted, ref } from 'vue'
 import { useVehiculosStore } from '@/stores/vehiculos'
 import { useConductoresStore } from '@/stores/conductores'
+import { useToast } from 'primevue/usetoast'
 import Dialog from 'primevue/dialog'
+import Button from 'primevue/button'
 import VehiculoTable from '@/components/vehiculos/VehiculoTable.vue'
-import type { Vehiculo } from '@/stores/vehiculos'
+import VehiculoDialog from '@/components/vehiculos/VehiculoDialog.vue'
+import type { Vehiculo, CreateVehiculoRequest } from '@/stores/vehiculos'
 
 const vehiculosStore = useVehiculosStore()
 const conductoresStore = useConductoresStore()
+const toast = useToast()
+
+// --- Dialog state ---
+const showDialog = ref(false)
+const editingVehiculo = ref<Vehiculo | null>(null)
 
 // --- Detail panel state ---
 const showDetail = ref(false)
@@ -28,8 +36,45 @@ function onViewVehiculo(vehiculo: Vehiculo): void {
   showDetail.value = true
 }
 
+function onNewVehiculo(): void {
+  editingVehiculo.value = null
+  showDialog.value = true
+}
 
+function onEditVehiculo(vehiculo: Vehiculo): void {
+  editingVehiculo.value = vehiculo
+  showDialog.value = true
+}
 
+async function onSaveVehiculo(data: CreateVehiculoRequest): Promise<void> {
+  try {
+    if (editingVehiculo.value) {
+      await vehiculosStore.updateVehiculo(editingVehiculo.value.id, data)
+      toast.add({
+        severity: 'success',
+        summary: 'Vehículo actualizado',
+        detail: `El vehículo ${data.matricula} se ha actualizado correctamente.`,
+        life: 3000,
+      })
+    } else {
+      const created = await vehiculosStore.createVehiculo(data)
+      toast.add({
+        severity: 'success',
+        summary: 'Vehículo creado',
+        detail: `El vehículo ${created.matricula} se ha creado correctamente.`,
+        life: 3000,
+      })
+    }
+    showDialog.value = false
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudo guardar el vehículo. Inténtalo de nuevo.',
+      life: 5000,
+    })
+  }
+}
 // --- Helpers ---
 
 function getConductorName(vehiculo: Vehiculo): string {
@@ -161,6 +206,15 @@ function getTipoConfig(tipo: string): StyleConfig {
       :vehiculos="vehiculosStore.vehiculos"
       :loading="vehiculosStore.loading"
       @view="onViewVehiculo"
+      @edit="onEditVehiculo"
+    />
+
+    <!-- Create/Edit Dialog -->
+    <VehiculoDialog
+      v-model:visible="showDialog"
+      :vehiculo="editingVehiculo"
+      :saving="vehiculosStore.saving"
+      @save="onSaveVehiculo"
     />
 
     <!-- Detail Panel Dialog -->
@@ -245,9 +299,14 @@ function getTipoConfig(tipo: string): StyleConfig {
                 <p class="text-sm font-medium" :class="detailVehiculo.conductor ? 'text-gray-800' : 'text-gray-400 italic'">
                   {{ getConductorName(detailVehiculo) }}
                 </p>
-              </div>
-            </div>
-          </div>
+        </div>
+      </div>
+      <Button
+        label="Nuevo Vehículo"
+        icon="pi pi-plus"
+        @click="onNewVehiculo"
+      />
+    </div>
         </div>
 
         <!-- Dimensions -->

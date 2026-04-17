@@ -107,6 +107,14 @@ public class OwnershipSecurityService {
         return false;
     }
 
+    /**
+     * Resolves the clienteId from the authenticated user's email.
+     * Public accessor for controllers that need to extract the client identity from JWT.
+     */
+    public Long resolveClienteIdFromAuth(Authentication authentication) {
+        return resolveClienteId(authentication);
+    }
+
     private boolean isAdmin(Authentication authentication) {
         return hasRole(authentication, RolUsuario.ADMIN) || hasRole(authentication, RolUsuario.SUPERADMIN);
     }

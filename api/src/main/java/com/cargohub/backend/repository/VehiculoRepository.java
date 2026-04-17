@@ -18,14 +18,21 @@ public interface VehiculoRepository extends JpaRepository<Vehiculo, Long> {
     List<Vehiculo> findByConductorId(Long conductorId);
 
     // --- FILTRO PARA EL MATCHING AUTOMÁTICO ---
-    // Busca un vehículo que esté DISPONIBLE, sea del TIPO correcto,
-    // aguante el PESO y quepa el LARGO del paquete.
+    // Busca vehículos DISPONIBLES del TIPO correcto que cumplan TODAS las dimensiones.
+    // Las comprobaciones de dimensión son opcionales: si el valor del vehículo es null, se omite esa restricción.
     @Query("SELECT v FROM Vehiculo v " +
             "WHERE v.estado = 'DISPONIBLE' " +
             "AND v.tipo = :tipo " +
             "AND v.capacidadCargaKg >= :peso " +
-            "AND v.largoUtilMm >= :largoMm")
+            "AND (v.largoUtilMm IS NULL OR v.largoUtilMm >= :largoMm) " +
+            "AND (v.anchoUtilMm IS NULL OR v.anchoUtilMm >= :anchoMm) " +
+            "AND (v.altoUtilMm IS NULL OR v.altoUtilMm >= :altoMm) " +
+            "AND (v.volumenM3 IS NULL OR v.volumenM3 >= :volumenM3) " +
+            "ORDER BY v.capacidadCargaKg ASC")
     List<Vehiculo> findCandidatos(@Param("tipo") TipoVehiculo tipo,
                                   @Param("peso") Double peso,
-                                  @Param("largoMm") Integer largoMm);
+                                  @Param("largoMm") Integer largoMm,
+                                  @Param("anchoMm") Integer anchoMm,
+                                  @Param("altoMm") Integer altoMm,
+                                  @Param("volumenM3") Double volumenM3);
 }

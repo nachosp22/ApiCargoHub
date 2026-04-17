@@ -4,8 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -31,16 +29,16 @@ public class PortesOptionsFragment extends Fragment {
         MaterialCardView upcomingTripsCard = view.findViewById(R.id.porteUpcomingCard);
         MaterialCardView historyTripsCard = view.findViewById(R.id.porteHistoryCard);
 
-        activeTripCard.setOnClickListener(v -> showSoon(R.string.home_menu_section_trip_active));
-        upcomingTripsCard.setOnClickListener(v -> showSoon(R.string.home_menu_section_trip_upcoming));
-        historyTripsCard.setOnClickListener(v -> showSoon(R.string.home_menu_section_trip_history));
+        activeTripCard.setOnClickListener(v -> navigateTo(TripListFragment.newInstance(TripListFragment.MODE_ACTIVE)));
+        upcomingTripsCard.setOnClickListener(v -> navigateTo(TripListFragment.newInstance(TripListFragment.MODE_UPCOMING)));
+        historyTripsCard.setOnClickListener(v -> navigateTo(TripListFragment.newInstance(TripListFragment.MODE_HISTORY)));
     }
 
-    private void showSoon(int labelRes) {
-        if (getContext() == null) {
-            return;
-        }
-        String message = getString(R.string.home_placeholder_action, getString(labelRes));
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    private void navigateTo(@NonNull Fragment fragment) {
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFragmentContainer, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 }

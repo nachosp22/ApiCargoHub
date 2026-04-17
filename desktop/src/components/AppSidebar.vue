@@ -1,14 +1,18 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useConductoresStore } from '@/stores/conductores'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const conductoresStore = useConductoresStore()
 
 interface NavItem {
   label: string
   icon: string
   route: string
+  badge?: () => number
 }
 
 const fleetRealtimeEnabled = import.meta.env.VITE_FEATURE_FLEET_REALTIME === 'true'
@@ -16,7 +20,9 @@ const fleetRealtimeEnabled = import.meta.env.VITE_FEATURE_FLEET_REALTIME === 'tr
 const navItems: NavItem[] = [
   { label: 'Dashboard', icon: 'pi-chart-bar', route: '/dashboard' },
   { label: 'Portes', icon: 'pi-truck', route: '/portes' },
+  { label: 'Revisión Portes', icon: 'pi-eye', route: '/revision-portes' },
   { label: 'Conductores', icon: 'pi-users', route: '/conductores' },
+  { label: 'Aprobaciones', icon: 'pi-user-plus', route: '/aprobacion-conductores', badge: () => conductoresStore.pendientesAprobacion.length },
   { label: 'Vehículos', icon: 'pi-car', route: '/vehiculos' },
   { label: 'Incidencias', icon: 'pi-exclamation-triangle', route: '/incidencias' },
   { label: 'Facturas', icon: 'pi-file', route: '/facturas' },
@@ -25,6 +31,11 @@ const navItems: NavItem[] = [
     ? [{ label: 'Mapa flota', icon: 'pi-map', route: '/fleet-map' }]
     : []),
 ]
+
+// Fetch pending count on sidebar mount
+onMounted(() => {
+  conductoresStore.fetchPendientesAprobacion()
+})
 
 async function handleLogout(): Promise<void> {
   authStore.logout()
@@ -63,6 +74,13 @@ async function handleLogout(): Promise<void> {
             >
               <i class="pi text-base" :class="item.icon"></i>
               <span>{{ item.label }}</span>
+              <span
+                v-if="item.badge && item.badge() > 0"
+                class="ml-auto inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold rounded-full"
+                :class="isActive ? 'bg-white/25 text-white' : 'bg-red-500 text-white'"
+              >
+                {{ item.badge() }}
+              </span>
             </button>
           </router-link>
         </li>

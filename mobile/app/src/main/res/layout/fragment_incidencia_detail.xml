@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ch_surface"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/ch_space_md"
+        android:paddingTop="@dimen/ch_space_lg"
+        android:paddingBottom="@dimen/ch_space_md">
+
+        <!-- Loading state -->
+        <LinearLayout
+            android:id="@+id/incidenciaDetailLoadingContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/ch_space_2xl">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Error state -->
+        <LinearLayout
+            android:id="@+id/incidenciaDetailErrorContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/ch_space_xl"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/incidenciaDetailErrorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyLarge"
+                android:textColor="@color/ch_text_secondary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/incidenciaDetailRetryButton"
+                style="@style/Widget.ApiCargoHub.Button.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_sm"
+                android:text="@string/incidencia_detail_retry"
+                android:textAllCaps="false" />
+        </LinearLayout>
+
+        <!-- Content -->
+        <LinearLayout
+            android:id="@+id/incidenciaDetailContentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/incidenciaDetailTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
+                android:textColor="@color/ch_text_primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/incidenciaDetailState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_sm"
+                android:background="@drawable/bg_state_chip"
+                android:backgroundTint="@color/ch_blue_100"
+                android:paddingStart="@dimen/ch_space_sm"
+                android:paddingTop="6dp"
+                android:paddingEnd="@dimen/ch_space_sm"
+                android:paddingBottom="6dp"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
+                android:textColor="@color/ch_blue_700"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/incidenciaDetailMetadata"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_sm"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
+                android:textColor="@color/ch_text_secondary" />
+
+            <!-- Description section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_md"
+                app:cardBackgroundColor="@color/ch_surface_card"
+                app:cardCornerRadius="@dimen/ch_radius_md"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/ch_blue_100"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/ch_space_md">
+
+                    <TextView
+                        android:id="@+id/incidenciaDetailDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyLarge"
+                        android:textColor="@color/ch_text_primary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- History section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_sm"
+                app:cardBackgroundColor="@color/ch_surface_card"
+                app:cardCornerRadius="@dimen/ch_radius_md"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/ch_blue_100"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/ch_space_md">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/incidencia_detail_history_title"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+                        android:textColor="@color/ch_text_primary"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/incidenciaDetailHistoryEmpty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_sm"
+                        android:text="@string/incidencia_detail_history_empty"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+                        android:textColor="@color/ch_text_secondary" />
+
+                    <TextView
+                        android:id="@+id/incidenciaDetailHistoryText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_sm"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+                        android:textColor="@color/ch_text_primary"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

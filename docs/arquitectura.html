@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoHub - Diagrama de Arquitectura</title>
+    <link rel="stylesheet" href="https://esm.sh/@excalidraw/excalidraw@0.18.0/dist/dev/index.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #header {
+            background: linear-gradient(135deg, #1976D2 0%, #7B1FA2 100%);
+            color: white;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        #header h1 { font-size: 20px; margin: 0; }
+        #header p { font-size: 12px; opacity: 0.85; margin: 2px 0 0 0; }
+        #controls {
+            background: white;
+            padding: 10px 20px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            border-bottom: 1px solid #ddd;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #1976D2; color: white; }
+        .btn-primary:hover { background: #1565C0; }
+        .btn-success { background: #388E3C; color: white; }
+        .btn-success:hover { background: #2E7D32; }
+        .btn-warning { background: #F57C00; color: white; }
+        .btn-warning:hover { background: #E65100; }
+        #status {
+            font-size: 12px;
+            color: #666;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+        }
+        #status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+            margin-right: 6px;
+            transition: background 0.3s;
+        }
+        #status-dot.ready { background: #388E3C; }
+        #status-dot.error { background: #d32f2f; }
+        #app {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            z-index: 5;
+            font-size: 16px;
+            color: #666;
+        }
+        .loading-overlay.hidden { display: none; }
+        .spinner {
+            width: 36px; height: 36px;
+            border: 4px solid #e0e0e0;
+            border-top: 4px solid #1976D2;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+    <script>
+        window.EXCALIDRAW_ASSET_PATH = "https://esm.sh/@excalidraw/excalidraw@0.18.0/dist/prod/";
+    </script>
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@19.0.0",
+            "react/jsx-runtime": "https://esm.sh/react@19.0.0/jsx-runtime",
+            "react-dom": "https://esm.sh/react-dom@19.0.0"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="header">
+        <div>
+            <h1>CargoHub - Arquitectura de Sistema</h1>
+            <p>Diagrama Interactivo de Arquitectura</p>
+        </div>
+        <div id="status"><div id="status-dot"></div><span id="status-text">Cargando...</span></div>
+    </div>
+    <div id="controls">
+        <button class="btn btn-warning" id="btnEdit">Modo Editor</button>
+        <button class="btn btn-success" id="btnDownload">Descargar JSON</button>
+        <button class="btn btn-primary" id="btnLoad">Cargar JSON</button>
+        <input type="file" id="fileInput" accept=".json" style="display:none">
+    </div>
+    <div id="app">
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <span id="loadingText">Iniciando Excalidraw...</span>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as React from "react";
+        import * as ReactDOM from "react-dom/client";
+        import { Excalidraw } from "https://esm.sh/@excalidraw/excalidraw@0.18.0";
+
+        // ─── DATOS DEL DIAGRAMA ───
+        const DIAGRAM_ELEMENTS = [
+            // === TÍTULO ===
+            {
+                type: "text", x: 400, y: 30, width: 650, height: 40,
+                text: "CargoHub - Arquitectura de Sistema",
+                fontSize: 24, fontFamily: 1, textAlign: "center",
+                strokeColor: "#1976D2", backgroundColor: "transparent"
+            },
+
+            // === DESKTOP APP ===
+            {
+                type: "rectangle", id: "desktop-app", x: 50, y: 100,
+                width: 200, height: 120,
+                backgroundColor: "#1976D2", strokeColor: "#1565C0", strokeWidth: 2
+            },
+            {
+                type: "text", x: 50, y: 110, width: 200, height: 30,
+                text: "Desktop App", fontSize: 16, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+            {
+                type: "text", x: 60, y: 145, width: 180, height: 70,
+                text: "Electron\nVue 3\nPinia\nPrimeVue\nMapLibre\nFleetMap (GPS)",
+                fontSize: 11, textAlign: "left", strokeColor: "#FFFFFF",
+                backgroundColor: "transparent", lineHeight: 1.4
+            },
+
+            // === MOBILE APP ===
+            {
+                type: "rectangle", id: "mobile-app", x: 750, y: 100,
+                width: 200, height: 120,
+                backgroundColor: "#388E3C", strokeColor: "#2E7D32", strokeWidth: 2
+            },
+            {
+                type: "text", x: 750, y: 110, width: 200, height: 30,
+                text: "Mobile App", fontSize: 16, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+            {
+                type: "text", x: 760, y: 145, width: 180, height: 70,
+                text: "Android Native\nRetrofit\nOkHttp\nGPS Reporter",
+                fontSize: 11, textAlign: "left", strokeColor: "#FFFFFF",
+                backgroundColor: "transparent", lineHeight: 1.4
+            },
+
+            // === FLECHA DESKTOP A API ===
+            {
+                type: "arrow", id: "arrow-desktop", x: 250, y: 160,
+                width: 150, height: 0, points: [[0, 0], [150, 0]],
+                endArrowhead: "arrow", strokeColor: "#666666", strokeWidth: 2
+            },
+            {
+                type: "text", x: 275, y: 135, width: 100, height: 20,
+                text: "REST API / JWT", fontSize: 10, textAlign: "center",
+                strokeColor: "#666666", backgroundColor: "transparent", fontStyle: "italic"
+            },
+
+            // === FLECHA MOBILE A API ===
+            {
+                type: "arrow", id: "arrow-mobile", x: 600, y: 160,
+                width: 150, height: 0, points: [[0, 0], [-150, 0]],
+                endArrowhead: "arrow", strokeColor: "#666666", strokeWidth: 2
+            },
+            {
+                type: "text", x: 625, y: 135, width: 100, height: 20,
+                text: "REST API / JWT", fontSize: 10, textAlign: "center",
+                strokeColor: "#666666", backgroundColor: "transparent", fontStyle: "italic"
+            },
+
+            // === API REST LABEL ===
+            {
+                type: "rectangle", id: "api-rest", x: 400, y: 190,
+                width: 200, height: 45,
+                backgroundColor: "#FFC107", strokeColor: "#FFA000", strokeWidth: 2
+            },
+            {
+                type: "text", x: 400, y: 200, width: 200, height: 30,
+                text: "REST API", fontSize: 14, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#333333", backgroundColor: "transparent"
+            },
+
+            // FLECHAS A API REST
+            {
+                type: "arrow", id: "arrow-to-api", x: 150, y: 220,
+                width: 250, height: 0, points: [[0, 0], [250, -30]],
+                endArrowhead: "arrow", strokeColor: "#666666", strokeWidth: 2
+            },
+            {
+                type: "arrow", id: "arrow-mobile-to-api", x: 850, y: 220,
+                width: 250, height: 0, points: [[0, 0], [-250, -30]],
+                endArrowhead: "arrow", strokeColor: "#666666", strokeWidth: 2
+            },
+
+            // === BACKEND SPRING BOOT ===
+            {
+                type: "rectangle", id: "backend", x: 300, y: 250,
+                width: 400, height: 350,
+                backgroundColor: "#7B1FA2", strokeColor: "#6A1B9A", strokeWidth: 3
+            },
+            {
+                type: "text", x: 300, y: 255, width: 400, height: 35,
+                text: "Spring Boot 4.0.1 + Java 17", fontSize: 14, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+
+            // CONTROLLERS
+            {
+                type: "rectangle", id: "controllers", x: 315, y: 300,
+                width: 120, height: 140,
+                backgroundColor: "#9C27B0", strokeColor: "#7B1FA2", strokeWidth: 1
+            },
+            {
+                type: "text", x: 315, y: 305, width: 120, height: 25,
+                text: "Controllers", fontSize: 12, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+            {
+                type: "text", x: 320, y: 335, width: 110, height: 100,
+                text: "AuthController\nConductor\nCliente\nVehiculo\nPorte\nFactura\nIncidencia\nFleetTracking",
+                fontSize: 9, textAlign: "left", strokeColor: "#FFFFFF",
+                backgroundColor: "transparent", lineHeight: 1.35
+            },
+
+            // SERVICES
+            {
+                type: "rectangle", id: "services", x: 445, y: 300,
+                width: 120, height: 140,
+                backgroundColor: "#9C27B0", strokeColor: "#7B1FA2", strokeWidth: 1
+            },
+            {
+                type: "text", x: 445, y: 305, width: 120, height: 25,
+                text: "Services", fontSize: 12, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+            {
+                type: "text", x: 450, y: 335, width: 110, height: 100,
+                text: "AuthService\nConductorSvc\nClienteSvc\nVehiculoSvc\nPorteSvc\nFacturaSvc\nIncidenciaSvc\nFleetTrackingSvc",
+                fontSize: 9, textAlign: "left", strokeColor: "#FFFFFF",
+                backgroundColor: "transparent", lineHeight: 1.35
+            },
+
+            // SECURITY
+            {
+                type: "rectangle", id: "security", x: 575, y: 300,
+                width: 110, height: 100,
+                backgroundColor: "#E91E63", strokeColor: "#C2185B", strokeWidth: 1
+            },
+            {
+                type: "text", x: 575, y: 305, width: 110, height: 25,
+                text: "Security", fontSize: 12, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+            {
+                type: "text", x: 580, y: 335, width: 100, height: 60,
+                text: "JwtService\nJwtAuthFilter\nSecurityConfig",
+                fontSize: 9, textAlign: "left", strokeColor: "#FFFFFF",
+                backgroundColor: "transparent", lineHeight: 1.35
+            },
+
+            // INTEGRATIONS
+            {
+                type: "rectangle", id: "integrations", x: 575, y: 410,
+                width: 110, height: 80,
+                backgroundColor: "#FF9800", strokeColor: "#F57C00", strokeWidth: 1
+            },
+            {
+                type: "text", x: 575, y: 415, width: 110, height: 25,
+                text: "Integrations", fontSize: 12, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+            {
+                type: "text", x: 580, y: 445, width: 100, height: 40,
+                text: "MapaService\nMcpWebhook\n(n8n)",
+                fontSize: 9, textAlign: "left", strokeColor: "#FFFFFF",
+                backgroundColor: "transparent", lineHeight: 1.35
+            },
+
+            // ROLES
+            {
+                type: "rectangle", id: "roles", x: 315, y: 450,
+                width: 250, height: 70,
+                backgroundColor: "#673AB7", strokeColor: "#512DA8", strokeWidth: 1
+            },
+            {
+                type: "text", x: 315, y: 455, width: 250, height: 25,
+                text: "Roles de Usuario", fontSize: 12, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+            {
+                type: "text", x: 325, y: 485, width: 230, height: 30,
+                text: "ADMIN  |  CONDUCTOR  |  CLIENTE", fontSize: 11,
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+
+            // FLECHA BACKEND A DB
+            {
+                type: "arrow", id: "arrow-backend-db", x: 500, y: 600,
+                width: 0, height: 50, points: [[0, 0], [0, 50]],
+                endArrowhead: "arrow", strokeColor: "#666666", strokeWidth: 2
+            },
+
+            // === POSTGRESQL ===
+            {
+                type: "rectangle", id: "postgresql", x: 300, y: 650,
+                width: 400, height: 180,
+                backgroundColor: "#1565C0", strokeColor: "#0D47A1", strokeWidth: 3
+            },
+            {
+                type: "text", x: 300, y: 655, width: 400, height: 30,
+                text: "PostgreSQL", fontSize: 14, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+
+            // ENTIDADES
+            {
+                type: "rectangle", id: "entidades", x: 315, y: 695,
+                width: 370, height: 125,
+                backgroundColor: "#1976D2", strokeColor: "#1565C0", strokeWidth: 1
+            },
+            {
+                type: "text", x: 320, y: 700, width: 360, height: 115,
+                text: "Usuario  |  Conductor  |  Cliente\nVehiculo  |  Porte  |  Factura\nIncidencia  |  BloqueoAgenda",
+                fontSize: 12, textAlign: "center", strokeColor: "#FFFFFF",
+                backgroundColor: "transparent", lineHeight: 1.8
+            },
+
+            // === INTEGRACIONES EXTERNAS ===
+            {
+                type: "rectangle", id: "integraciones-externas", x: 850, y: 250,
+                width: 180, height: 200,
+                backgroundColor: "#FF5722", strokeColor: "#E64A19", strokeWidth: 2
+            },
+            {
+                type: "text", x: 850, y: 255, width: 180, height: 30,
+                text: "Integraciones Externas", fontSize: 12, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+
+            // OSRM
+            {
+                type: "rectangle", id: "osrm", x: 860, y: 295,
+                width: 160, height: 50,
+                backgroundColor: "#FF7043", strokeColor: "#FF5722", strokeWidth: 1
+            },
+            {
+                type: "text", x: 860, y: 305, width: 160, height: 35,
+                text: "OSRM\n(Routing)", fontSize: 11, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF",
+                backgroundColor: "transparent", lineHeight: 1.4
+            },
+
+            // n8n
+            {
+                type: "rectangle", id: "n8n", x: 860, y: 355,
+                width: 160, height: 50,
+                backgroundColor: "#FF7043", strokeColor: "#FF5722", strokeWidth: 1
+            },
+            {
+                type: "text", x: 860, y: 365, width: 160, height: 35,
+                text: "n8n Webhook\n(Automations)", fontSize: 11, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF",
+                backgroundColor: "transparent", lineHeight: 1.4
+            },
+
+            // CartoDB
+            {
+                type: "rectangle", id: "cartodb", x: 860, y: 415,
+                width: 160, height: 25,
+                backgroundColor: "#FF7043", strokeColor: "#FF5722", strokeWidth: 1
+            },
+            {
+                type: "text", x: 860, y: 418, width: 160, height: 20,
+                text: "CartoDB (Mapas)", fontSize: 11, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+
+            // FLECHA API A INTEGRACIONES
+            {
+                type: "arrow", id: "arrow-api-integrations", x: 700, y: 350,
+                width: 150, height: 0, points: [[0, 0], [150, 0]],
+                endArrowhead: "arrow", strokeColor: "#666666", strokeWidth: 2
+            },
+
+            // === MONOREPO STRUCTURE ===
+            {
+                type: "rectangle", id: "monorepo", x: 50, y: 650,
+                width: 180, height: 180,
+                backgroundColor: "#607D8B", strokeColor: "#455A64", strokeWidth: 2
+            },
+            {
+                type: "text", x: 50, y: 655, width: 180, height: 30,
+                text: "Monorepo", fontSize: 12, fontWeight: "bold",
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+            {
+                type: "rectangle", id: "folder-api", x: 60, y: 695,
+                width: 160, height: 30,
+                backgroundColor: "#78909C", strokeColor: "#607D8B", strokeWidth: 1
+            },
+            {
+                type: "text", x: 60, y: 700, width: 160, height: 22,
+                text: "api/ (Spring Boot)", fontSize: 10,
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+            {
+                type: "rectangle", id: "folder-desktop", x: 60, y: 730,
+                width: 160, height: 30,
+                backgroundColor: "#78909C", strokeColor: "#607D8B", strokeWidth: 1
+            },
+            {
+                type: "text", x: 60, y: 735, width: 160, height: 22,
+                text: "desktop/ (Electron)", fontSize: 10,
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+            {
+                type: "rectangle", id: "folder-mobile", x: 60, y: 765,
+                width: 160, height: 30,
+                backgroundColor: "#78909C", strokeColor: "#607D8B", strokeWidth: 1
+            },
+            {
+                type: "text", x: 60, y: 770, width: 160, height: 22,
+                text: "mobile/ (Android)", fontSize: 10,
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+            {
+                type: "rectangle", id: "folder-scripts", x: 60, y: 800,
+                width: 160, height: 22,
+                backgroundColor: "#78909C", strokeColor: "#607D8B", strokeWidth: 1
+            },
+            {
+                type: "text", x: 60, y: 802, width: 160, height: 18,
+                text: "scripts/", fontSize: 10,
+                textAlign: "center", strokeColor: "#FFFFFF", backgroundColor: "transparent"
+            },
+
+            // === FLUJO DE DATOS ===
+            {
+                type: "text", x: 50, y: 260, width: 200, height: 20,
+                text: "Flujo de Datos:", fontSize: 11, fontWeight: "bold",
+                strokeColor: "#333333", backgroundColor: "transparent"
+            },
+            {
+                type: "text", x: 50, y: 285, width: 200, height: 50,
+                text: "Desktop/Mobile → REST API → Backend → PostgreSQL\n\nDesktop: FleetMap GPS\nMobile: Reporta ubicación",
+                fontSize: 10, strokeColor: "#666666",
+                backgroundColor: "transparent", lineHeight: 1.4
+            }
+        ];
+
+        // ─── INICIALIZACIÓN ───
+        let excalidrawAPI = null;
+        const rootElement = document.getElementById("app");
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        const loadingText = document.getElementById("loadingText");
+        const statusDot = document.getElementById("status-dot");
+        const statusText = document.getElementById("status-text");
+
+        function setStatus(state, msg) {
+            statusDot.className = state;
+            statusText.textContent = msg;
+        }
+
+        function showLoading(msg) {
+            loadingOverlay.classList.remove("hidden");
+            loadingText.textContent = msg;
+        }
+
+        function hideLoading() {
+            loadingOverlay.classList.add("hidden");
+        }
+
+        async function initExcalidraw() {
+            showLoading("Cargando Excalidraw desde CDN...");
+            try {
+                const root = ReactDOM.createRoot(rootElement);
+
+                root.render(
+                    React.createElement(Excalidraw, {
+                        initialData: {
+                            elements: DIAGRAM_ELEMENTS,
+                            appState: {
+                                viewBackgroundColor: "#FFFFFF",
+                                zenModeEnabled: false,
+                                gridSize: null
+                            }
+                        },
+                        excalidrawAPI: (api) => {
+                            excalidrawAPI = api;
+                            setStatus("ready", "Listo");
+                            console.log("Excalidraw inicializado correctamente ✓");
+                        },
+                        onChange: (elements, appState) => {
+                            // Opcional: guardar estado automáticamente
+                        },
+                        viewModeEnabled: false,
+                        zenModeEnabled: false,
+                        gridModeEnabled: false,
+                        langCode: "es"
+                    })
+                );
+
+                // Esperar a que React monte
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                hideLoading();
+
+                if (!excalidrawAPI) {
+                    setStatus("error", "API no disponible");
+                }
+            } catch (err) {
+                console.error("Error inicializando Excalidraw:", err);
+                showLoading("Error al cargar Excalidraw. Ver consola (F12).");
+                setStatus("error", "Error");
+            }
+        }
+
+        initExcalidraw();
+
+        // ─── BOTONES ───
+        window.downloadJSON = function() {
+            if (!excalidrawAPI) {
+                alert("Espere a que Excalidraw cargue completamente");
+                return;
+            }
+            try {
+                const elements = excalidrawAPI.getSceneElements();
+                const appState = excalidrawAPI.getAppState();
+                const files = excalidrawAPI.getFiles();
+                const data = {
+                    type: "excalidraw",
+                    version: 2,
+                    elements: elements,
+                    appState: appState,
+                    files: files
+                };
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "cargohub-arquitectura.json";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                console.log("JSON descargado ✓");
+            } catch (err) {
+                console.error("Error al descargar JSON:", err);
+                alert("Error al descargar. Revise la consola.");
+            }
+        };
+
+        window.loadJSON = function(elements) {
+            if (!excalidrawAPI) {
+                alert("Espere a que Excalidraw cargue completamente");
+                return;
+            }
+            try {
+                const parsed = typeof elements === "string" ? JSON.parse(elements) : elements;
+                const elems = parsed.elements || parsed;
+                excalidrawAPI.updateScene({
+                    elements: elems,
+                    appState: { viewModeEnabled: false }
+                });
+                console.log("JSON cargado ✓", elems.length, "elementos");
+            } catch (err) {
+                console.error("Error al cargar JSON:", err);
+                alert("Error al cargar el archivo JSON. Asegúrese de que sea un archivo .json válido de Excalidraw.");
+            }
+        };
+
+        window.enableEditMode = function() {
+            if (!excalidrawAPI) return;
+            const elements = excalidrawAPI.getSceneElements();
+            excalidrawAPI.updateScene({
+                elements: elements,
+                appState: { viewModeEnabled: false, zenModeEnabled: false }
+            });
+            console.log("Modo editor activado ✓");
+        };
+
+        // Listeners de botones (después de que el DOM cargó)
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("btnDownload").addEventListener("click", window.downloadJSON);
+            document.getElementById("btnLoad").addEventListener("click", () => {
+                document.getElementById("fileInput").click();
+            });
+            document.getElementById("btnEdit").addEventListener("click", window.enableEditMode);
+            document.getElementById("fileInput").addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => window.loadJSON(event.target.result);
+                reader.readAsText(file);
+            });
+        });
+    </script>
+</body>
+</html>

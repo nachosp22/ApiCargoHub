@@ -11,8 +11,16 @@
             android:icon="@drawable/ic_nav_profile"
             android:title="@string/home_menu_section_profile" />
         <item
-            android:id="@+id/nav_ports"
+            android:id="@+id/nav_vehicle"
+            android:icon="@drawable/ic_nav_vehicle"
+            android:title="@string/home_menu_section_vehicle" />
+        <item
+            android:id="@+id/nav_offers"
             android:icon="@drawable/ic_nav_ports"
+            android:title="@string/home_menu_section_offers" />
+        <item
+            android:id="@+id/nav_portes"
+            android:icon="@drawable/ic_nav_portes"
             android:title="@string/home_menu_section_ports" />
         <item
             android:id="@+id/nav_incidents"
@@ -23,12 +31,12 @@
             android:icon="@drawable/ic_nav_agenda"
             android:title="@string/home_menu_section_agenda" />
         <item
-            android:id="@+id/nav_vehicle"
-            android:icon="@drawable/ic_nav_vehicle"
-            android:title="@string/home_menu_section_vehicle" />
-        <item
             android:id="@+id/nav_billing"
             android:icon="@drawable/ic_nav_billing"
             android:title="@string/home_menu_section_billing" />
+        <item
+            android:id="@+id/nav_stats"
+            android:icon="@drawable/ic_nav_stats"
+            android:title="@string/home_menu_section_stats" />
     </group>
 </menu>

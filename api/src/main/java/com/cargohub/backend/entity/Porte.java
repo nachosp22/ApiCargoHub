@@ -1,5 +1,6 @@
 package com.cargohub.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.cargohub.backend. entity.enums.EstadoPorte;
 import com.cargohub.backend.entity.enums.TipoVehiculo;
 import jakarta.persistence.*;
@@ -7,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -42,6 +45,8 @@ public class Porte {
     private Double pesoTotalKg;
     private Double volumenTotalM3;
     private Double largoMaxPaquete;
+    private Double anchoMaxPaquete;
+    private Double altoMaxPaquete;
 
     @Enumerated(EnumType. STRING)
     private TipoVehiculo tipoVehiculoRequerido;
@@ -72,6 +77,12 @@ public class Porte {
     @ManyToOne
     @JoinColumn(name = "conductor_id")
     private Conductor conductor;
+
+    @JsonIgnore
+    @ElementCollection
+    @CollectionTable(name = "porte_rechazos", joinColumns = @JoinColumn(name = "porte_id"))
+    @Column(name = "conductor_id", nullable = false)
+    private Set<Long> conductoresRechazados = new HashSet<>();
 
     public Double getPrecioFinal() {
         Double p = this.precio != null ? this.precio : 0.0;

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ch_surface"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/ch_space_md"
+            android:paddingTop="@dimen/ch_space_lg"
+            android:paddingBottom="@dimen/ch_space_md">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/home_menu_section_profile"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
+                android:textColor="@color/ch_text_primary"
+                android:textStyle="bold" />
+
+            <!-- Profile info card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_md"
+                app:cardBackgroundColor="@color/ch_surface_card"
+                app:cardCornerRadius="@dimen/ch_radius_md"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/ch_blue_100"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/ch_space_md">
+
+                    <ProgressBar
+                        android:id="@+id/profileLoadingProgress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/profileNameTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_sm"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleLarge"
+                        android:textColor="@color/ch_text_primary"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/profileEmailTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_xs"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyLarge"
+                        android:textColor="@color/ch_text_secondary" />
+
+                    <TextView
+                        android:id="@+id/profileIdTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_sm"
+                        android:background="@drawable/bg_state_chip"
+                        android:backgroundTint="@color/ch_blue_100"
+                        android:paddingStart="@dimen/ch_space_sm"
+                        android:paddingTop="6dp"
+                        android:paddingEnd="@dimen/ch_space_sm"
+                        android:paddingBottom="6dp"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
+                        android:textColor="@color/ch_blue_700"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/profileDetailTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_md"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+                        android:textColor="@color/ch_text_primary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Editable fields card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_sm"
+                app:cardBackgroundColor="@color/ch_surface_card"
+                app:cardCornerRadius="@dimen/ch_radius_md"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/ch_blue_100"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/ch_space_md">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/profileNombreLayout"
+                        style="@style/Widget.ApiCargoHub.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/profile_edit_nombre_label">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/profileNombreInput"
+                            style="@style/Widget.ApiCargoHub.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textPersonName" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/profileApellidosLayout"
+                        style="@style/Widget.ApiCargoHub.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_sm"
+                        android:hint="@string/profile_edit_apellidos_label">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/profileApellidosInput"
+                            style="@style/Widget.ApiCargoHub.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textPersonName" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/profileTelefonoLayout"
+                        style="@style/Widget.ApiCargoHub.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_sm"
+                        android:hint="@string/profile_edit_telefono_label">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/profileTelefonoInput"
+                            style="@style/Widget.ApiCargoHub.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="phone" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/profileCiudadLayout"
+                        style="@style/Widget.ApiCargoHub.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_sm"
+                        android:hint="@string/profile_edit_ciudad_label">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/profileCiudadInput"
+                            style="@style/Widget.ApiCargoHub.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapWords" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Actions section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_lg"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.SectionLabel"
+                android:textColor="@color/ch_text_secondary"
+                android:text="Acciones" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/profileOpenAgendaButton"
+                style="@style/Widget.ApiCargoHub.Button.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_sm"
+                android:text="@string/profile_open_agenda"
+                android:textAllCaps="false" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/profileOpenVehicleButton"
+                style="@style/Widget.ApiCargoHub.Button.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_xs"
+                android:text="@string/profile_open_vehicle"
+                android:textAllCaps="false" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/profileDeactivateButton"
+                style="@style/Widget.ApiCargoHub.Button.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_xs"
+                android:text="@string/profile_deactivate_account"
+                android:textAllCaps="false"
+                android:textColor="@color/ch_error"
+                app:strokeColor="@color/ch_error_soft" />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom save CTA -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/ch_surface_card"
+        android:elevation="8dp"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/ch_space_md"
+        android:paddingTop="@dimen/ch_space_sm"
+        android:paddingBottom="@dimen/ch_space_md">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/profileSaveChangesButton"
+            style="@style/Widget.ApiCargoHub.Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_save_changes"
+            android:textAllCaps="false" />
+    </LinearLayout>
+</LinearLayout>

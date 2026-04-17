@@ -3,13 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/ch_surface"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="22dp">
+        android:paddingHorizontal="@dimen/ch_space_md"
+        android:paddingTop="@dimen/ch_space_lg"
+        android:paddingBottom="@dimen/ch_space_md">
 
         <TextView
             android:layout_width="wrap_content"
@@ -22,7 +25,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/ch_space_xs"
             android:text="@string/incidencia_new_subtitle"
             android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
             android:textColor="@color/ch_text_secondary" />
@@ -31,10 +34,10 @@
             android:id="@+id/noPortesCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="@dimen/ch_space_md"
             android:visibility="gone"
             app:cardBackgroundColor="@color/ch_warning_soft"
-            app:cardCornerRadius="14dp"
+            app:cardCornerRadius="@dimen/ch_radius_md"
             app:cardElevation="0dp"
             app:strokeColor="@color/ch_warning"
             app:strokeWidth="1dp">
@@ -42,7 +45,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
+                android:padding="@dimen/ch_space_md"
                 android:text="@string/incidencia_no_portes"
                 android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
                 android:textColor="@color/ch_warning_text" />
@@ -50,40 +53,33 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/porteInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            style="@style/Widget.ApiCargoHub.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:hint="@string/incidencia_porte_label"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            android:layout_marginTop="@dimen/ch_space_md"
+            android:hint="@string/incidencia_porte_label">
 
             <Spinner
                 android:id="@+id/porteSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="56dp" />
+                android:minHeight="52dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tituloInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.ApiCargoHub.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/ch_space_md"
             android:hint="@string/incidencia_titulo_label"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
             app:counterEnabled="true"
             app:counterMaxLength="150"
             app:errorEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/tituloInput"
+                style="@style/Widget.ApiCargoHub.TextInputEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textCapSentences"
@@ -92,21 +88,18 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/descripcionInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.ApiCargoHub.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/ch_space_md"
             android:hint="@string/incidencia_descripcion_label"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
             app:counterEnabled="true"
             app:counterMaxLength="4000"
             app:errorEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/descripcionInput"
+                style="@style/Widget.ApiCargoHub.TextInputEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="top"
@@ -118,49 +111,41 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/ch_space_md"
             android:orientation="horizontal">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/severidadInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                style="@style/Widget.ApiCargoHub.TextInputLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="@string/incidencia_severidad_label"
-                app:boxCornerRadiusBottomEnd="12dp"
-                app:boxCornerRadiusBottomStart="12dp"
-                app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp">
+                android:hint="@string/incidencia_severidad_label">
 
                 <Spinner
                     android:id="@+id/severidadSpinner"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="56dp" />
+                    android:minHeight="52dp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Space
-                android:layout_width="12dp"
+                android:layout_width="@dimen/ch_space_sm"
                 android:layout_height="match_parent" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/prioridadInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                style="@style/Widget.ApiCargoHub.TextInputLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="@string/incidencia_prioridad_label"
-                app:boxCornerRadiusBottomEnd="12dp"
-                app:boxCornerRadiusBottomStart="12dp"
-                app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp">
+                android:hint="@string/incidencia_prioridad_label">
 
                 <Spinner
                     android:id="@+id/prioridadSpinner"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="56dp" />
+                    android:minHeight="52dp" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
@@ -169,22 +154,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="@dimen/ch_space_xl"
             android:visibility="gone" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/submitButton"
+            style="@style/Widget.ApiCargoHub.Button.Primary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
+            android:layout_marginTop="@dimen/ch_space_xl"
             android:text="@string/incidencia_submit_button"
             android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            app:backgroundTint="@color/ch_error"
-            app:cornerRadius="14dp" />
-
+            app:backgroundTint="@color/ch_error" />
     </LinearLayout>
 </ScrollView>

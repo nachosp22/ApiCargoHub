@@ -44,6 +44,42 @@ export interface UpdateConductorRequest {
   radioAccionKm?: number
 }
 
+// --- Detail Interfaces ---
+
+export interface BloqueoAgenda {
+  id: number
+  tipo: string
+  descripcion: string
+  fechaInicio: string
+  fechaFin: string
+  diaSemana?: number
+}
+
+export interface VehiculoConductor {
+  id: number
+  matricula: string
+  marca: string
+  modelo: string
+  tipoVehiculo: string
+  activo: boolean
+}
+
+export interface EstadisticasConductor {
+  portesCompletados: number
+  ingresoTotal: number
+  mediaPorPorte: number
+  ingresoPorMes: Record<string, number>
+}
+
+export interface PorteConductor {
+  id: number
+  estado: string
+  origen: string
+  destino: string
+  fecha: string
+  precio: number
+}
+
 // --- Mock Data ---
 
 const MOCK_CONDUCTORES: Conductor[] = [
@@ -130,6 +166,17 @@ export const useConductoresStore = defineStore('conductores', () => {
   const loading = ref(false)
   const saving = ref(false)
   const usingMockData = ref(false)
+
+  // --- Pending approval state ---
+  const pendientesAprobacion = ref<Conductor[]>([])
+  const pendientesLoading = ref(false)
+
+  // --- Detail tabs state ---
+  const detailAgenda = ref<BloqueoAgenda[]>([])
+  const detailVehiculos = ref<VehiculoConductor[]>([])
+  const detailEstadisticas = ref<EstadisticasConductor | null>(null)
+  const detailPortes = ref<PorteConductor[]>([])
+  const detailLoading = ref(false)
 
   // --- Getters ---
   const totalConductores = computed(() => conductores.value.length)
@@ -348,7 +395,158 @@ export const useConductoresStore = defineStore('conductores', () => {
     }
   }
 
+  // --- Pending Approval Actions ---
+
+  async function fetchPendientesAprobacion(): Promise<void> {
+    pendientesLoading.value = true
+    try {
+      const response = await api.get('/conductores/pendientes-aprobacion')
+      const data = extractArray(response.data)
+      pendientesAprobacion.value = data.map(mapConductorFromApi)
+    } catch {
+      pendientesAprobacion.value = []
+    } finally {
+      pendientesLoading.value = false
+    }
+  }
+
+  async function aprobarConductor(id: number): Promise<void> {
+    saving.value = true
+    try {
+      await api.post(`/conductores/${id}/aprobar`)
+      pendientesAprobacion.value = pendientesAprobacion.value.filter((c) => c.id !== id)
+    } finally {
+      saving.value = false
+    }
+  }
+
+  async function rechazarConductor(id: number): Promise<void> {
+    saving.value = true
+    try {
+      await api.post(`/conductores/${id}/rechazar`)
+      pendientesAprobacion.value = pendientesAprobacion.value.filter((c) => c.id !== id)
+    } finally {
+      saving.value = false
+    }
+  }
+
+  // --- Detail Tab Actions ---
+
+  /**
+   * Fetch agenda (bloqueos + bloqueos recurrentes) for a conductor.
+   */
+  async function fetchAgenda(conductorId: number): Promise<void> {
+    detailLoading.value = true
+    try {
+      const [agendaRes, recurrentesRes] = await Promise.allSettled([
+        api.get(`/conductores/${conductorId}/agenda`),
+        api.get(`/conductores/${conductorId}/bloqueos-recurrentes`),
+      ])
+
+      const agenda = agendaRes.status === 'fulfilled' ? extractArray(agendaRes.value.data) : []
+      const recurrentes = recurrentesRes.status === 'fulfilled' ? extractArray(recurrentesRes.value.data) : []
+
+      detailAgenda.value = [...agenda, ...recurrentes].map((b) => ({
+        id: Number(b.id ?? 0),
+        tipo: String(b.tipo ?? b.tipoBloqueo ?? 'BLOQUEO'),
+        descripcion: String(b.descripcion ?? b.motivo ?? '—'),
+        fechaInicio: String(b.fechaInicio ?? b.inicio ?? '—'),
+        fechaFin: String(b.fechaFin ?? b.fin ?? '—'),
+        diaSemana: b.diaSemana != null ? Number(b.diaSemana) : undefined,
+      }))
+    } catch {
+      detailAgenda.value = []
+    } finally {
+      detailLoading.value = false
+    }
+  }
+
+  /**
+   * Fetch vehiculos assigned to a conductor.
+   */
+  async function fetchVehiculos(conductorId: number): Promise<void> {
+    detailLoading.value = true
+    try {
+      const res = await api.get(`/conductores/${conductorId}/vehiculos`)
+      const list = extractArray(res.data)
+      detailVehiculos.value = list.map((v) => ({
+        id: Number(v.id ?? 0),
+        matricula: String(v.matricula ?? '—'),
+        marca: String(v.marca ?? '—'),
+        modelo: String(v.modelo ?? '—'),
+        tipoVehiculo: String(v.tipoVehiculo ?? v.tipo ?? '—'),
+        activo: v.activo !== false,
+      }))
+    } catch {
+      detailVehiculos.value = []
+    } finally {
+      detailLoading.value = false
+    }
+  }
+
+  /**
+   * Fetch estadísticas for a conductor.
+   */
+  async function fetchEstadisticas(conductorId: number): Promise<void> {
+    detailLoading.value = true
+    try {
+      const res = await api.get(`/conductores/${conductorId}/estadisticas`)
+      const d = res.data as Record<string, unknown>
+      detailEstadisticas.value = {
+        portesCompletados: Number(d.portesCompletados ?? 0),
+        ingresoTotal: Number(d.ingresoTotal ?? 0),
+        mediaPorPorte: Number(d.mediaPorPorte ?? 0),
+        ingresoPorMes: (d.ingresoPorMes as Record<string, number>) ?? {},
+      }
+    } catch {
+      detailEstadisticas.value = null
+    } finally {
+      detailLoading.value = false
+    }
+  }
+
+  /**
+   * Fetch portes for a conductor.
+   */
+  async function fetchPortesConductor(conductorId: number): Promise<void> {
+    detailLoading.value = true
+    try {
+      const res = await api.get(`/portes/conductor/${conductorId}`)
+      const list = extractArray(res.data)
+      detailPortes.value = list.map((p) => ({
+        id: Number(p.id ?? 0),
+        estado: String(p.estado ?? 'PENDIENTE'),
+        origen: String(p.origen ?? p.ciudadOrigen ?? '—'),
+        destino: String(p.destino ?? p.ciudadDestino ?? '—'),
+        fecha: formatDateLocal(p.fecha ?? p.fechaCreacion ?? p.fechaSalida),
+        precio: Number(p.precio ?? p.precioTotal ?? 0),
+      }))
+    } catch {
+      detailPortes.value = []
+    } finally {
+      detailLoading.value = false
+    }
+  }
+
+  /**
+   * Clear all detail tab data.
+   */
+  function clearDetail(): void {
+    detailAgenda.value = []
+    detailVehiculos.value = []
+    detailEstadisticas.value = null
+    detailPortes.value = []
+  }
+
   // --- Helpers ---
+
+  function formatDateLocal(value: unknown): string {
+    if (!value) return '—'
+    const str = String(value)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str
+    if (str.includes('T')) return str.split('T')[0]
+    return str
+  }
 
   function extractArray(data: unknown): Record<string, unknown>[] {
     if (Array.isArray(data)) return data as Record<string, unknown>[]
@@ -400,6 +598,13 @@ export const useConductoresStore = defineStore('conductores', () => {
     loading,
     saving,
     usingMockData,
+    pendientesAprobacion,
+    pendientesLoading,
+    detailAgenda,
+    detailVehiculos,
+    detailEstadisticas,
+    detailPortes,
+    detailLoading,
     // Getters
     totalConductores,
     conductoresByEstado,
@@ -412,5 +617,13 @@ export const useConductoresStore = defineStore('conductores', () => {
     updateConductor,
     toggleEstado,
     deleteConductor,
+    fetchPendientesAprobacion,
+    aprobarConductor,
+    rechazarConductor,
+    fetchAgenda,
+    fetchVehiculos,
+    fetchEstadisticas,
+    fetchPortesConductor,
+    clearDetail,
   }
 })

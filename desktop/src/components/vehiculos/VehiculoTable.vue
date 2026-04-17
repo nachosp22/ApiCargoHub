@@ -16,6 +16,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'view', vehiculo: Vehiculo): void
+  (e: 'edit', vehiculo: Vehiculo): void
 }>()
 
 // --- Filters ---
@@ -292,6 +293,15 @@ function getTipoConfig(tipo: string): StyleConfig {
               size="small"
               v-tooltip.top="'Ver detalle'"
               @click="emit('view', slotProps.data)"
+            />
+            <Button
+              icon="pi pi-pencil"
+              severity="secondary"
+              text
+              rounded
+              size="small"
+              v-tooltip.top="'Editar'"
+              @click="emit('edit', slotProps.data)"
             />
           </div>
         </template>

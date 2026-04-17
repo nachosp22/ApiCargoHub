@@ -18,6 +18,14 @@ public class ConductorProfileResponse {
         return id;
     }
 
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getApellidos() {
+        return apellidos;
+    }
+
     public String getNombreCompleto() {
         String firstName = nombre != null ? nombre.trim() : "";
         String lastName = apellidos != null ? apellidos.trim() : "";

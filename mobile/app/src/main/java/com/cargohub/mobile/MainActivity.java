@@ -7,20 +7,28 @@ import androidx.core.view.GravityCompat;
 
 import com.cargohub.mobile.databinding.ActivityMainBinding;
 import com.cargohub.mobile.session.SessionManager;
+import com.cargohub.mobile.ui.AgendaFragment;
+import com.cargohub.mobile.ui.EstadisticasFragment;
+import com.cargohub.mobile.ui.FacturacionFragment;
 import com.cargohub.mobile.ui.HomeFragment;
 import com.cargohub.mobile.ui.IncidenciasOptionsFragment;
-import com.cargohub.mobile.ui.PlaceholderSectionFragment;
-import com.cargohub.mobile.ui.PortesOptionsFragment;
+import com.cargohub.mobile.ui.OfferInboxFragment;
+import com.cargohub.mobile.ui.PortesFragment;
+import com.cargohub.mobile.ui.ProfileFragment;
+import com.cargohub.mobile.ui.TrackingStatusFragment;
+import com.cargohub.mobile.ui.VehicleFragment;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
+    private final SessionManager.SessionInvalidationListener sessionInvalidationListener =
+            () -> runOnUiThread(this::ensureAuthenticatedSession);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!SessionManager.hasSession()) {
+        if (!SessionManager.hasActiveSession()) {
             LoginNavigator.openLoginAndFinish(this);
             return;
         }
@@ -37,9 +45,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (!SessionManager.hasSession()) {
-            LoginNavigator.openLoginAndFinish(this);
-        }
+        SessionManager.setInvalidationListener(sessionInvalidationListener);
+        ensureAuthenticatedSession();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        SessionManager.setInvalidationListener(null);
     }
 
     @Override
@@ -73,14 +86,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (itemId == R.id.nav_profile) {
-            openPlaceholder(getString(R.string.home_menu_section_profile), getString(R.string.section_profile_placeholder));
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.contentFragmentContainer, new ProfileFragment())
+                    .commit();
             return;
         }
 
-        if (itemId == R.id.nav_ports) {
+        if (itemId == R.id.nav_vehicle) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.contentFragmentContainer, new PortesOptionsFragment())
+                    .replace(R.id.contentFragmentContainer, new VehicleFragment())
+                    .commit();
+            return;
+        }
+
+        if (itemId == R.id.nav_offers) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.contentFragmentContainer, new OfferInboxFragment())
+                    .commit();
+            return;
+        }
+
+        if (itemId == R.id.nav_portes) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.contentFragmentContainer, new PortesFragment())
                     .commit();
             return;
         }
@@ -94,29 +126,37 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (itemId == R.id.nav_agenda) {
-            openPlaceholder(getString(R.string.home_menu_section_agenda), getString(R.string.section_agenda_placeholder));
-            return;
-        }
-
-        if (itemId == R.id.nav_vehicle) {
-            openPlaceholder(getString(R.string.home_menu_section_vehicle), getString(R.string.section_vehicle_placeholder));
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.contentFragmentContainer, new AgendaFragment())
+                    .commit();
             return;
         }
 
         if (itemId == R.id.nav_billing) {
-            openPlaceholder(getString(R.string.home_menu_section_billing), getString(R.string.section_billing_placeholder));
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.contentFragmentContainer, new FacturacionFragment())
+                    .commit();
+            return;
         }
-    }
 
-    private void openPlaceholder(String title, String message) {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.contentFragmentContainer, PlaceholderSectionFragment.newInstance(title, message))
-                .commit();
+        if (itemId == R.id.nav_stats) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.contentFragmentContainer, new EstadisticasFragment())
+                    .commit();
+        }
     }
 
     private void performLogout() {
         SessionManager.clearSession();
         LoginNavigator.openLoginAndFinish(this);
+    }
+
+    private void ensureAuthenticatedSession() {
+        if (!SessionManager.hasActiveSession()) {
+            LoginNavigator.openLoginAndFinish(this);
+        }
     }
 }

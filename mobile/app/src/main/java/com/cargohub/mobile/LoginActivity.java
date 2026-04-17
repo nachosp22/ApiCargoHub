@@ -24,7 +24,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (SessionManager.hasSession()) {
+        if (SessionManager.hasActiveSession()) {
             openMainAndFinish();
             return;
         }
@@ -69,14 +69,7 @@ public class LoginActivity extends AppCompatActivity {
                         showFormError(getString(R.string.login_error_missing_token));
                         return;
                     }
-                    SessionManager.saveAccessToken(token);
-                    Long conductorId = loginResponse.getConductorId();
-                    if (conductorId == null) {
-                        conductorId = loginResponse.getId();
-                    }
-                    if (conductorId != null && conductorId > 0) {
-                        SessionManager.saveConductorId(conductorId);
-                    }
+                    SessionManager.saveLoginSession(loginResponse);
                     openMainAndFinish();
                 });
             }

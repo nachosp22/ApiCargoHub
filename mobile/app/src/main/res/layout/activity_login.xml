@@ -3,11 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/ch_surface"
-    android:paddingStart="24dp"
-    android:paddingTop="24dp"
-    android:paddingEnd="24dp"
-    android:paddingBottom="24dp">
+    android:background="@color/ch_background">
 
     <LinearLayout
         android:id="@+id/loginContainer"
@@ -15,19 +11,21 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
+        android:paddingStart="@dimen/spacing_xl"
+        android:paddingEnd="@dimen/spacing_xl"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.45">
+        app:layout_constraintVertical_bias="0.42">
 
         <ImageView
             android:id="@+id/companyLogo"
-            android:layout_width="84dp"
-            android:layout_height="84dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:background="@drawable/bg_login_logo_placeholder"
             android:contentDescription="@string/app_name"
-            android:padding="20dp"
+            android:padding="@dimen/spacing_lg"
             android:src="@drawable/ic_cargohub_logo"
             app:tint="@color/white" />
 
@@ -36,7 +34,7 @@
             style="@style/Widget.ApiCargoHub.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="36dp"
+            android:layout_marginTop="@dimen/spacing_3xl"
             android:hint="@string/login_email_label">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -53,10 +51,9 @@
             style="@style/Widget.ApiCargoHub.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="@dimen/spacing_sm"
             android:hint="@string/login_password_label"
-            app:endIconMode="password_toggle"
-            >
+            app:endIconMode="password_toggle">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/passwordInput"
@@ -71,12 +68,12 @@
             android:id="@+id/loginErrorText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="@dimen/spacing_xs"
             android:background="@drawable/bg_error_soft"
-            android:paddingStart="10dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="10dp"
-            android:paddingBottom="8dp"
+            android:paddingStart="@dimen/spacing_sm"
+            android:paddingTop="@dimen/spacing_xs"
+            android:paddingEnd="@dimen/spacing_sm"
+            android:paddingBottom="@dimen/spacing_xs"
             android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
             android:textColor="@color/ch_error"
             android:visibility="gone" />
@@ -85,9 +82,9 @@
             android:id="@+id/loginProgress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="@dimen/spacing_xs"
             android:indeterminate="true"
-            app:indicatorColor="@color/ch_blue_500"
+            app:indicatorColor="@color/ch_primary"
             app:trackColor="@color/ch_blue_100"
             android:visibility="gone" />
 
@@ -95,20 +92,20 @@
             android:id="@+id/loginLoadingText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/spacing_xs"
             android:text="@string/login_loading"
             android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
-            android:textColor="@color/ch_text_secondary"
+            android:textColor="@color/ch_on_surface_variant"
             android:visibility="gone" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/loginButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:minHeight="52dp"
+            android:layout_marginTop="@dimen/spacing_lg"
+            android:minHeight="48dp"
             android:text="@string/login_cta"
-            app:backgroundTint="@color/ch_blue_600" />
+            app:backgroundTint="@color/ch_primary" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

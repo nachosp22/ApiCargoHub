@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
+import GlobalSearchBar from '@/components/GlobalSearchBar.vue'
 
 const authStore = useAuthStore()
 
@@ -20,15 +21,8 @@ function userInitials(): string {
   <header
     class="fixed top-0 left-60 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-20"
   >
-    <!-- Left: Search Bar -->
-    <div class="relative w-full max-w-md">
-      <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-      <input
-        type="text"
-        placeholder="Buscar..."
-        class="w-full pl-10 pr-4 py-2 bg-gray-100 border-0 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-white transition-colors"
-      />
-    </div>
+    <!-- Left: Global Search Bar -->
+    <GlobalSearchBar />
 
     <!-- Right: Notifications + User -->
     <div class="flex items-center gap-5 ml-4 shrink-0">

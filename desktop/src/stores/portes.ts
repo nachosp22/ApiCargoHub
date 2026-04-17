@@ -54,6 +54,9 @@ export interface Porte {
   descripcionCliente?: string
   pesoTotalKg?: number
   volumenTotalM3?: number
+  largoMaxPaquete?: number
+  anchoMaxPaquete?: number
+  altoMaxPaquete?: number
   tipoVehiculoRequerido?: string
   requiereFrio?: boolean
   revisionManual?: boolean
@@ -64,6 +67,27 @@ export interface Porte {
   fechaEntrega?: string
   conductor?: Conductor | null
   cliente?: Cliente | null
+}
+
+export interface ConductorCandidato {
+  id: number
+  nombre: string
+  apellidos?: string
+  telefono?: string
+  ciudadBase?: string
+  rating?: number
+  numeroValoraciones?: number
+  vehiculoInfo?: string
+  score: number
+}
+
+export interface DimensionesRequest {
+  pesoTotalKg?: number
+  volumenTotalM3?: number
+  largoMaxPaquete?: number
+  anchoMaxPaquete?: number
+  altoMaxPaquete?: number
+  tipoVehiculoRequerido?: string
 }
 
 export interface CreatePorteRequest {
@@ -199,6 +223,9 @@ export const usePortesStore = defineStore('portes', () => {
   const loading = ref(false)
   const saving = ref(false)
   const usingMockData = ref(false)
+  const pendientesRevision = ref<Porte[]>([])
+  const conductorCandidatos = ref<ConductorCandidato[]>([])
+  const loadingCandidatos = ref(false)
 
   // --- Getters ---
   const totalPortes = computed(() => portes.value.length)
@@ -362,6 +389,64 @@ export const usePortesStore = defineStore('portes', () => {
   }
 
   /**
+   * Adjust the price of a porte.
+   */
+  async function ajustarPrecio(id: number, data: { precioAjustado: number; motivo: string }): Promise<Porte> {
+    saving.value = true
+    try {
+      const response = await api.post(`/portes/${id}/ajuste`, data)
+      const updated = mapPorteFromApi(response.data)
+      const idx = portes.value.findIndex((p) => p.id === id)
+      if (idx !== -1) portes.value[idx] = updated
+      if (selectedPorte.value?.id === id) selectedPorte.value = updated
+      return updated
+    } catch (error) {
+      if (usingMockData.value) {
+        const idx = portes.value.findIndex((p) => p.id === id)
+        if (idx !== -1) {
+          portes.value[idx] = {
+            ...portes.value[idx],
+            ajustePrecio: data.precioAjustado,
+            motivoAjuste: data.motivo,
+          }
+          if (selectedPorte.value?.id === id) selectedPorte.value = portes.value[idx]
+          return portes.value[idx]
+        }
+      }
+      throw error
+    } finally {
+      saving.value = false
+    }
+  }
+
+  /**
+   * Mark a porte as invoiced (facturado).
+   */
+  async function facturarPorte(id: number): Promise<Porte> {
+    saving.value = true
+    try {
+      const response = await api.post(`/portes/${id}/facturar`)
+      const updated = mapPorteFromApi(response.data)
+      const idx = portes.value.findIndex((p) => p.id === id)
+      if (idx !== -1) portes.value[idx] = updated
+      if (selectedPorte.value?.id === id) selectedPorte.value = updated
+      return updated
+    } catch (error) {
+      if (usingMockData.value) {
+        const idx = portes.value.findIndex((p) => p.id === id)
+        if (idx !== -1) {
+          portes.value[idx] = { ...portes.value[idx], estado: 'FACTURADO' }
+          if (selectedPorte.value?.id === id) selectedPorte.value = portes.value[idx]
+          return portes.value[idx]
+        }
+      }
+      throw error
+    } finally {
+      saving.value = false
+    }
+  }
+
+  /**
    * Delete a porte (ADMIN only).
    */
   async function deletePorte(id: number): Promise<void> {
@@ -446,6 +531,97 @@ export const usePortesStore = defineStore('portes', () => {
     await Promise.allSettled([fetchConductores(), fetchVehiculos(), fetchClientes()])
   }
 
+  // --- Revision Manual Actions ---
+
+  /**
+   * Fetch portes pending manual review.
+   */
+  async function fetchPendientesRevision(): Promise<void> {
+    loading.value = true
+    try {
+      const response = await api.get('/portes/pendientes-revision')
+      const data = extractArray(response.data)
+      pendientesRevision.value = data.map(mapPorteFromApi)
+    } catch {
+      // Filter from local portes as fallback
+      pendientesRevision.value = portes.value.filter(
+        (p) => p.revisionManual || (p.estado === 'PENDIENTE' && !p.conductor),
+      )
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Update cargo dimensions on a porte (admin).
+   */
+  async function updateDimensiones(porteId: number, dimensiones: DimensionesRequest): Promise<Porte> {
+    saving.value = true
+    try {
+      const response = await api.put(`/portes/${porteId}/dimensiones`, dimensiones)
+      const updated = mapPorteFromApi(response.data)
+      // Update in both lists
+      const idx = portes.value.findIndex((p) => p.id === porteId)
+      if (idx !== -1) portes.value[idx] = updated
+      const revIdx = pendientesRevision.value.findIndex((p) => p.id === porteId)
+      if (revIdx !== -1) pendientesRevision.value[revIdx] = updated
+      return updated
+    } finally {
+      saving.value = false
+    }
+  }
+
+  /**
+   * Search for matching conductor candidates for a porte.
+   */
+  async function buscarConductores(porteId: number): Promise<ConductorCandidato[]> {
+    loadingCandidatos.value = true
+    conductorCandidatos.value = []
+    try {
+      const response = await api.post(`/portes/${porteId}/buscar-conductores`)
+      const data = Array.isArray(response.data) ? response.data : []
+      conductorCandidatos.value = data.map((c: Record<string, unknown>) => ({
+        id: Number(c.id ?? 0),
+        nombre: String(c.nombre ?? ''),
+        apellidos: c.apellidos ? String(c.apellidos) : undefined,
+        telefono: c.telefono ? String(c.telefono) : undefined,
+        ciudadBase: c.ciudadBase ? String(c.ciudadBase) : undefined,
+        rating: c.rating != null ? Number(c.rating) : undefined,
+        numeroValoraciones: c.numeroValoraciones != null ? Number(c.numeroValoraciones) : undefined,
+        vehiculoInfo: c.vehiculoInfo ? String(c.vehiculoInfo) : undefined,
+        score: Number(c.score ?? 0),
+      }))
+      return conductorCandidatos.value
+    } catch {
+      conductorCandidatos.value = []
+      return []
+    } finally {
+      loadingCandidatos.value = false
+    }
+  }
+
+  /**
+   * Assign a conductor to a porte manually (admin).
+   */
+  async function asignarConductor(porteId: number, conductorId: number): Promise<Porte> {
+    saving.value = true
+    try {
+      const response = await api.post(`/portes/${porteId}/asignar-conductor`, null, {
+        params: { conductorId },
+      })
+      const updated = mapPorteFromApi(response.data)
+      // Update main list
+      const idx = portes.value.findIndex((p) => p.id === porteId)
+      if (idx !== -1) portes.value[idx] = updated
+      // Remove from pendientes
+      pendientesRevision.value = pendientesRevision.value.filter((p) => p.id !== porteId)
+      conductorCandidatos.value = []
+      return updated
+    } finally {
+      saving.value = false
+    }
+  }
+
   // --- Helpers ---
 
   function extractArray(data: unknown): Record<string, unknown>[] {
@@ -475,6 +651,9 @@ export const usePortesStore = defineStore('portes', () => {
       descripcionCliente: p.descripcionCliente ? String(p.descripcionCliente) : undefined,
       pesoTotalKg: p.pesoTotalKg != null ? Number(p.pesoTotalKg) : undefined,
       volumenTotalM3: p.volumenTotalM3 != null ? Number(p.volumenTotalM3) : undefined,
+      largoMaxPaquete: p.largoMaxPaquete != null ? Number(p.largoMaxPaquete) : undefined,
+      anchoMaxPaquete: p.anchoMaxPaquete != null ? Number(p.anchoMaxPaquete) : undefined,
+      altoMaxPaquete: p.altoMaxPaquete != null ? Number(p.altoMaxPaquete) : undefined,
       tipoVehiculoRequerido: p.tipoVehiculoRequerido ? String(p.tipoVehiculoRequerido) : undefined,
       requiereFrio: p.requiereFrio === true,
       revisionManual: p.revisionManual === true,
@@ -524,6 +703,9 @@ export const usePortesStore = defineStore('portes', () => {
     loading,
     saving,
     usingMockData,
+    pendientesRevision,
+    conductorCandidatos,
+    loadingCandidatos,
     // Getters
     totalPortes,
     portesByEstado,
@@ -534,9 +716,15 @@ export const usePortesStore = defineStore('portes', () => {
     updatePorte,
     changeEstado,
     deletePorte,
+    ajustarPrecio,
+    facturarPorte,
     fetchConductores,
     fetchVehiculos,
     fetchClientes,
     fetchReferenceData,
+    fetchPendientesRevision,
+    updateDimensiones,
+    buscarConductores,
+    asignarConductor,
   }
 })

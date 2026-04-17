@@ -1,0 +1,712 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------< com.cargohub:backend >------------------------
+[INFO] Building backend 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:4.0.1:run (default-cli) > test-compile @ backend >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ backend ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ backend ---
+[INFO] skip non existing resourceDirectory C:\Users\nacho\Desktop\ApiCargoHub\api\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] <<< spring-boot:4.0.1:run (default-cli) < test-compile @ backend <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:4.0.1:run (default-cli) @ backend ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.1)
+
+2026-04-17T01:07:36.201+02:00  INFO 860708 --- [backend] [           main] c.cargohub.backend.BackendApplication    : Starting BackendApplication using Java 17.0.18 with PID 860708 (C:\Users\nacho\Desktop\ApiCargoHub\api\target\classes started by nacho in C:\Users\nacho\Desktop\ApiCargoHub\api)
+2026-04-17T01:07:36.203+02:00  INFO 860708 --- [backend] [           main] c.cargohub.backend.BackendApplication    : No active profile set, falling back to 1 default profile: "default"
+2026-04-17T01:07:36.591+02:00  INFO 860708 --- [backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-17T01:07:36.634+02:00  INFO 860708 --- [backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 39 ms. Found 11 JPA repository interfaces.
+2026-04-17T01:07:36.973+02:00  INFO 860708 --- [backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-04-17T01:07:36.979+02:00  INFO 860708 --- [backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-17T01:07:36.980+02:00  INFO 860708 --- [backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.15]
+2026-04-17T01:07:37.012+02:00  INFO 860708 --- [backend] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 784 ms
+2026-04-17T01:07:37.098+02:00  INFO 860708 --- [backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-04-17T01:07:37.156+02:00  INFO 860708 --- [backend] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.0.Final
+2026-04-17T01:07:37.517+02:00  INFO 860708 --- [backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-17T01:07:37.546+02:00  INFO 860708 --- [backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-17T01:07:37.725+02:00  INFO 860708 --- [backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1f6f0fe2
+2026-04-17T01:07:37.726+02:00  INFO 860708 --- [backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-17T01:07:37.768+02:00  WARN 860708 --- [backend] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-04-17T01:07:37.792+02:00  INFO 860708 --- [backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/cargohub]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.3
+	Default catalog/schema: cargohub/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-17T01:07:38.701+02:00  INFO 860708 --- [backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    create table bloqueos_recurrentes (
+        id bigint generated by default as identity,
+        activo boolean not null,
+        created_at timestamp(6) not null,
+        dia_semana integer not null,
+        updated_at timestamp(6),
+        conductor_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    alter table if exists bloqueos_recurrentes 
+       drop constraint if exists UK3ydc64x4rptty1s50176ykvhm
+2026-04-17T01:07:38.929+02:00  WARN 860708 --- [backend] [           main] org.hibernate.orm.jdbc.warn              : HHH000247: ErrorCode: 0, SQLState: 00000
+2026-04-17T01:07:38.929+02:00  WARN 860708 --- [backend] [           main] org.hibernate.orm.jdbc.warn              : constraint "uk3ydc64x4rptty1s50176ykvhm" of relation "bloqueos_recurrentes" does not exist, skipping
+Hibernate: 
+    alter table if exists bloqueos_recurrentes 
+       add constraint UK3ydc64x4rptty1s50176ykvhm unique (conductor_id, dia_semana)
+Hibernate: 
+    alter table if exists bloqueos_recurrentes 
+       add constraint FK35vj2hwr337ddqkx89rvw9oy3 
+       foreign key (conductor_id) 
+       references conductores
+2026-04-17T01:07:38.969+02:00  INFO 860708 --- [backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-17T01:07:39.022+02:00  INFO 860708 --- [backend] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-17T01:07:39.660+02:00  INFO 860708 --- [backend] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name databaseUserDetailsService
+2026-04-17T01:07:40.105+02:00  WARN 860708 --- [backend] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-17T01:07:40.432+02:00  INFO 860708 --- [backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-04-17T01:07:40.435+02:00  INFO 860708 --- [backend] [           main] c.cargohub.backend.BackendApplication    : Started BackendApplication in 4.477 seconds (process running for 4.706)
+2026-04-17T01:08:07.507+02:00  INFO 860708 --- [backend] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-17T01:08:07.508+02:00  INFO 860708 --- [backend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-17T01:08:07.508+02:00  INFO 860708 --- [backend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+Hibernate: 
+    select
+        u1_0.id 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    insert 
+    into
+        usuarios
+        (activo, email, fecha_registro, password, rol, token_recuperacion, ultimo_acceso) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        clientes
+        (cif, direccion_fiscal, email_contacto, nombre_empresa, sector, telefono, usuario_id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    select
+        u1_0.id 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    insert 
+    into
+        usuarios
+        (activo, email, fecha_registro, password, rol, token_recuperacion, ultimo_acceso) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        clientes
+        (cif, direccion_fiscal, email_contacto, nombre_empresa, sector, telefono, usuario_id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.cif,
+        c1_0.direccion_fiscal,
+        c1_0.email_contacto,
+        c1_0.nombre_empresa,
+        c1_0.sector,
+        c1_0.telefono,
+        c1_0.usuario_id 
+    from
+        clientes c1_0 
+    left join
+        usuarios u1_0 
+            on u1_0.id=c1_0.usuario_id 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.cif,
+        c1_0.direccion_fiscal,
+        c1_0.email_contacto,
+        c1_0.nombre_empresa,
+        c1_0.sector,
+        c1_0.telefono,
+        c1_0.usuario_id 
+    from
+        clientes c1_0 
+    left join
+        usuarios u1_0 
+            on u1_0.id=c1_0.usuario_id 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.ajuste_precio,
+        p1_0.cliente_id,
+        p1_0.conductor_id,
+        p1_0.descripcion_cliente,
+        p1_0.destino,
+        p1_0.distancia_estimada,
+        p1_0.distancia_km,
+        p1_0.estado,
+        p1_0.fecha_creacion,
+        p1_0.fecha_entrega,
+        p1_0.fecha_recogida,
+        p1_0.largo_max_paquete,
+        p1_0.latitud_destino,
+        p1_0.latitud_origen,
+        p1_0.longitud_destino,
+        p1_0.longitud_origen,
+        p1_0.motivo_ajuste,
+        p1_0.motivo_revision,
+        p1_0.origen,
+        p1_0.peso_total_kg,
+        p1_0.precio,
+        p1_0.requiere_frio,
+        p1_0.revision_manual,
+        p1_0.tipo_vehiculo_requerido,
+        p1_0.version,
+        p1_0.volumen_total_m3 
+    from
+        portes p1_0 
+    where
+        p1_0.cliente_id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.cif,
+        c1_0.direccion_fiscal,
+        c1_0.email_contacto,
+        c1_0.nombre_empresa,
+        c1_0.sector,
+        c1_0.telefono,
+        c1_0.usuario_id 
+    from
+        clientes c1_0 
+    left join
+        usuarios u1_0 
+            on u1_0.id=c1_0.usuario_id 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.ajuste_precio,
+        p1_0.cliente_id,
+        p1_0.conductor_id,
+        p1_0.descripcion_cliente,
+        p1_0.destino,
+        p1_0.distancia_estimada,
+        p1_0.distancia_km,
+        p1_0.estado,
+        p1_0.fecha_creacion,
+        p1_0.fecha_entrega,
+        p1_0.fecha_recogida,
+        p1_0.largo_max_paquete,
+        p1_0.latitud_destino,
+        p1_0.latitud_origen,
+        p1_0.longitud_destino,
+        p1_0.longitud_origen,
+        p1_0.motivo_ajuste,
+        p1_0.motivo_revision,
+        p1_0.origen,
+        p1_0.peso_total_kg,
+        p1_0.precio,
+        p1_0.requiere_frio,
+        p1_0.revision_manual,
+        p1_0.tipo_vehiculo_requerido,
+        p1_0.version,
+        p1_0.volumen_total_m3 
+    from
+        portes p1_0 
+    where
+        p1_0.cliente_id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.cif,
+        c1_0.direccion_fiscal,
+        c1_0.email_contacto,
+        c1_0.nombre_empresa,
+        c1_0.sector,
+        c1_0.telefono,
+        c1_0.usuario_id 
+    from
+        clientes c1_0 
+    left join
+        usuarios u1_0 
+            on u1_0.id=c1_0.usuario_id 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.ajuste_precio,
+        p1_0.cliente_id,
+        p1_0.conductor_id,
+        p1_0.descripcion_cliente,
+        p1_0.destino,
+        p1_0.distancia_estimada,
+        p1_0.distancia_km,
+        p1_0.estado,
+        p1_0.fecha_creacion,
+        p1_0.fecha_entrega,
+        p1_0.fecha_recogida,
+        p1_0.largo_max_paquete,
+        p1_0.latitud_destino,
+        p1_0.latitud_origen,
+        p1_0.longitud_destino,
+        p1_0.longitud_origen,
+        p1_0.motivo_ajuste,
+        p1_0.motivo_revision,
+        p1_0.origen,
+        p1_0.peso_total_kg,
+        p1_0.precio,
+        p1_0.requiere_frio,
+        p1_0.revision_manual,
+        p1_0.tipo_vehiculo_requerido,
+        p1_0.version,
+        p1_0.volumen_total_m3 
+    from
+        portes p1_0 
+    where
+        p1_0.cliente_id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.cif,
+        c1_0.direccion_fiscal,
+        c1_0.email_contacto,
+        c1_0.nombre_empresa,
+        c1_0.sector,
+        c1_0.telefono,
+        c1_0.usuario_id 
+    from
+        clientes c1_0 
+    left join
+        usuarios u1_0 
+            on u1_0.id=c1_0.usuario_id 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.ajuste_precio,
+        p1_0.cliente_id,
+        p1_0.conductor_id,
+        p1_0.descripcion_cliente,
+        p1_0.destino,
+        p1_0.distancia_estimada,
+        p1_0.distancia_km,
+        p1_0.estado,
+        p1_0.fecha_creacion,
+        p1_0.fecha_entrega,
+        p1_0.fecha_recogida,
+        p1_0.largo_max_paquete,
+        p1_0.latitud_destino,
+        p1_0.latitud_origen,
+        p1_0.longitud_destino,
+        p1_0.longitud_origen,
+        p1_0.motivo_ajuste,
+        p1_0.motivo_revision,
+        p1_0.origen,
+        p1_0.peso_total_kg,
+        p1_0.precio,
+        p1_0.requiere_frio,
+        p1_0.revision_manual,
+        p1_0.tipo_vehiculo_requerido,
+        p1_0.version,
+        p1_0.volumen_total_m3 
+    from
+        portes p1_0 
+    where
+        p1_0.cliente_id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.cif,
+        c1_0.direccion_fiscal,
+        c1_0.email_contacto,
+        c1_0.nombre_empresa,
+        c1_0.sector,
+        c1_0.telefono,
+        c1_0.usuario_id 
+    from
+        clientes c1_0 
+    left join
+        usuarios u1_0 
+            on u1_0.id=c1_0.usuario_id 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.ajuste_precio,
+        p1_0.cliente_id,
+        p1_0.conductor_id,
+        p1_0.descripcion_cliente,
+        p1_0.destino,
+        p1_0.distancia_estimada,
+        p1_0.distancia_km,
+        p1_0.estado,
+        p1_0.fecha_creacion,
+        p1_0.fecha_entrega,
+        p1_0.fecha_recogida,
+        p1_0.largo_max_paquete,
+        p1_0.latitud_destino,
+        p1_0.latitud_origen,
+        p1_0.longitud_destino,
+        p1_0.longitud_origen,
+        p1_0.motivo_ajuste,
+        p1_0.motivo_revision,
+        p1_0.origen,
+        p1_0.peso_total_kg,
+        p1_0.precio,
+        p1_0.requiere_frio,
+        p1_0.revision_manual,
+        p1_0.tipo_vehiculo_requerido,
+        p1_0.version,
+        p1_0.volumen_total_m3 
+    from
+        portes p1_0 
+    where
+        p1_0.cliente_id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.activo,
+        u1_0.email,
+        u1_0.fecha_registro,
+        u1_0.password,
+        u1_0.rol,
+        u1_0.token_recuperacion,
+        u1_0.ultimo_acceso 
+    from
+        usuarios u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.cif,
+        c1_0.direccion_fiscal,
+        c1_0.email_contacto,
+        c1_0.nombre_empresa,
+        c1_0.sector,
+        c1_0.telefono,
+        c1_0.usuario_id 
+    from
+        clientes c1_0 
+    left join
+        usuarios u1_0 
+            on u1_0.id=c1_0.usuario_id 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.ajuste_precio,
+        p1_0.cliente_id,
+        p1_0.conductor_id,
+        p1_0.descripcion_cliente,
+        p1_0.destino,
+        p1_0.distancia_estimada,
+        p1_0.distancia_km,
+        p1_0.estado,
+        p1_0.fecha_creacion,
+        p1_0.fecha_entrega,
+        p1_0.fecha_recogida,
+        p1_0.largo_max_paquete,
+        p1_0.latitud_destino,
+        p1_0.latitud_origen,
+        p1_0.longitud_destino,
+        p1_0.longitud_origen,
+        p1_0.motivo_ajuste,
+        p1_0.motivo_revision,
+        p1_0.origen,
+        p1_0.peso_total_kg,
+        p1_0.precio,
+        p1_0.requiere_frio,
+        p1_0.revision_manual,
+        p1_0.tipo_vehiculo_requerido,
+        p1_0.version,
+        p1_0.volumen_total_m3 
+    from
+        portes p1_0 
+    where
+        p1_0.cliente_id=?

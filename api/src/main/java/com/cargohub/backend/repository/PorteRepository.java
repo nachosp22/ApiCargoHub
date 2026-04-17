@@ -16,6 +16,10 @@ public interface PorteRepository extends JpaRepository<Porte, Long> {
     // 1. Marketplace
     List<Porte> findByEstadoOrderByFechaRecogidaAsc(EstadoPorte estado);
 
+    @Query("SELECT p FROM Porte p WHERE p.estado = :estado AND :conductorId NOT MEMBER OF p.conductoresRechazados ORDER BY p.fechaRecogida ASC")
+    List<Porte> findPendingOffersForConductor(@Param("estado") EstadoPorte estado,
+                                              @Param("conductorId") Long conductorId);
+
     // 2. Mis Viajes (Búsqueda directa por Conductor)
     List<Porte> findByConductorId(Long conductorId);
 
@@ -45,4 +49,15 @@ public interface PorteRepository extends JpaRepository<Porte, Long> {
 
     @Query("SELECT COUNT(p) FROM Porte p WHERE YEAR(p.fechaRecogida) = :anio AND MONTH(p.fechaRecogida) = :mes AND p.estado IN :estados")
     long countByYearAndMonthAndEstadoIn(@Param("anio") int anio, @Param("mes") int mes, @Param("estados") List<EstadoPorte> estados);
+
+    // Estadísticas para conductor
+    @Query("SELECT p FROM Porte p WHERE p.conductor.id = :conductorId" +
+           " AND (:desde IS NULL OR p.fechaCreacion >= :desde)" +
+           " AND (:hasta IS NULL OR p.fechaCreacion <= :hasta)")
+    List<Porte> findByConductorIdAndFechas(@Param("conductorId") Long conductorId,
+                                            @Param("desde") LocalDateTime desde,
+                                            @Param("hasta") LocalDateTime hasta);
+
+    // Portes pendientes de revisión manual
+    List<Porte> findByRevisionManualTrueOrderByFechaCreacionDesc();
 }

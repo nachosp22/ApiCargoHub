@@ -11,6 +11,8 @@ public class McpWebhookResponse {
     private Double pesoTotalKg;
     private Double volumenTotalM3;
     private Double largoMaxPaquete;
+    private Double anchoMaxPaquete;
+    private Double altoMaxPaquete;
     private String tipoVehiculoRequerido;
     private Boolean revisionManual;
     private String motivoRevision;

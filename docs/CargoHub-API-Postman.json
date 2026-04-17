@@ -1,0 +1,1047 @@
+{
+  "info": {
+    "name": "CargoHub API",
+    "description": "Colección de requests para probar la API de CargoHub - Sistema de gestión logística",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Endpoints de autenticación",
+      "item": [
+        {
+          "name": "1. Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                  "    pm.collectionVariables.set('userId', jsonData.id);",
+                  "    pm.collectionVariables.set('userRole', jsonData.rol);",
+                  "    if (jsonData.conductorId) pm.collectionVariables.set('conductorId', jsonData.conductorId);",
+                  "    if (jsonData.clienteId) pm.collectionVariables.set('clienteId', jsonData.clienteId);",
+                  "}",
+                  "",
+                  "pm.test('Login exitoso', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Token recibido', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "    pm.expect(jsonData).to.have.property('rol');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formurlencoded",
+              "formurlencoded": [
+                {
+                  "key": "email",
+                  "value": "admin@cargohub.com",
+                  "description": "Email del usuario"
+                },
+                {
+                  "key": "password",
+                  "value": "Admin123!",
+                  "description": "Contraseña"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login con email y password. Retorna accessToken JWT que se guarda automáticamente en la variable de colección."
+          }
+        },
+        {
+          "name": "2. Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formurlencoded",
+              "formurlencoded": [
+                {
+                  "key": "email",
+                  "value": "nuevo@conductor.com",
+                  "description": "Email del usuario"
+                },
+                {
+                  "key": "password",
+                  "value": "Password123!",
+                  "description": "Contraseña"
+                },
+                {
+                  "key": "rol",
+                  "value": "CONDUCTOR",
+                  "description": "Rol: SUPERADMIN, ADMIN, CONDUCTOR, CLIENTE"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Registro de nuevo usuario. Roles disponibles: SUPERADMIN, ADMIN, CONDUCTOR, CLIENTE"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conductores",
+      "description": "Gestión de conductores (requiere Bearer token)",
+      "item": [
+        {
+          "name": "3. Listar todos",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/conductores",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conductores"]
+            },
+            "description": "Listar todos los conductores. Requiere rol ADMIN o SUPERADMIN."
+          }
+        },
+        {
+          "name": "4. Obtener perfil",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/conductores/{{conductorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conductores", "{{conductorId}}"]
+            },
+            "description": "Obtener perfil de un conductor específico. Requiere ser el propio conductor o ADMIN."
+          }
+        },
+        {
+          "name": "5. Actualizar perfil",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nombre\": \"Juan García\",\n    \"apellidos\": \"García López\",\n    \"telefono\": \"612345678\",\n    \"ciudadBase\": \"Barcelona\",\n    \"radioAccionKm\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/conductores/{{conductorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conductores", "{{conductorId}}"]
+            },
+            "description": "Actualizar datos del perfil del conductor"
+          }
+        },
+        {
+          "name": "6. Actualizar ubicación GPS",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/conductores/{{conductorId}}/ubicacion?lat=40.4168&lon=-3.7038",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conductores", "{{conductorId}}", "ubicacion"],
+              "query": [
+                {
+                  "key": "lat",
+                  "value": "40.4168",
+                  "description": "Latitud"
+                },
+                {
+                  "key": "lon",
+                  "value": "-3.7038",
+                  "description": "Longitud"
+                }
+              ]
+            },
+            "description": "Reportar ubicación GPS del conductor"
+          }
+        },
+        {
+          "name": "7. Ver agenda",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/conductores/{{conductorId}}/agenda?desde=2025-01-01&hasta=2025-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conductores", "{{conductorId}}", "agenda"],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2025-01-01",
+                  "description": "Fecha inicio (YYYY-MM-DD)"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2025-12-31",
+                  "description": "Fecha fin (YYYY-MM-DD)"
+                }
+              ]
+            },
+            "description": "Ver agenda/bloqueos del conductor en un rango de fechas"
+          }
+        },
+        {
+          "name": "8. Crear bloqueo agenda",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tipoBloqueo\": \"VACACIONES\",\n    \"fechaInicio\": \"2025-07-01T00:00:00\",\n    \"fechaFin\": \"2025-07-15T23:59:59\",\n    \"motivo\": \"Vacaciones de verano\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/conductores/{{conductorId}}/agenda",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conductores", "{{conductorId}}", "agenda"]
+            },
+            "description": "Crear bloqueo en la agenda (vacaciones, descanso, etc.)"
+          }
+        },
+        {
+          "name": "9. Mis vehículos",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/conductores/{{conductorId}}/vehiculos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conductores", "{{conductorId}}", "vehiculos"]
+            },
+            "description": "Listar vehículos del conductor"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clientes",
+      "description": "Gestión de clientes",
+      "item": [
+        {
+          "name": "10. Listar todos",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "clientes"]
+            },
+            "description": "Listar todos los clientes. Requiere rol ADMIN."
+          }
+        },
+        {
+          "name": "11. Obtener perfil",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes/{{clienteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "clientes", "{{clienteId}}"]
+            },
+            "description": "Obtener perfil del cliente. Requiere ser el propio cliente o ADMIN."
+          }
+        },
+        {
+          "name": "12. Mis envíos",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes/{{clienteId}}/portes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "clientes", "{{clienteId}}", "portes"]
+            },
+            "description": "Ver historial de portes del cliente"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vehículos",
+      "description": "Gestión de flota de vehículos",
+      "item": [
+        {
+          "name": "13. Listar flota",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehiculos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehiculos"]
+            },
+            "description": "Listar toda la flota de vehículos. Requiere rol ADMIN."
+          }
+        },
+        {
+          "name": "14. Crear vehículo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"matricula\": \"1234ABC\",\n    \"marca\": \"Mercedes\",\n    \"modelo\": \"Actros\",\n    \"tipoVehiculo\": \"CAMION\",\n    \"capacidadToneladas\": 24,\n    \"volumenM3\": 80,\n    \"anioMatriculacion\": 2022\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/vehiculos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehiculos"]
+            },
+            "description": "Crear nuevo vehículo en la flota"
+          }
+        },
+        {
+          "name": "15. Dar de baja",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehiculos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehiculos", "1"]
+            },
+            "description": "Dar de baja (soft delete) un vehículo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Portes",
+      "description": "Gestión de portes/envíos",
+      "item": [
+        {
+          "name": "16. Listar portes",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/portes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portes"]
+            },
+            "description": "Listar todos los portes. Requiere rol ADMIN."
+          }
+        },
+        {
+          "name": "17. Dashboard resumen",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/portes/resumen?anio=2025&mes=6",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portes", "resumen"],
+              "query": [
+                {
+                  "key": "anio",
+                  "value": "2025",
+                  "description": "Año (opcional)"
+                },
+                {
+                  "key": "mes",
+                  "value": "6",
+                  "description": "Mes (opcional)"
+                }
+              ]
+            },
+            "description": "Obtener estadísticas/resumen de portes. Requiere rol ADMIN."
+          }
+        },
+        {
+          "name": "18. Crear porte",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"clienteId\": 1,\n    \"origen\": \"Madrid\",\n    \"destino\": \"Barcelona\",\n    \"latitudOrigen\": 40.4168,\n    \"longitudOrigen\": -3.7038,\n    \"latitudDestino\": 41.3851,\n    \"longitudDestino\": 2.1734,\n    \"descripcionCliente\": \"Mercancía general paletizada\",\n    \"fechaRecogida\": \"2025-07-01T08:00:00\",\n    \"fechaEntrega\": \"2025-07-03T18:00:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/portes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portes"]
+            },
+            "description": "Crear nuevo porte. Estados: PENDIENTE, ASIGNADO, EN_TRANSITO, ENTREGADO, CANCELADO, FACTURADO"
+          }
+        },
+        {
+          "name": "19. Ver ofertas conductor",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/portes/ofertas/{{conductorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portes", "ofertas", "{{conductorId}}"]
+            },
+            "description": "Ver portes disponibles para un conductor"
+          }
+        },
+        {
+          "name": "20. Aceptar porte",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/portes/1/aceptar?conductorId={{conductorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portes", "1", "aceptar"],
+              "query": [
+                {
+                  "key": "conductorId",
+                  "value": "{{conductorId}}",
+                  "description": "ID del conductor que acepta"
+                }
+              ]
+            },
+            "description": "Conductor acepta un porte disponible"
+          }
+        },
+        {
+          "name": "21. Cambiar estado",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/portes/1/estado?nuevo=EN_TRANSITO",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portes", "1", "estado"],
+              "query": [
+                {
+                  "key": "nuevo",
+                  "value": "EN_TRANSITO",
+                  "description": "Nuevo estado: PENDIENTE, ASIGNADO, EN_TRANSITO, ENTREGADO, CANCELADO"
+                }
+              ]
+            },
+            "description": "Cambiar estado del porte (conductor o admin)"
+          }
+        },
+        {
+          "name": "22. Obtener porte por ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/portes/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portes", "1"]
+            },
+            "description": "Obtener detalles de un porte específico"
+          }
+        },
+        {
+          "name": "23. Facturar porte",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/portes/1/facturar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portes", "1", "facturar"]
+            },
+            "description": "Generar factura para un porte. Requiere ADMIN."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Facturas",
+      "description": "Gestión de facturas",
+      "item": [
+        {
+          "name": "24. Listar facturas",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas"]
+            },
+            "description": "Listar todas las facturas. Requiere rol ADMIN."
+          }
+        },
+        {
+          "name": "25. Ver factura",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/facturas/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "facturas", "1"]
+            },
+            "description": "Ver detalle de una factura específica"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Incidencias",
+      "description": "Gestión de incidencias",
+      "item": [
+        {
+          "name": "26. Crear incidencia",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"titulo\": \"Retraso en entrega\",\n    \"descripcion\": \"El envío llega con 2 horas de retraso sobre lo previsto\",\n    \"severidad\": \"MEDIA\",\n    \"prioridad\": \"MEDIA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/incidencias?porteId=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "incidencias"],
+              "query": [
+                {
+                  "key": "porteId",
+                  "value": "1",
+                  "description": "ID del porte asociado"
+                }
+              ]
+            },
+            "description": "Reportar una incidencia en un porte. Severidad/Prioridad: BAJA, MEDIA, ALTA"
+          }
+        },
+        {
+          "name": "27. Listar incidencias",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/incidencias",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "incidencias"]
+            },
+            "description": "Listar todas las incidencias. Requiere rol ADMIN."
+          }
+        },
+        {
+          "name": "28. Ver pendientes",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/incidencias/pendientes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "incidencias", "pendientes"]
+            },
+            "description": "Listar incidencias pendientes de resolver. Requiere ADMIN."
+          }
+        },
+        {
+          "name": "29. Resolver incidencia",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"resolucion\": \"Cliente compensado con descuento del 10%\",\n    \"estadoFinal\": \"RESUELTA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/incidencias/1/resolver",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "incidencias", "1", "resolver"]
+            },
+            "description": "Resolver una incidencia. Estados finales: ABIERTA, EN_REVISION, RESUELTA, DESESTIMADA"
+          }
+        },
+        {
+          "name": "30. Ver incidencias por porte",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/incidencias/porte/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "incidencias", "porte", "1"]
+            },
+            "description": "Ver todas las incidencias de un porte específico"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Flota (Realtime)",
+      "description": "Endpoints de tracking GPS en tiempo real",
+      "item": [
+        {
+          "name": "31. Fleet snapshot",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/fleet/snapshot",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "fleet", "snapshot"]
+            },
+            "description": "Obtener snapshot de posiciones GPS de toda la flota. Requiere ADMIN."
+          }
+        },
+        {
+          "name": "32. Enviar ubicación",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"lat\": 40.4168,\n    \"lon\": -3.7038,\n    \"recordedAt\": \"2025-07-01T14:30:00Z\",\n    \"speedKph\": 85.5,\n    \"headingDeg\": 180\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tracking/drivers/{{conductorId}}/locations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "tracking", "drivers", "{{conductorId}}", "locations"]
+            },
+            "description": "Enviar ubicación GPS del conductor. Lat: -90 a 90, Lon: -180 a 180, Heading: 0-359"
+          }
+        },
+        {
+          "name": "33. Estimar ETA",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/eta/estimate?driverId=1&jobId=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "eta", "estimate"],
+              "query": [
+                {
+                  "key": "driverId",
+                  "value": "1",
+                  "description": "ID del conductor"
+                },
+                {
+                  "key": "jobId",
+                  "value": "1",
+                  "description": "ID del porte/job"
+                }
+              ]
+            },
+            "description": "Estimar tiempo de llegada. Requiere ADMIN."
+          }
+        }
+      ]
+    }
+  ]
+}

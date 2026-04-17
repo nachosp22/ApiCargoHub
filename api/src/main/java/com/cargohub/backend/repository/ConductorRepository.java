@@ -36,6 +36,10 @@ public interface ConductorRepository extends JpaRepository<Conductor, Long> {
             "AND c.diasLaborables LIKE %:diaSemanaString% ")
     List<Conductor> findCandidatosDisponibles(@Param("diaSemanaString") String diaSemanaString);
 
+    // Conductores pendientes de aprobación (usuario.activo = false)
+    @Query("SELECT c FROM Conductor c WHERE c.usuario.activo = false")
+    List<Conductor> findPendientesAprobacion();
+
     @Query("SELECT c.id as id, c.latitudActual as latitudActual, c.longitudActual as longitudActual, " +
             "c.ultimaActualizacionUbicacion as ultimaActualizacionUbicacion, " +
             "c.velocidadKphActual as velocidadKphActual, c.rumboActualDeg as rumboActualDeg " +

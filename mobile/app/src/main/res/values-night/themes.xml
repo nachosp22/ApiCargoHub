@@ -1,12 +1,22 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.ApiCargoHub" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="colorPrimary">@color/ch_blue_600</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <!-- Primary -->
+        <item name="colorPrimary">@color/ch_blue_500</item>
+        <item name="colorOnPrimary">@color/ch_blue_900</item>
         <item name="colorPrimaryContainer">@color/ch_blue_900</item>
         <item name="colorOnPrimaryContainer">@color/ch_blue_100</item>
-        <item name="colorSecondary">@color/ch_blue_700</item>
-        <item name="colorSurface">@android:color/background_dark</item>
-        <item name="colorOnSurface">@color/white</item>
+        <item name="colorSecondary">@color/ch_blue_300</item>
+        <item name="colorTertiary">@color/ch_success</item>
+        <!-- Surface -->
+        <item name="colorSurface">@color/ch_dark_surface</item>
+        <item name="colorSurfaceVariant">@color/ch_dark_surface_alt</item>
+        <item name="colorOnSurface">@color/ch_dark_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/ch_dark_on_surface_variant</item>
+        <item name="colorOutline">@color/ch_dark_outline</item>
+        <!-- Error -->
+        <item name="colorError">@color/ch_error</item>
+        <item name="colorErrorContainer">@color/ch_error_soft</item>
+        <!-- Text appearances (shared with light) -->
         <item name="textAppearanceHeadlineLarge">@style/TextAppearance.ApiCargoHub.HeadlineLarge</item>
         <item name="textAppearanceTitleLarge">@style/TextAppearance.ApiCargoHub.TitleLarge</item>
         <item name="textAppearanceTitleMedium">@style/TextAppearance.ApiCargoHub.TitleMedium</item>
@@ -16,7 +26,20 @@
         <item name="textAppearanceBodySmall">@style/TextAppearance.ApiCargoHub.BodySmall</item>
         <item name="textAppearanceLabelLarge">@style/TextAppearance.ApiCargoHub.LabelLarge</item>
         <item name="textAppearanceLabelMedium">@style/TextAppearance.ApiCargoHub.LabelMedium</item>
+        <!-- Shape -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.ApiCargoHub.SmallComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.ApiCargoHub.MediumComponent</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.ApiCargoHub.LargeComponent</item>
+        <!-- Widget styles -->
+        <item name="materialButtonStyle">@style/Widget.ApiCargoHub.Button</item>
+        <item name="materialCardViewStyle">@style/Widget.ApiCargoHub.Card</item>
+        <item name="toolbarStyle">@style/Widget.ApiCargoHub.Toolbar</item>
         <item name="navigationViewStyle">@style/Widget.ApiCargoHub.NavigationView</item>
-        <item name="android:windowBackground">@android:color/background_dark</item>
+        <item name="bottomNavigationStyle">@style/Widget.ApiCargoHub.BottomNavigation</item>
+        <item name="textInputStyle">@style/Widget.ApiCargoHub.TextInputLayout</item>
+        <!-- System bars -->
+        <item name="android:statusBarColor" tools:targetApi="l">@color/ch_dark_background</item>
+        <item name="android:windowBackground">@color/ch_dark_background</item>
+        <item name="android:navigationBarColor">@color/ch_dark_surface</item>
     </style>
 </resources>

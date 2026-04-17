@@ -13,6 +13,16 @@ import retrofit2.Response;
 
 public class AuthRepository {
 
+    private final com.cargohub.mobile.network.ApiService apiService;
+
+    public AuthRepository() {
+        this(ApiClient.getInstance());
+    }
+
+    AuthRepository(@NonNull com.cargohub.mobile.network.ApiService apiService) {
+        this.apiService = apiService;
+    }
+
     public interface LoginCallback {
         void onSuccess(@NonNull LoginResponse loginResponse);
 
@@ -21,8 +31,7 @@ public class AuthRepository {
 
     public void login(@NonNull String email, @NonNull String password,
                       @NonNull LoginCallback callback) {
-        Call<LoginResponse> call = ApiClient.getInstance()
-                .login(email, password);
+        Call<LoginResponse> call = apiService.login(email, password);
 
         call.enqueue(new Callback<LoginResponse>() {
             @Override

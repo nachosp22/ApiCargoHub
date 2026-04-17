@@ -42,6 +42,8 @@ onMounted(() => {
         icon="pi-truck"
         icon-bg-color="bg-blue-50"
         icon-text-color="text-blue-600"
+        :trend="dashboardStore.trends['portesMes']?.value"
+        :trend-positive="dashboardStore.trends['portesMes']?.positive"
       />
       <KpiCard
         title="Portes Activos"
@@ -49,6 +51,8 @@ onMounted(() => {
         icon="pi-send"
         icon-bg-color="bg-emerald-50"
         icon-text-color="text-emerald-600"
+        :trend="dashboardStore.trends['portesActivos']?.value"
+        :trend-positive="dashboardStore.trends['portesActivos']?.positive"
       />
       <KpiCard
         title="Portes Mañana"
@@ -89,7 +93,7 @@ onMounted(() => {
     </div>
 
     <!-- Activity Chart -->
-    <ActivityChart :data="dashboardStore.chartData" />
+    <ActivityChart :data="dashboardStore.chartData" :labels="dashboardStore.chartLabels" />
 
     <!-- Recent Portes Table -->
     <RecentPortesTable

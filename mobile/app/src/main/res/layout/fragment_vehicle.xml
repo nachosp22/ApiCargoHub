@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ch_surface"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/ch_space_md"
+        android:paddingTop="@dimen/ch_space_lg"
+        android:paddingBottom="@dimen/ch_space_md">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/home_menu_section_vehicle"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
+            android:textColor="@color/ch_text_primary"
+            android:textStyle="bold" />
+
+        <!-- Vehicle form -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_md"
+            app:cardBackgroundColor="@color/ch_surface_card"
+            app:cardCornerRadius="@dimen/ch_radius_md"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/ch_blue_100"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/ch_space_md">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vehicle_form_title"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+                    android:textColor="@color/ch_text_primary"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/vehicleMatriculaLayout"
+                    style="@style/Widget.ApiCargoHub.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_md"
+                    android:hint="@string/vehicle_matricula_label">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/vehicleMatriculaInput"
+                        style="@style/Widget.ApiCargoHub.TextInputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/vehicleMarcaLayout"
+                    style="@style/Widget.ApiCargoHub.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:hint="@string/vehicle_marca_label">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/vehicleMarcaInput"
+                        style="@style/Widget.ApiCargoHub.TextInputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/vehicleModeloLayout"
+                    style="@style/Widget.ApiCargoHub.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:hint="@string/vehicle_modelo_label">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/vehicleModeloInput"
+                        style="@style/Widget.ApiCargoHub.TextInputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:text="@string/vehicle_tipo_label"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelLarge"
+                    android:textColor="@color/ch_text_primary" />
+
+                <Spinner
+                    android:id="@+id/vehicleTipoSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_xs"
+                    android:minHeight="52dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.ApiCargoHub.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/vehicle_capacidad_label">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/vehicleCapacidadInput"
+                            style="@style/Widget.ApiCargoHub.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <Space
+                        android:layout_width="@dimen/ch_space_sm"
+                        android:layout_height="match_parent" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.ApiCargoHub.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/vehicle_largo_label">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/vehicleLargoInput"
+                            style="@style/Widget.ApiCargoHub.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.ApiCargoHub.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/vehicle_ancho_label">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/vehicleAnchoInput"
+                            style="@style/Widget.ApiCargoHub.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <Space
+                        android:layout_width="@dimen/ch_space_sm"
+                        android:layout_height="match_parent" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.ApiCargoHub.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/vehicle_alto_label">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/vehicleAltoInput"
+                            style="@style/Widget.ApiCargoHub.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <CheckBox
+                    android:id="@+id/vehicleTrampillaCheckbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:minHeight="48dp"
+                    android:text="@string/vehicle_trampilla_label" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_md"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/vehicleSaveButton"
+                        style="@style/Widget.ApiCargoHub.Button.Primary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/vehicle_save_action"
+                        android:textAllCaps="false" />
+
+                    <Space
+                        android:layout_width="@dimen/ch_space_sm"
+                        android:layout_height="match_parent" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/vehicleRefreshButton"
+                        style="@style/Widget.ApiCargoHub.Button.Secondary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/retry_button"
+                        android:textAllCaps="false" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <ProgressBar
+            android:id="@+id/vehicleLoadingProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/ch_space_lg" />
+
+        <TextView
+            android:id="@+id/vehicleEmptyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_md"
+            android:text="@string/vehicle_empty"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyLarge"
+            android:textColor="@color/ch_text_secondary"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/vehicleRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_md"
+            android:nestedScrollingEnabled="false" />
+    </LinearLayout>
+</ScrollView>

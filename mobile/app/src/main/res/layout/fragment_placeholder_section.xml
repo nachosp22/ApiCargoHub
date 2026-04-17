@@ -3,9 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/ch_surface"
     android:gravity="center"
     android:orientation="vertical"
-    android:padding="26dp">
+    android:padding="@dimen/spacing_xl">
 
     <TextView
         android:id="@+id/sectionTitleText"
@@ -20,9 +21,9 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        app:cardBackgroundColor="@color/ch_surface"
-        app:cardCornerRadius="18dp"
+        android:layout_marginTop="@dimen/spacing_lg"
+        app:cardBackgroundColor="@color/ch_surface_card"
+        app:cardCornerRadius="@dimen/radius_lg"
         app:cardElevation="0dp"
         app:strokeColor="@color/ch_blue_100"
         app:strokeWidth="1dp">
@@ -31,7 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="18dp">
+            android:padding="@dimen/spacing_md">
 
             <TextView
                 android:layout_width="match_parent"
@@ -45,7 +46,7 @@
                 android:id="@+id/sectionBodyText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/spacing_xs"
                 android:text="@string/section_placeholder_default_message"
                 android:textColor="@color/ch_text_primary"
                 android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyLarge" />

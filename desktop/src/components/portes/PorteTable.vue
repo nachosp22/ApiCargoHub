@@ -20,6 +20,8 @@ const emit = defineEmits<{
   (e: 'view', porte: Porte): void
   (e: 'edit', porte: Porte): void
   (e: 'delete', porte: Porte): void
+  (e: 'ajustar-precio', porte: Porte): void
+  (e: 'facturar', porte: Porte): void
 }>()
 
 const authStore = useAuthStore()
@@ -216,7 +218,7 @@ function formatDate(dateStr: string | undefined): string {
       </Column>
 
       <!-- Acciones -->
-      <Column header="Acciones" style="min-width: 120px; text-align: center" :exportable="false">
+      <Column header="Acciones" style="min-width: 180px; text-align: center" :exportable="false">
         <template #body="slotProps">
           <div class="flex items-center justify-center gap-1" @click.stop>
             <Button
@@ -236,6 +238,25 @@ function formatDate(dateStr: string | undefined): string {
               size="small"
               v-tooltip.top="'Editar'"
               @click="emit('edit', slotProps.data)"
+            />
+            <Button
+              icon="pi pi-euro"
+              severity="info"
+              text
+              rounded
+              size="small"
+              v-tooltip.top="'Ajustar precio'"
+              @click="emit('ajustar-precio', slotProps.data)"
+            />
+            <Button
+              v-if="slotProps.data.estado === 'ENTREGADO'"
+              icon="pi pi-file"
+              severity="success"
+              text
+              rounded
+              size="small"
+              v-tooltip.top="'Facturar'"
+              @click="emit('facturar', slotProps.data)"
             />
             <Button
               v-if="isAdmin"

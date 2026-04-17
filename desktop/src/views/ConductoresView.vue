@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useConductoresStore } from '@/stores/conductores'
 import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
+import TabView from 'primevue/tabview'
+import TabPanel from 'primevue/tabpanel'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Tag from 'primevue/tag'
 import ConductorTable from '@/components/conductores/ConductorTable.vue'
 import ConductorDialog from '@/components/conductores/ConductorDialog.vue'
+import ConductorStatsChart from '@/components/conductores/ConductorStatsChart.vue'
 import type { Conductor, CreateConductorRequest } from '@/stores/conductores'
 
 const conductoresStore = useConductoresStore()
@@ -18,6 +24,19 @@ const editingConductor = ref<Conductor | null>(null)
 // --- Detail panel state ---
 const showDetail = ref(false)
 const detailConductor = ref<Conductor | null>(null)
+const activeTab = ref(0)
+
+// --- Load tab data when detail opens or tab changes ---
+watch([showDetail, activeTab], ([visible, tab]) => {
+  if (!visible || !detailConductor.value) return
+  const id = detailConductor.value.id
+  switch (tab) {
+    case 1: conductoresStore.fetchAgenda(id); break
+    case 2: conductoresStore.fetchVehiculos(id); break
+    case 3: conductoresStore.fetchEstadisticas(id); break
+    case 4: conductoresStore.fetchPortesConductor(id); break
+  }
+})
 
 // --- Toggle confirmation ---
 const showToggleConfirm = ref(false)
@@ -42,6 +61,8 @@ function onEditConductor(conductor: Conductor): void {
 
 function onViewConductor(conductor: Conductor): void {
   detailConductor.value = conductor
+  activeTab.value = 0
+  conductoresStore.clearDetail()
   showDetail.value = true
 }
 
@@ -157,6 +178,18 @@ const defaultConfig: StyleConfig = {
 function getEstadoConfig(estado: string): StyleConfig {
   return estadoConfig[estado] ?? { ...defaultConfig, label: estado }
 }
+
+function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | undefined {
+  const map: Record<string, 'success' | 'info' | 'warn' | 'danger' | 'secondary'> = {
+    COMPLETADO: 'success',
+    ENTREGADO: 'success',
+    EN_RUTA: 'info',
+    PENDIENTE: 'warn',
+    PROGRAMADO: 'secondary',
+    CANCELADO: 'danger',
+  }
+  return map[estado]
+}
 </script>
 
 <template>
@@ -253,15 +286,15 @@ function getEstadoConfig(estado: string): StyleConfig {
       @save="onSaveConductor"
     />
 
-    <!-- Detail Panel Dialog -->
+    <!-- Detail Panel Dialog with Tabs -->
     <Dialog
       v-model:visible="showDetail"
       :header="`Detalle del Conductor #${detailConductor?.id ?? ''}`"
       :modal="true"
       :closable="true"
-      :style="{ width: '700px' }"
+      :style="{ width: '850px' }"
     >
-      <div v-if="detailConductor" class="space-y-6 pt-2">
+      <div v-if="detailConductor" class="space-y-4 pt-2">
         <!-- Header with Avatar + Status -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
@@ -304,97 +337,234 @@ function getEstadoConfig(estado: string): StyleConfig {
           </div>
         </div>
 
-        <!-- Contact Info -->
-        <div class="bg-gray-50 rounded-xl p-5">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Información de Contacto</h4>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="flex items-center gap-3">
-              <i class="pi pi-envelope text-gray-400"></i>
-              <div>
-                <span class="text-xs text-gray-500">Email</span>
-                <p class="text-gray-800 text-sm font-medium">{{ detailConductor.email || '—' }}</p>
+        <!-- Tabs -->
+        <TabView v-model:activeIndex="activeTab">
+          <!-- Tab 0: Info general -->
+          <TabPanel value="0" header="Información">
+            <div class="space-y-5 pt-3">
+              <!-- Contact Info -->
+              <div class="bg-gray-50 rounded-xl p-5">
+                <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Información de Contacto</h4>
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="flex items-center gap-3">
+                    <i class="pi pi-envelope text-gray-400"></i>
+                    <div>
+                      <span class="text-xs text-gray-500">Email</span>
+                      <p class="text-gray-800 text-sm font-medium">{{ detailConductor.email || '—' }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <i class="pi pi-phone text-gray-400"></i>
+                    <div>
+                      <span class="text-xs text-gray-500">Teléfono</span>
+                      <p class="text-gray-800 text-sm font-medium">{{ detailConductor.telefono || '—' }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <i class="pi pi-id-card text-gray-400"></i>
+                    <div>
+                      <span class="text-xs text-gray-500">DNI / Licencia</span>
+                      <p class="text-gray-800 text-sm font-medium font-mono">{{ detailConductor.dni || '—' }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <i class="pi pi-map-marker text-gray-400"></i>
+                    <div>
+                      <span class="text-xs text-gray-500">Ciudad Base</span>
+                      <p class="text-gray-800 text-sm font-medium">{{ detailConductor.ciudadBase || '—' }}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="flex items-center gap-3">
-              <i class="pi pi-phone text-gray-400"></i>
-              <div>
-                <span class="text-xs text-gray-500">Teléfono</span>
-                <p class="text-gray-800 text-sm font-medium">{{ detailConductor.telefono || '—' }}</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3">
-              <i class="pi pi-id-card text-gray-400"></i>
-              <div>
-                <span class="text-xs text-gray-500">DNI / Licencia</span>
-                <p class="text-gray-800 text-sm font-medium font-mono">{{ detailConductor.dni || '—' }}</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3">
-              <i class="pi pi-map-marker text-gray-400"></i>
-              <div>
-                <span class="text-xs text-gray-500">Ciudad Base</span>
-                <p class="text-gray-800 text-sm font-medium">{{ detailConductor.ciudadBase || '—' }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Stats -->
-        <div class="grid grid-cols-3 gap-4">
-          <div class="bg-blue-50 rounded-xl p-4 text-center">
-            <p class="text-2xl font-bold text-blue-700">{{ detailConductor.portesAsignados }}</p>
-            <p class="text-xs text-blue-600 mt-0.5">Portes Asignados</p>
-          </div>
-          <div class="bg-amber-50 rounded-xl p-4 text-center">
-            <p class="text-2xl font-bold text-amber-700">{{ detailConductor.rating.toFixed(1) }}</p>
-            <p class="text-xs text-amber-600 mt-0.5">
-              {{ getRatingStars(detailConductor.rating) }}
-              <span class="text-gray-400 ml-1">({{ detailConductor.numeroValoraciones }})</span>
-            </p>
-          </div>
-          <div class="bg-green-50 rounded-xl p-4 text-center">
-            <p class="text-2xl font-bold text-green-700">{{ detailConductor.radioAccionKm }} km</p>
-            <p class="text-xs text-green-600 mt-0.5">Radio de Acción</p>
-          </div>
-        </div>
+              <!-- Stats -->
+              <div class="grid grid-cols-3 gap-4">
+                <div class="bg-blue-50 rounded-xl p-4 text-center">
+                  <p class="text-2xl font-bold text-blue-700">{{ detailConductor.portesAsignados }}</p>
+                  <p class="text-xs text-blue-600 mt-0.5">Portes Asignados</p>
+                </div>
+                <div class="bg-amber-50 rounded-xl p-4 text-center">
+                  <p class="text-2xl font-bold text-amber-700">{{ detailConductor.rating.toFixed(1) }}</p>
+                  <p class="text-xs text-amber-600 mt-0.5">
+                    {{ getRatingStars(detailConductor.rating) }}
+                    <span class="text-gray-400 ml-1">({{ detailConductor.numeroValoraciones }})</span>
+                  </p>
+                </div>
+                <div class="bg-green-50 rounded-xl p-4 text-center">
+                  <p class="text-2xl font-bold text-green-700">{{ detailConductor.radioAccionKm }} km</p>
+                  <p class="text-xs text-green-600 mt-0.5">Radio de Acción</p>
+                </div>
+              </div>
 
-        <!-- Work Preferences -->
-        <div class="bg-gray-50 rounded-xl p-5">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Preferencias</h4>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <span class="text-xs text-gray-500">Días Laborables</span>
-              <div class="flex gap-1 mt-1">
-                <span
-                  v-for="day in ['L', 'M', 'X', 'J', 'V', 'S', 'D']"
-                  :key="day"
-                  class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium"
-                  :class="
-                    detailConductor.diasLaborables.includes(String(['L', 'M', 'X', 'J', 'V', 'S', 'D'].indexOf(day) + 1))
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-200 text-gray-400'
-                  "
-                >
-                  {{ day }}
-                </span>
+              <!-- Work Preferences -->
+              <div class="bg-gray-50 rounded-xl p-5">
+                <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Preferencias</h4>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <span class="text-xs text-gray-500">Días Laborables</span>
+                    <div class="flex gap-1 mt-1">
+                      <span
+                        v-for="day in ['L', 'M', 'X', 'J', 'V', 'S', 'D']"
+                        :key="day"
+                        class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium"
+                        :class="
+                          detailConductor.diasLaborables.includes(String(['L', 'M', 'X', 'J', 'V', 'S', 'D'].indexOf(day) + 1))
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-200 text-gray-400'
+                        "
+                      >
+                        {{ day }}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="text-xs text-gray-500">Disponibilidad</span>
+                    <p class="mt-1">
+                      <span
+                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
+                        :class="detailConductor.disponible
+                          ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
+                          : 'bg-red-50 text-red-700 ring-red-600/20'
+                        "
+                      >
+                        {{ detailConductor.disponible ? 'Disponible' : 'No disponible' }}
+                      </span>
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div>
-              <span class="text-xs text-gray-500">Disponibilidad</span>
-              <p class="mt-1">
-                <span
-                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
-                  :class="detailConductor.disponible
-                    ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
-                    : 'bg-red-50 text-red-700 ring-red-600/20'
-                  "
+          </TabPanel>
+
+          <!-- Tab 1: Agenda -->
+          <TabPanel value="1" header="Agenda">
+            <div class="pt-3">
+              <div v-if="conductoresStore.detailLoading" class="flex items-center justify-center py-8">
+                <i class="pi pi-spin pi-spinner text-2xl text-gray-400"></i>
+              </div>
+              <div v-else-if="conductoresStore.detailAgenda.length === 0" class="text-center py-8 text-gray-400">
+                <i class="pi pi-calendar-times text-3xl mb-2"></i>
+                <p class="text-sm">Sin bloqueos en la agenda</p>
+              </div>
+              <div v-else class="space-y-3">
+                <div
+                  v-for="bloqueo in conductoresStore.detailAgenda"
+                  :key="bloqueo.id"
+                  class="bg-gray-50 rounded-lg p-4 flex items-start justify-between"
                 >
-                  {{ detailConductor.disponible ? 'Disponible' : 'No disponible' }}
-                </span>
-              </p>
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <Tag :value="bloqueo.tipo" severity="warn" class="text-xs" />
+                      <span class="text-sm font-medium text-gray-800">{{ bloqueo.descripcion }}</span>
+                    </div>
+                    <p class="text-xs text-gray-500">{{ bloqueo.fechaInicio }} — {{ bloqueo.fechaFin }}</p>
+                    <!-- Recurring day chips -->
+                    <div v-if="bloqueo.diaSemana != null" class="flex gap-1 mt-2">
+                      <span
+                        v-for="(day, idx) in ['L', 'M', 'X', 'J', 'V', 'S', 'D']"
+                        :key="day"
+                        class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium"
+                        :class="bloqueo.diaSemana === idx + 1 ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-400'"
+                      >
+                        {{ day }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </TabPanel>
+
+          <!-- Tab 2: Vehículos -->
+          <TabPanel value="2" header="Vehículos">
+            <div class="pt-3">
+              <div v-if="conductoresStore.detailLoading" class="flex items-center justify-center py-8">
+                <i class="pi pi-spin pi-spinner text-2xl text-gray-400"></i>
+              </div>
+              <div v-else-if="conductoresStore.detailVehiculos.length === 0" class="text-center py-8 text-gray-400">
+                <i class="pi pi-car text-3xl mb-2"></i>
+                <p class="text-sm">Sin vehículos asignados</p>
+              </div>
+              <DataTable v-else :value="conductoresStore.detailVehiculos" size="small" stripedRows class="text-sm">
+                <Column field="matricula" header="Matrícula" />
+                <Column field="marca" header="Marca" />
+                <Column field="modelo" header="Modelo" />
+                <Column field="tipoVehiculo" header="Tipo" />
+                <Column header="Estado">
+                  <template #body="{ data }">
+                    <Tag
+                      :value="data.activo ? 'Activo' : 'Inactivo'"
+                      :severity="data.activo ? 'success' : 'danger'"
+                      class="text-xs"
+                    />
+                  </template>
+                </Column>
+              </DataTable>
+            </div>
+          </TabPanel>
+
+          <!-- Tab 3: Estadísticas -->
+          <TabPanel value="3" header="Estadísticas">
+            <div class="pt-3">
+              <div v-if="conductoresStore.detailLoading" class="flex items-center justify-center py-8">
+                <i class="pi pi-spin pi-spinner text-2xl text-gray-400"></i>
+              </div>
+              <div v-else-if="!conductoresStore.detailEstadisticas" class="text-center py-8 text-gray-400">
+                <i class="pi pi-chart-bar text-3xl mb-2"></i>
+                <p class="text-sm">Sin datos de estadísticas</p>
+              </div>
+              <div v-else class="space-y-5">
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-3 gap-4">
+                  <div class="bg-blue-50 rounded-xl p-4 text-center">
+                    <p class="text-2xl font-bold text-blue-700">{{ conductoresStore.detailEstadisticas.portesCompletados }}</p>
+                    <p class="text-xs text-blue-600 mt-0.5">Portes Completados</p>
+                  </div>
+                  <div class="bg-emerald-50 rounded-xl p-4 text-center">
+                    <p class="text-2xl font-bold text-emerald-700">{{ conductoresStore.detailEstadisticas.ingresoTotal.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }) }}</p>
+                    <p class="text-xs text-emerald-600 mt-0.5">Ingreso Total</p>
+                  </div>
+                  <div class="bg-indigo-50 rounded-xl p-4 text-center">
+                    <p class="text-2xl font-bold text-indigo-700">{{ conductoresStore.detailEstadisticas.mediaPorPorte.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }) }}</p>
+                    <p class="text-xs text-indigo-600 mt-0.5">Media por Porte</p>
+                  </div>
+                </div>
+
+                <!-- Mini chart -->
+                <ConductorStatsChart :ingreso-por-mes="conductoresStore.detailEstadisticas.ingresoPorMes" />
+              </div>
+            </div>
+          </TabPanel>
+
+          <!-- Tab 4: Portes -->
+          <TabPanel value="4" header="Portes">
+            <div class="pt-3">
+              <div v-if="conductoresStore.detailLoading" class="flex items-center justify-center py-8">
+                <i class="pi pi-spin pi-spinner text-2xl text-gray-400"></i>
+              </div>
+              <div v-else-if="conductoresStore.detailPortes.length === 0" class="text-center py-8 text-gray-400">
+                <i class="pi pi-truck text-3xl mb-2"></i>
+                <p class="text-sm">Sin portes registrados</p>
+              </div>
+              <DataTable v-else :value="conductoresStore.detailPortes" size="small" stripedRows class="text-sm" :paginator="conductoresStore.detailPortes.length > 10" :rows="10">
+                <Column field="id" header="ID" style="width: 60px" />
+                <Column header="Estado" style="width: 120px">
+                  <template #body="{ data }">
+                    <Tag :value="data.estado" :severity="getPortesSeverity(data.estado)" class="text-xs" />
+                  </template>
+                </Column>
+                <Column field="origen" header="Origen" />
+                <Column field="destino" header="Destino" />
+                <Column field="fecha" header="Fecha" style="width: 110px" />
+                <Column header="Precio" style="width: 100px">
+                  <template #body="{ data }">
+                    {{ data.precio.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }) }}
+                  </template>
+                </Column>
+              </DataTable>
+            </div>
+          </TabPanel>
+        </TabView>
       </div>
     </Dialog>
 

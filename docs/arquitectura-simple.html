@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoHub - Diagrama Simple</title>
+    <link rel="stylesheet" href="https://esm.sh/@excalidraw/excalidraw@0.18.0/dist/dev/index.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #header {
+            background: linear-gradient(135deg, #1976D2 0%, #7B1FA2 100%);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        #header h1 { font-size: 18px; margin: 0; font-weight: 500; }
+        #status {
+            position: absolute;
+            right: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+        #status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+            margin-right: 6px;
+            transition: background 0.3s;
+        }
+        #status-dot.ready { background: #4CAF50; }
+        #status-dot.error { background: #f44336; }
+        #app {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            z-index: 5;
+            font-size: 14px;
+            color: #666;
+        }
+        .loading-overlay.hidden { display: none; }
+        .spinner {
+            width: 32px; height: 32px;
+            border: 3px solid #e0e0e0;
+            border-top: 3px solid #1976D2;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+    <script>
+        window.EXCALIDRAW_ASSET_PATH = "https://esm.sh/@excalidraw/excalidraw@0.18.0/dist/prod/";
+    </script>
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@19.0.0",
+            "react/jsx-runtime": "https://esm.sh/react@19.0.0/jsx-runtime",
+            "react-dom": "https://esm.sh/react-dom@19.0.0"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="header">
+        <h1>CargoHub - Arquitectura Simple</h1>
+        <div id="status"><div id="status-dot"></div><span id="status-text">Cargando...</span></div>
+    </div>
+    <div id="app">
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <span id="loadingText">Cargando diagrama...</span>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as React from "react";
+        import * as ReactDOM from "react-dom/client";
+        import { Excalidraw } from "https://esm.sh/@excalidraw/excalidraw@0.18.0";
+
+        let excalidrawAPI = null;
+        const rootElement = document.getElementById("app");
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        const loadingText = document.getElementById("loadingText");
+        const statusDot = document.getElementById("status-dot");
+        const statusText = document.getElementById("status-text");
+
+        function setStatus(state, msg) {
+            statusDot.className = state;
+            statusText.textContent = msg;
+        }
+
+        function hideLoading() {
+            loadingOverlay.classList.add("hidden");
+        }
+
+        async function loadDiagramJSON() {
+            try {
+                const response = await fetch('diagrama-simple.json');
+                if (!response.ok) throw new Error('No se pudo cargar el archivo');
+                const data = await response.json();
+                console.log('JSON cargado:', data.elements.length, 'elementos');
+                return data;
+            } catch (err) {
+                console.error('Error cargando JSON:', err);
+                throw err;
+            }
+        }
+
+        async function initExcalidraw() {
+            try {
+                const diagramData = await loadDiagramJSON();
+                
+                const root = ReactDOM.createRoot(rootElement);
+
+                root.render(
+                    React.createElement(Excalidraw, {
+                        initialData: diagramData,
+                        excalidrawAPI: (api) => {
+                            excalidrawAPI = api;
+                            setStatus("ready", "Diagrama cargado");
+                            console.log("Excalidraw inicializado correctamente");
+                        },
+                        viewModeEnabled: false,
+                        zenModeEnabled: false,
+                        gridModeEnabled: false,
+                        langCode: "es"
+                    })
+                );
+
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                hideLoading();
+
+            } catch (err) {
+                console.error("Error inicializando Excalidraw:", err);
+                loadingText.textContent = "Error al cargar el diagrama. Ver consola (F12).";
+                setStatus("error", "Error");
+            }
+        }
+
+        initExcalidraw();
+    </script>
+</body>
+</html>

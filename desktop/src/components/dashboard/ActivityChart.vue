@@ -18,14 +18,15 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 interface Props {
   data: number[]
+  labels?: string[]
 }
 
-const props = defineProps<Props>()
-
-const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+const props = withDefaults(defineProps<Props>(), {
+  labels: () => ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+})
 
 const chartData = computed<ChartData<'bar'>>(() => ({
-  labels: MONTHS,
+  labels: props.labels,
   datasets: [
     {
       label: 'Portes',

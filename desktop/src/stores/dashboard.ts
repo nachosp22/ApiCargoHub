@@ -25,50 +25,24 @@ export interface KpiTrend {
   positive: boolean
 }
 
-// --- Mock Data ---
-
-const MOCK_KPIS: DashboardKpis = {
-  portesActivos: 47,
-  conductores: 23,
-  incidenciasAbiertas: 8,
-  vehiculosDisponibles: 15,
-}
-
-const MOCK_CHART_DATA: number[] = [42, 38, 55, 48, 62, 58, 71, 65, 73, 68, 52, 45]
-
-const MOCK_PORTES: Porte[] = [
-  { id: 1001, origen: 'Madrid', destino: 'Barcelona', conductor: 'Juan Pérez', estado: 'EN_RUTA', fecha: '2026-03-15' },
-  { id: 1002, origen: 'Valencia', destino: 'Sevilla', conductor: 'María López', estado: 'COMPLETADO', fecha: '2026-03-14' },
-  { id: 1003, origen: 'Bilbao', destino: 'Zaragoza', conductor: 'Carlos Ruiz', estado: 'PENDIENTE', fecha: '2026-03-16' },
-  { id: 1004, origen: 'Málaga', destino: 'Granada', conductor: 'Ana García', estado: 'ENTREGADO', fecha: '2026-03-13' },
-  { id: 1005, origen: 'Alicante', destino: 'Murcia', conductor: 'Pedro Martín', estado: 'PROGRAMADO', fecha: '2026-03-17' },
-  { id: 1006, origen: 'Valladolid', destino: 'Salamanca', conductor: 'Laura Sánchez', estado: 'EN_RUTA', fecha: '2026-03-15' },
-  { id: 1007, origen: 'Córdoba', destino: 'Jaén', conductor: 'Miguel Torres', estado: 'CANCELADO', fecha: '2026-03-12' },
-  { id: 1008, origen: 'Santander', destino: 'Oviedo', conductor: 'Elena Díaz', estado: 'COMPLETADO', fecha: '2026-03-14' },
-  { id: 1009, origen: 'Pamplona', destino: 'San Sebastián', conductor: 'Diego Navarro', estado: 'PENDIENTE', fecha: '2026-03-16' },
-  { id: 1010, origen: 'Toledo', destino: 'Ciudad Real', conductor: 'Sofía Romero', estado: 'PROGRAMADO', fecha: '2026-03-18' },
-  { id: 1011, origen: 'Cáceres', destino: 'Badajoz', conductor: 'Juan Pérez', estado: 'EN_RUTA', fecha: '2026-03-15' },
-  { id: 1012, origen: 'Tarragona', destino: 'Lleida', conductor: 'María López', estado: 'ENTREGADO', fecha: '2026-03-13' },
-]
-
-const MOCK_TRENDS: Record<string, KpiTrend> = {
-  portesActivos: { value: '+12%', positive: true },
-  conductores: { value: '+2', positive: true },
-  incidenciasAbiertas: { value: '-3', positive: true },
-  vehiculosDisponibles: { value: '+5%', positive: true },
+export interface MonthlyChartPoint {
+  label: string
+  count: number
 }
 
 // --- Store ---
 
 export const useDashboardStore = defineStore('dashboard', () => {
   // --- State ---
-  const kpis = ref<DashboardKpis>(MOCK_KPIS)
-  const chartData = ref<number[]>(MOCK_CHART_DATA)
-  const recentPortes = ref<Porte[]>(MOCK_PORTES)
-  const trends = ref<Record<string, KpiTrend>>(MOCK_TRENDS)
+  const kpis = ref<DashboardKpis>({ portesActivos: 0, conductores: 0, incidenciasAbiertas: 0, vehiculosDisponibles: 0 })
+  const chartData = ref<number[]>([])
+  const chartLabels = ref<string[]>([])
+  const recentPortes = ref<Porte[]>([])
+  const trends = ref<Record<string, KpiTrend>>({})
   const loading = ref(false)
   const usingMockData = ref(false)
   const resumen = ref<{ portesMes: number; portesActivos: number; portesManana: number } | null>(null)
+  const resumenAnterior = ref<{ portesMes: number; portesActivos: number; portesManana: number } | null>(null)
   const incidenciasPendientes = ref<number>(0)
 
   // --- Getters ---
@@ -78,7 +52,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
   /**
    * Fetch all dashboard data from API endpoints.
-   * Falls back to mock data on any error.
+   * Computes KPIs, chart data, and trends from real data.
    */
   async function fetchDashboardData(): Promise<void> {
     loading.value = true
@@ -99,11 +73,9 @@ export const useDashboardStore = defineStore('dashboard', () => {
       const incidenciasData = incidenciasRes.status === 'fulfilled' ? incidenciasRes.value.data : null
       const vehiculosData = vehiculosRes.status === 'fulfilled' ? vehiculosRes.value.data : null
 
-      // If at least one endpoint returned data, compute from API
       const hasAnyData = portesData || conductoresData || incidenciasData || vehiculosData
 
       if (hasAnyData) {
-        // Extract arrays (API may return directly or wrap in content/data)
         const portesList = extractArray(portesData)
         const conductoresList = extractArray(conductoresData)
         const incidenciasList = extractArray(incidenciasData)
@@ -133,32 +105,123 @@ export const useDashboardStore = defineStore('dashboard', () => {
             fecha: formatDateFromApi(p.fecha ?? p.fechaCreacion ?? p.fechaSalida),
           }))
         }
+
+        // --- Chart: group portes by month (last 12 months) ---
+        computeChartFromPortes(portesList)
       } else {
-        // All endpoints failed → use mock data
         usingMockData.value = true
-        kpis.value = MOCK_KPIS
-        recentPortes.value = MOCK_PORTES
+        kpis.value = { portesActivos: 0, conductores: 0, incidenciasAbiertas: 0, vehiculosDisponibles: 0 }
+        recentPortes.value = []
+        chartData.value = []
+        chartLabels.value = []
       }
     } catch {
-      // Unexpected error → use mock data
       usingMockData.value = true
-      kpis.value = MOCK_KPIS
-      recentPortes.value = MOCK_PORTES
+      kpis.value = { portesActivos: 0, conductores: 0, incidenciasAbiertas: 0, vehiculosDisponibles: 0 }
+      recentPortes.value = []
+      chartData.value = []
+      chartLabels.value = []
     } finally {
-      // Chart data is always mock (no stats endpoint)
-      chartData.value = MOCK_CHART_DATA
-      trends.value = MOCK_TRENDS
       loading.value = false
     }
   }
 
+  /**
+   * Compute chart data by grouping portes by month for the last 12 months.
+   */
+  function computeChartFromPortes(portesList: Record<string, unknown>[]): void {
+    const now = new Date()
+    const MONTH_NAMES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+
+    // Build last 12 months as YYYY-MM keys
+    const months: { key: string; label: string }[] = []
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const label = `${MONTH_NAMES[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`
+      months.push({ key, label })
+    }
+
+    // Count portes per month
+    const countByMonth: Record<string, number> = {}
+    for (const m of months) countByMonth[m.key] = 0
+
+    for (const p of portesList) {
+      const dateStr = String(p.fecha ?? p.fechaCreacion ?? p.fechaSalida ?? '')
+      if (!dateStr) continue
+      const monthKey = dateStr.slice(0, 7) // YYYY-MM
+      if (monthKey in countByMonth) {
+        countByMonth[monthKey]++
+      }
+    }
+
+    chartLabels.value = months.map((m) => m.label)
+    chartData.value = months.map((m) => countByMonth[m.key])
+  }
+
+  /**
+   * Fetch resumen for current and previous month to calculate trends.
+   */
   async function fetchResumen(): Promise<void> {
     try {
-      const res = await getResumenPortes()
-      resumen.value = res.data
+      const now = new Date()
+      const currentYear = now.getFullYear()
+      const currentMonth = now.getMonth() + 1
+      const prevDate = new Date(currentYear, currentMonth - 2, 1)
+      const prevYear = prevDate.getFullYear()
+      const prevMonth = prevDate.getMonth() + 1
+
+      const [currentRes, prevRes] = await Promise.allSettled([
+        getResumenPortes(currentYear, currentMonth),
+        getResumenPortes(prevYear, prevMonth),
+      ])
+
+      resumen.value = currentRes.status === 'fulfilled' ? currentRes.value.data : null
+      resumenAnterior.value = prevRes.status === 'fulfilled' ? prevRes.value.data : null
+
+      // Calculate trends from real data
+      computeTrends()
     } catch {
       resumen.value = null
+      resumenAnterior.value = null
+      trends.value = {}
     }
+  }
+
+  /**
+   * Compute KPI trends comparing current vs previous period.
+   */
+  function computeTrends(): void {
+    const current = resumen.value
+    const previous = resumenAnterior.value
+
+    if (!current || !previous) {
+      trends.value = {}
+      return
+    }
+
+    const result: Record<string, KpiTrend> = {}
+
+    // Portes del mes trend
+    if (previous.portesMes > 0) {
+      const pct = ((current.portesMes - previous.portesMes) / previous.portesMes * 100).toFixed(0)
+      const val = Number(pct)
+      result['portesMes'] = {
+        value: `${val >= 0 ? '+' : ''}${pct}%`,
+        positive: val >= 0,
+      }
+    }
+
+    // Portes activos trend
+    if (previous.portesActivos > 0) {
+      const diff = current.portesActivos - previous.portesActivos
+      result['portesActivos'] = {
+        value: `${diff >= 0 ? '+' : ''}${diff}`,
+        positive: diff >= 0,
+      }
+    }
+
+    trends.value = result
   }
 
   async function fetchIncidenciasPendientes(): Promise<void> {
@@ -194,23 +257,22 @@ export const useDashboardStore = defineStore('dashboard', () => {
   function formatDateFromApi(value: unknown): string {
     if (!value) return '—'
     const str = String(value)
-    // If already YYYY-MM-DD, return as is
     if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str
-    // If ISO datetime, extract date part
     if (str.includes('T')) return str.split('T')[0]
     return str
   }
 
-  // Return ALL state, getters, and actions
   return {
     // State
     kpis,
     chartData,
+    chartLabels,
     recentPortes,
     trends,
     loading,
     usingMockData,
     resumen,
+    resumenAnterior,
     incidenciasPendientes,
     // Getters
     totalPortes,

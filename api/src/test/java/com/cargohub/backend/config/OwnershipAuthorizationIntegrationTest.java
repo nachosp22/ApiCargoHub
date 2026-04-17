@@ -25,6 +25,9 @@ import com.cargohub.backend.service.ClienteService;
 import com.cargohub.backend.service.ConductorService;
 import com.cargohub.backend.service.IncidenciaService;
 import com.cargohub.backend.service.PorteService;
+import com.cargohub.backend.service.BloqueoRecurrenteService;
+import com.cargohub.backend.service.ConductorMatchingService;
+import com.cargohub.backend.service.VehiculoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +80,9 @@ class OwnershipAuthorizationIntegrationTest {
     private ConductorService conductorService;
 
     @MockitoBean
+    private VehiculoService vehiculoService;
+
+    @MockitoBean
     private PorteService porteService;
 
     @MockitoBean
@@ -99,6 +105,15 @@ class OwnershipAuthorizationIntegrationTest {
 
     @MockitoBean
     private IncidenciaRepository incidenciaRepository;
+
+    @MockitoBean
+    private BloqueoRecurrenteService bloqueoRecurrenteService;
+
+    @MockitoBean
+    private com.cargohub.backend.service.PorteTrackingService porteTrackingService;
+
+    @MockitoBean
+    private ConductorMatchingService conductorMatchingService;
 
     @BeforeEach
     void setup() throws Exception {
@@ -222,6 +237,25 @@ class OwnershipAuthorizationIntegrationTest {
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/conductores/agenda/100")
                         .with(user("conductor@test.com").roles("CONDUCTOR")))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void conductor_canRejectOwnOfferOnly() throws Exception {
+        Conductor conductor = new Conductor();
+        conductor.setId(7L);
+        when(conductorRepository.findByUsuarioEmail("conductor@test.com")).thenReturn(Optional.of(conductor));
+
+        mockMvc.perform(post("/api/portes/21/rechazar")
+                        .param("conductorId", "7")
+                        .with(user("conductor@test.com").roles("CONDUCTOR")))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(post("/api/portes/21/rechazar")
+                        .param("conductorId", "8")
+                        .with(user("conductor@test.com").roles("CONDUCTOR")))
+                .andExpect(status().isForbidden());
+
+        verify(porteService).rechazarPorte(21L, 7L);
     }
 
     @Test

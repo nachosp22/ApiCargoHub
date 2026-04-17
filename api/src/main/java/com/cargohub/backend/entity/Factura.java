@@ -28,6 +28,15 @@ public class Factura {
 
     private boolean pagada = false;
 
+    private LocalDate fechaPago;
+
+    private String formaPago;
+
+    private String condicionesPago;
+
+    @Column(columnDefinition = "TEXT")
+    private String observaciones;
+
     @OneToOne
     @JoinColumn(name = "porte_id", nullable = false, unique = true)
     private Porte porte;

@@ -27,11 +27,14 @@ public class McpWebhookService {
 
     private final RestTemplate restTemplate;
     private final N8nWebhookRepository n8nWebhookRepository;
+    private final GeminiCargaService geminiCargaService;
 
     @Autowired
-    public McpWebhookService(RestTemplate restTemplate, N8nWebhookRepository n8nWebhookRepository) {
+    public McpWebhookService(RestTemplate restTemplate, N8nWebhookRepository n8nWebhookRepository,
+                             GeminiCargaService geminiCargaService) {
         this.restTemplate = restTemplate;
         this.n8nWebhookRepository = n8nWebhookRepository;
+        this.geminiCargaService = geminiCargaService;
     }
 
     /**
@@ -44,13 +47,21 @@ public class McpWebhookService {
     }
 
     /**
-     * Llama al webhook MCP n8n para calcular las dimensiones del pedido y guarda el historial de ejecución
+     * Calcula dimensiones del pedido. Usa Gemini como backend principal;
+     * si Gemini no está configurado, cae al webhook n8n como fallback.
      * @param descripcionCliente La descripción del pedido del cliente
-     * @param porte Porte opcional para asociar con esta llamada al webhook
+     * @param porte Porte opcional para asociar con esta llamada
      * @return McpWebhookResponse con las dimensiones calculadas
      */
     public McpWebhookResponse calcularDimensiones(String descripcionCliente, Porte porte) {
-        // Si la URL del webhook no está configurada o la descripción está vacía, devuelve null
+        // Primary: delegate to Gemini if available
+        if (geminiCargaService.isAvailable()) {
+            log.info("Delegating cargo dimension calculation to Gemini AI");
+            return geminiCargaService.calcularDimensiones(descripcionCliente, porte);
+        }
+
+        // Fallback: n8n webhook
+        log.info("Gemini not configured, falling back to n8n webhook");
         if (webhookUrl == null || webhookUrl.isBlank() || descripcionCliente == null || descripcionCliente.isBlank()) {
             String errorMsg = "Webhook no configurado o descripción vacía";
             saveWebhookLog(null, null, descripcionCliente, null, false, errorMsg, porte);
@@ -119,6 +130,8 @@ public class McpWebhookService {
         response.setPesoTotalKg(0.0);
         response.setVolumenTotalM3(0.0);
         response.setLargoMaxPaquete(0.0);
+        response.setAnchoMaxPaquete(0.0);
+        response.setAltoMaxPaquete(0.0);
         response.setTipoVehiculoRequerido(null);
         response.setRevisionManual(true);
         response.setMotivoRevision(motivo);

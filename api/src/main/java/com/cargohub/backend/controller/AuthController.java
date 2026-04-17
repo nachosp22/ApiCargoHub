@@ -2,6 +2,7 @@ package com.cargohub.backend.controller;
 
 import com.cargohub.backend.config.JwtService;
 import com.cargohub.backend.dto.LoginResponse;
+import com.cargohub.backend.dto.RegisterRequest;
 import com.cargohub.backend.entity.Cliente;
 import com.cargohub.backend.entity.Conductor;
 import com.cargohub.backend.entity.Usuario;
@@ -9,6 +10,7 @@ import com.cargohub.backend.entity.enums.RolUsuario;
 import com.cargohub.backend.service.ClienteService;
 import com.cargohub.backend.service.ConductorService;
 import com.cargohub.backend.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,8 +20,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.time.Instant;
 
 @RestController
@@ -33,40 +35,85 @@ public class AuthController {
     @Autowired private AuthenticationManager authenticationManager;
     @Autowired private JwtService jwtService;
 
-    // --- EL REGISTRO NO CAMBIA (El servicio ya encripta) ---
+    // --- REGISTRO (soporta CLIENTE y CONDUCTOR) ---
     @PostMapping("/register")
-    public ResponseEntity<?> registrar(@RequestParam String email,
-                                       @RequestParam String password,
-                                       @RequestParam RolUsuario rol) {
+    public ResponseEntity<?> registrar(@Valid @RequestBody RegisterRequest request) {
         try {
-            Usuario nuevoUsuario = usuarioService.registrarUsuario(email, password, rol);
+            String rolStr = request.getRol();
+            RolUsuario rol = RolUsuario.CLIENTE; // default
 
-            // ... (Lógica de perfiles Conductor/Cliente se mantiene igual) ...
+            if (rolStr != null && rolStr.equalsIgnoreCase("CONDUCTOR")) {
+                rol = RolUsuario.CONDUCTOR;
+            }
+
             if (rol == RolUsuario.CONDUCTOR) {
-                Conductor c = new Conductor();
-                c.setUsuario(nuevoUsuario);
-                c.setNombre("Conductor " + email.split("@")[0]);
-                c.setDni("TEMP-" + UUID.randomUUID().toString().substring(0, 8));
-                c.setTelefono("000000000");
-                c.setCiudadBase("Madrid");
-                c.setLatitudBase(40.416);
-                c.setLongitudBase(-3.703);
-                conductorService.guardarOActualizar(c);
+                return registrarConductor(request);
+            } else {
+                return registrarCliente(request);
             }
-            else if (rol == RolUsuario.CLIENTE) {
-                Cliente cli = new Cliente();
-                cli.setUsuario(nuevoUsuario);
-                cli.setNombreEmpresa("Empresa " + email.split("@")[0]);
-                cli.setCif("TEMP-" + UUID.randomUUID().toString().substring(0, 8));
-                cli.setEmailContacto(email);
-                cli.setDireccionFiscal("Dirección pendiente");
-                clienteService.guardarCliente(cli);
-            }
-
-            return ResponseEntity.ok(nuevoUsuario);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    private ResponseEntity<?> registrarCliente(RegisterRequest request) {
+        // Validate required client fields
+        if (request.getNombreEmpresa() == null || request.getNombreEmpresa().isBlank()) {
+            return ResponseEntity.badRequest().body("El nombre de la empresa es obligatorio");
+        }
+        if (request.getCif() == null || request.getCif().isBlank()) {
+            return ResponseEntity.badRequest().body("El CIF/NIF es obligatorio");
+        }
+
+        Usuario nuevoUsuario = usuarioService.registrarUsuario(
+                request.getEmail(), request.getPassword(), RolUsuario.CLIENTE);
+
+        Cliente cli = new Cliente();
+        cli.setUsuario(nuevoUsuario);
+        cli.setNombreEmpresa(request.getNombreEmpresa());
+        cli.setCif(request.getCif());
+        cli.setEmailContacto(
+                request.getEmailContacto() != null ? request.getEmailContacto() : request.getEmail());
+        cli.setDireccionFiscal(request.getDireccionFiscal());
+        cli.setTelefono(request.getTelefono());
+        cli.setSector(request.getSector());
+        clienteService.guardarCliente(cli);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Registro completado correctamente",
+                "pendingApproval", false
+        ));
+    }
+
+    private ResponseEntity<?> registrarConductor(RegisterRequest request) {
+        // Validate required conductor fields
+        if (request.getNombre() == null || request.getNombre().isBlank()) {
+            return ResponseEntity.badRequest().body("El nombre es obligatorio");
+        }
+        if (request.getDni() == null || request.getDni().isBlank()) {
+            return ResponseEntity.badRequest().body("El DNI/NIE es obligatorio");
+        }
+
+        // Create user with activo=false — requires admin approval
+        Usuario nuevoUsuario = usuarioService.registrarUsuario(
+                request.getEmail(), request.getPassword(), RolUsuario.CONDUCTOR);
+        nuevoUsuario.setActivo(false);
+        nuevoUsuario = usuarioService.guardar(nuevoUsuario);
+
+        Conductor conductor = new Conductor();
+        conductor.setUsuario(nuevoUsuario);
+        conductor.setNombre(request.getNombre());
+        conductor.setApellidos(request.getApellidos());
+        conductor.setDni(request.getDni());
+        conductor.setTelefono(request.getTelefono());
+        conductor.setCiudadBase(request.getCiudadBase());
+        conductor.setDisponible(false); // Not available until approved
+        conductorService.guardarOActualizar(conductor);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Registro completado. Tu cuenta será revisada por nuestro equipo.",
+                "pendingApproval", true
+        ));
     }
 
     // --- LOGIN JWT ---

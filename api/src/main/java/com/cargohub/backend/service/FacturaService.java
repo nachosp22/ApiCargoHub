@@ -8,7 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cargohub.backend.dto.FacturaResumenResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -82,5 +89,50 @@ public class FacturaService {
 
         // Formateamos con 4 dígitos de relleno (padding)
         return String.format("F-%d-%04d", anioActual, secuencia);
+    }
+
+    // ── Métodos para conductor ──
+
+    public Page<Factura> findByConductorId(Long conductorId, LocalDate desde, LocalDate hasta,
+                                            Boolean pagada, Pageable pageable) {
+        return facturaRepository.findByConductorId(conductorId, desde, hasta, pagada, pageable);
+    }
+
+    public FacturaResumenResponse getResumenByConductor(Long conductorId, String periodo) {
+        LocalDate desde = null;
+        LocalDate hasta = LocalDate.now();
+
+        if (periodo != null) {
+            switch (periodo.toUpperCase()) {
+                case "SEMANA":
+                    desde = hasta.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                    break;
+                case "MES":
+                    desde = hasta.withDayOfMonth(1);
+                    break;
+                case "ANIO":
+                    desde = hasta.withDayOfYear(1);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        List<Factura> facturas = facturaRepository.findAllByConductorId(conductorId, desde, hasta);
+
+        double totalFacturado = facturas.stream()
+                .mapToDouble(f -> f.getImporteTotal() != null ? f.getImporteTotal() : 0.0)
+                .sum();
+        double totalPagado = facturas.stream()
+                .filter(Factura::isPagada)
+                .mapToDouble(f -> f.getImporteTotal() != null ? f.getImporteTotal() : 0.0)
+                .sum();
+
+        FacturaResumenResponse resumen = new FacturaResumenResponse();
+        resumen.setTotalFacturado(Math.round(totalFacturado * 100.0) / 100.0);
+        resumen.setTotalPagado(Math.round(totalPagado * 100.0) / 100.0);
+        resumen.setTotalPendiente(Math.round((totalFacturado - totalPagado) * 100.0) / 100.0);
+        resumen.setNumeroFacturas((long) facturas.size());
+        return resumen;
     }
 }

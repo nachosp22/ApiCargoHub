@@ -8,6 +8,8 @@ import com.cargohub.backend.repository.FacturaRepository;
 import com.cargohub.backend.service.ClienteService;
 import com.cargohub.backend.service.ConductorService;
 import com.cargohub.backend.service.UsuarioService;
+import com.cargohub.backend.service.FacturaPdfService;
+import com.cargohub.backend.security.OwnershipSecurityService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -60,6 +62,12 @@ class JwtSecurityIntegrationTest {
 
     @MockitoBean
     private FacturaRepository facturaRepository;
+
+    @MockitoBean
+    private OwnershipSecurityService ownershipSecurityService;
+
+    @MockitoBean
+    private FacturaPdfService facturaPdfService;
 
     @Test
     void login_returnsJwtAccessTokenPayload() throws Exception {

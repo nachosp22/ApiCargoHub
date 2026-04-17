@@ -17,10 +17,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +48,9 @@ class PorteServiceTest {
 
     @Mock
     private McpWebhookService mcpWebhookService;
+
+    @Mock
+    private ConductorMatchingService conductorMatchingService;
 
     @InjectMocks
     private PorteService porteService;
@@ -125,6 +133,60 @@ class PorteServiceTest {
     }
 
     @Test
+    void testAceptarPorte_OfertaRechazadaPorConductor() {
+        porte.getConductoresRechazados().add(1L);
+        when(porteRepository.findById(1L)).thenReturn(Optional.of(porte));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> porteService.aceptarPorte(1L, 1L));
+
+        assertEquals("Ya rechazaste esta oferta y ya no está disponible para tu cuenta.", exception.getMessage());
+        verify(porteRepository, never()).save(any(Porte.class));
+    }
+
+    @Test
+    void testRechazarPorte() {
+        when(porteRepository.findById(1L)).thenReturn(Optional.of(porte));
+        when(conductorRepository.findById(1L)).thenReturn(Optional.of(conductor));
+        when(porteRepository.save(any(Porte.class))).thenReturn(porte);
+
+        porteService.rechazarPorte(1L, 1L);
+
+        assertTrue(porte.getConductoresRechazados().contains(1L));
+        verify(porteRepository).save(porte);
+    }
+
+    @Test
+    void testRechazarPorte_IgnoresRepeatedRejection() {
+        porte.getConductoresRechazados().add(1L);
+        when(porteRepository.findById(1L)).thenReturn(Optional.of(porte));
+        when(conductorRepository.findById(1L)).thenReturn(Optional.of(conductor));
+
+        porteService.rechazarPorte(1L, 1L);
+
+        verify(porteRepository, never()).save(any(Porte.class));
+    }
+
+    @Test
+    void testRechazarPorte_FailsWhenOfferNotPending() {
+        porte.setEstado(EstadoPorte.ASIGNADO);
+        when(porteRepository.findById(1L)).thenReturn(Optional.of(porte));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> porteService.rechazarPorte(1L, 1L));
+
+        assertEquals("Este viaje ya no admite rechazo.", exception.getMessage());
+    }
+
+    @Test
+    void testListarOfertasParaConductor_UsesFilteredRepositoryQuery() {
+        when(porteRepository.findPendingOffersForConductor(EstadoPorte.PENDIENTE, 1L)).thenReturn(List.of(porte));
+
+        List<Porte> result = porteService.listarOfertasParaConductor(1L);
+
+        assertEquals(1, result.size());
+        verify(porteRepository).findPendingOffersForConductor(EstadoPorte.PENDIENTE, 1L);
+    }
+
+    @Test
     void testAgregarAjusteManual() {
         // Given
         when(porteRepository.findById(1L)).thenReturn(Optional.of(porte));
@@ -187,8 +249,10 @@ class PorteServiceTest {
         when(mcpWebhookService.calcularDimensiones(anyString())).thenReturn(mcpResponse);
         when(mcpWebhookService.convertirTipoVehiculo("FURGONETA")).thenReturn(TipoVehiculo.FURGONETA);
         when(calculadoraPrecio.calcularPrecioTotal(any(Porte.class))).thenReturn(150.0);
-        when(vehiculoRepository.findCandidatos(any(TipoVehiculo.class), anyDouble(), anyInt()))
+        when(vehiculoRepository.findCandidatos(any(TipoVehiculo.class), anyDouble(), anyInt(), anyInt(), anyInt(), anyDouble()))
                 .thenReturn(java.util.List.of(vehiculo));
+        when(conductorMatchingService.buscarDisponibles(any(), any(), any()))
+                .thenReturn(java.util.List.of(conductor));
         when(porteRepository.save(any(Porte.class))).thenAnswer(invocation -> invocation.getArgument(0));
         
         // When
@@ -222,7 +286,7 @@ class PorteServiceTest {
         
         when(mcpWebhookService.calcularDimensiones(anyString())).thenReturn(mcpResponse);
         when(calculadoraPrecio.calcularPrecioTotal(any(Porte.class))).thenReturn(150.0);
-        when(vehiculoRepository.findCandidatos(any(), anyDouble(), anyInt()))
+        when(vehiculoRepository.findCandidatos(any(), anyDouble(), anyInt(), anyInt(), anyInt(), anyDouble()))
                 .thenReturn(java.util.Collections.emptyList());
         when(porteRepository.save(any(Porte.class))).thenAnswer(invocation -> invocation.getArgument(0));
         

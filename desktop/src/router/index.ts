@@ -32,9 +32,19 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/PortesView.vue'),
       },
       {
+        path: 'revision-portes',
+        name: 'revision-portes',
+        component: () => import('@/views/RevisionPortesView.vue'),
+      },
+      {
         path: 'conductores',
         name: 'conductores',
         component: () => import('@/views/ConductoresView.vue'),
+      },
+      {
+        path: 'aprobacion-conductores',
+        name: 'aprobacion-conductores',
+        component: () => import('@/views/AprobacionConductoresView.vue'),
       },
       {
         path: 'vehiculos',

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/ch_space_xs"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/ch_surface_card"
+    app:cardCornerRadius="@dimen/ch_radius_md"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/ch_blue_100"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/ch_space_md">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/vehiculoItemMatriculaText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+                android:textColor="@color/ch_text_primary"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/vehiculoItemStateButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="@dimen/ch_space_xs"
+                android:textAllCaps="false"
+                android:textSize="@dimen/ch_text_size_caption"
+                app:backgroundTint="@color/ch_blue_100"
+                app:cornerRadius="@dimen/ch_radius_sm" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/vehiculoItemSummaryText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_xs"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+            android:textColor="@color/ch_text_secondary" />
+
+        <!-- Dimensions hidden by default — progressive disclosure -->
+        <TextView
+            android:id="@+id/vehiculoItemDimensionsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_xs"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
+            android:textColor="@color/ch_text_secondary" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,384 @@
+<script setup lang="ts">
+import { ref, watch, computed } from 'vue'
+import { usePortesStore } from '@/stores/portes'
+import { useToast } from 'primevue/usetoast'
+import type { Porte, DimensionesRequest, ConductorCandidato } from '@/stores/portes'
+import Dialog from 'primevue/dialog'
+import Button from 'primevue/button'
+import InputNumber from 'primevue/inputnumber'
+import Select from 'primevue/select'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import PorteStatusBadge from './PorteStatusBadge.vue'
+
+interface Props {
+  visible: boolean
+  porte: Porte | null
+}
+
+const props = defineProps<Props>()
+const emit = defineEmits<{
+  'update:visible': [value: boolean]
+  assigned: []
+}>()
+
+const portesStore = usePortesStore()
+const toast = useToast()
+
+const dialogVisible = computed({
+  get: () => props.visible,
+  set: (val: boolean) => emit('update:visible', val),
+})
+
+// Dimension form
+const dimForm = ref<DimensionesRequest>({})
+const showCandidatos = ref(false)
+
+const tipoVehiculoOptions = [
+  { label: 'Furgoneta', value: 'FURGONETA' },
+  { label: 'Rígido', value: 'RIGIDO' },
+  { label: 'Tráiler', value: 'TRAILER' },
+  { label: 'Especial', value: 'ESPECIAL' },
+]
+
+// Reset form when porte changes
+watch(
+  () => props.porte,
+  (p) => {
+    if (p) {
+      dimForm.value = {
+        pesoTotalKg: p.pesoTotalKg ?? undefined,
+        volumenTotalM3: p.volumenTotalM3 ?? undefined,
+        largoMaxPaquete: p.largoMaxPaquete ?? undefined,
+        anchoMaxPaquete: p.anchoMaxPaquete ?? undefined,
+        altoMaxPaquete: p.altoMaxPaquete ?? undefined,
+        tipoVehiculoRequerido: p.tipoVehiculoRequerido ?? undefined,
+      }
+      showCandidatos.value = false
+      portesStore.conductorCandidatos = []
+    }
+  },
+  { immediate: true },
+)
+
+async function onSaveDimensiones(): Promise<void> {
+  if (!props.porte) return
+  try {
+    await portesStore.updateDimensiones(props.porte.id, dimForm.value)
+    toast.add({ severity: 'success', summary: 'Dimensiones actualizadas', life: 3000 })
+  } catch {
+    toast.add({ severity: 'error', summary: 'Error al actualizar dimensiones', life: 5000 })
+  }
+}
+
+async function onBuscarConductores(): Promise<void> {
+  if (!props.porte) return
+  showCandidatos.value = true
+  await portesStore.buscarConductores(props.porte.id)
+}
+
+async function onAsignar(candidato: ConductorCandidato): Promise<void> {
+  if (!props.porte) return
+  try {
+    await portesStore.asignarConductor(props.porte.id, candidato.id)
+    toast.add({
+      severity: 'success',
+      summary: 'Conductor asignado',
+      detail: `${candidato.nombre} ${candidato.apellidos ?? ''} asignado al porte #${props.porte.id}`,
+      life: 3000,
+    })
+    emit('update:visible', false)
+    emit('assigned')
+  } catch {
+    toast.add({ severity: 'error', summary: 'Error al asignar conductor', life: 5000 })
+  }
+}
+
+function copyToClipboard(text: string, label: string): void {
+  navigator.clipboard.writeText(text)
+  toast.add({ severity: 'info', summary: `${label} copiado`, life: 2000 })
+}
+</script>
+
+<template>
+  <Dialog
+    v-model:visible="dialogVisible"
+    :header="`Revisión Porte #${porte?.id ?? ''}`"
+    :modal="true"
+    :closable="true"
+    :style="{ width: '900px' }"
+    :contentStyle="{ maxHeight: '80vh', overflow: 'auto' }"
+  >
+    <div v-if="porte" class="space-y-6 pt-2">
+      <!-- Status & Route Header -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="text-lg font-bold text-gray-800">#{{ porte.id }}</span>
+          <PorteStatusBadge :estado="porte.estado" />
+          <span
+            v-if="porte.revisionManual"
+            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20"
+          >
+            <i class="pi pi-exclamation-circle mr-1"></i>
+            Revisión Manual
+          </span>
+        </div>
+      </div>
+
+      <!-- Motivo de revisión -->
+      <div
+        v-if="porte.motivoRevision"
+        class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3"
+      >
+        <div class="flex items-center gap-2 mb-1">
+          <i class="pi pi-info-circle text-amber-600"></i>
+          <span class="text-sm font-semibold text-amber-800">Motivo de revisión</span>
+        </div>
+        <p class="text-sm text-amber-700">{{ porte.motivoRevision }}</p>
+      </div>
+
+      <!-- Route Info -->
+      <div class="bg-gray-50 rounded-xl p-4">
+        <div class="flex items-center gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <i class="pi pi-map-marker text-blue-500"></i>
+              <span class="text-xs text-gray-500 uppercase tracking-wide">Origen</span>
+            </div>
+            <p class="text-gray-800 font-medium">{{ porte.origen }}</p>
+          </div>
+          <i class="pi pi-arrow-right text-gray-300 text-xl flex-shrink-0"></i>
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <i class="pi pi-flag text-emerald-500"></i>
+              <span class="text-xs text-gray-500 uppercase tracking-wide">Destino</span>
+            </div>
+            <p class="text-gray-800 font-medium">{{ porte.destino }}</p>
+          </div>
+          <div v-if="porte.distanciaKm" class="text-right flex-shrink-0">
+            <span class="text-xs text-gray-500">Distancia</span>
+            <p class="text-gray-800 font-medium">{{ porte.distanciaKm?.toFixed(0) }} km</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Client Info Card -->
+      <div class="bg-blue-50/50 rounded-xl p-5 border border-blue-100">
+        <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-2">
+          <i class="pi pi-building text-blue-500"></i>
+          Datos del Cliente
+        </h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <span class="text-xs text-gray-500">Empresa</span>
+            <p class="text-gray-800 font-medium">{{ porte.cliente?.nombreEmpresa ?? 'Sin cliente' }}</p>
+          </div>
+          <div>
+            <span class="text-xs text-gray-500">CIF</span>
+            <p class="text-gray-800 font-medium">{{ porte.cliente?.cif ?? '—' }}</p>
+          </div>
+          <div>
+            <span class="text-xs text-gray-500">Teléfono</span>
+            <p v-if="porte.cliente?.telefono" class="text-gray-800 font-medium flex items-center gap-2">
+              {{ porte.cliente.telefono }}
+              <button
+                class="text-blue-500 hover:text-blue-700 transition-colors"
+                @click="copyToClipboard(porte.cliente!.telefono!, 'Teléfono')"
+              >
+                <i class="pi pi-copy text-xs"></i>
+              </button>
+            </p>
+            <p v-else class="text-gray-400">—</p>
+          </div>
+          <div>
+            <span class="text-xs text-gray-500">Email</span>
+            <p v-if="porte.cliente?.emailContacto" class="text-gray-800 font-medium flex items-center gap-2">
+              {{ porte.cliente.emailContacto }}
+              <button
+                class="text-blue-500 hover:text-blue-700 transition-colors"
+                @click="copyToClipboard(porte.cliente!.emailContacto!, 'Email')"
+              >
+                <i class="pi pi-copy text-xs"></i>
+              </button>
+            </p>
+            <p v-else class="text-gray-400">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div v-if="porte.descripcionCliente" class="bg-gray-50 rounded-xl p-4">
+        <h4 class="text-xs text-gray-500 uppercase tracking-wide mb-2">Descripción del cliente</h4>
+        <p class="text-gray-700 text-sm">{{ porte.descripcionCliente }}</p>
+      </div>
+
+      <!-- Cargo Dimensions - Editable -->
+      <div class="bg-white rounded-xl p-5 border border-gray-200">
+        <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4 flex items-center gap-2">
+          <i class="pi pi-box text-orange-500"></i>
+          Dimensiones de Carga
+        </h4>
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Peso (kg)</label>
+            <InputNumber
+              v-model="dimForm.pesoTotalKg"
+              :minFractionDigits="1"
+              :maxFractionDigits="2"
+              placeholder="0.0"
+              class="w-full"
+              :min="0"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Volumen (m³)</label>
+            <InputNumber
+              v-model="dimForm.volumenTotalM3"
+              :minFractionDigits="1"
+              :maxFractionDigits="3"
+              placeholder="0.0"
+              class="w-full"
+              :min="0"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Tipo Vehículo</label>
+            <Select
+              v-model="dimForm.tipoVehiculoRequerido"
+              :options="tipoVehiculoOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccionar"
+              class="w-full"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Largo máx. (m)</label>
+            <InputNumber
+              v-model="dimForm.largoMaxPaquete"
+              :minFractionDigits="1"
+              :maxFractionDigits="2"
+              placeholder="0.0"
+              class="w-full"
+              :min="0"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Ancho máx. (m)</label>
+            <InputNumber
+              v-model="dimForm.anchoMaxPaquete"
+              :minFractionDigits="1"
+              :maxFractionDigits="2"
+              placeholder="0.0"
+              class="w-full"
+              :min="0"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Alto máx. (m)</label>
+            <InputNumber
+              v-model="dimForm.altoMaxPaquete"
+              :minFractionDigits="1"
+              :maxFractionDigits="2"
+              placeholder="0.0"
+              class="w-full"
+              :min="0"
+            />
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <Button
+            label="Guardar Dimensiones"
+            icon="pi pi-save"
+            size="small"
+            severity="secondary"
+            :loading="portesStore.saving"
+            @click="onSaveDimensiones"
+          />
+          <Button
+            label="Buscar Conductores"
+            icon="pi pi-search"
+            size="small"
+            :loading="portesStore.loadingCandidatos"
+            @click="onBuscarConductores"
+          />
+        </div>
+      </div>
+
+      <!-- Conductor Candidates Table -->
+      <div v-if="showCandidatos" class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
+          <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-2">
+            <i class="pi pi-users text-primary"></i>
+            Conductores Candidatos
+            <span class="text-xs font-normal text-gray-400">({{ portesStore.conductorCandidatos.length }} encontrados)</span>
+          </h4>
+        </div>
+
+        <DataTable
+          :value="portesStore.conductorCandidatos"
+          :loading="portesStore.loadingCandidatos"
+          stripedRows
+          size="small"
+          :rows="10"
+          :paginator="portesStore.conductorCandidatos.length > 10"
+          emptyMessage="No se encontraron conductores disponibles con las dimensiones actuales."
+        >
+          <Column header="Conductor" :sortable="false">
+            <template #body="{ data }">
+              <div>
+                <span class="font-medium text-gray-800">{{ data.nombre }} {{ data.apellidos ?? '' }}</span>
+                <span v-if="data.ciudadBase" class="block text-xs text-gray-500">{{ data.ciudadBase }}</span>
+              </div>
+            </template>
+          </Column>
+          <Column field="rating" header="Rating" :sortable="true" style="width: 100px">
+            <template #body="{ data }">
+              <div v-if="data.rating != null" class="flex items-center gap-1">
+                <i class="pi pi-star-fill text-amber-400 text-xs"></i>
+                <span class="text-sm font-medium">{{ data.rating?.toFixed(1) }}</span>
+                <span class="text-xs text-gray-400">({{ data.numeroValoraciones }})</span>
+              </div>
+              <span v-else class="text-gray-400 text-sm">—</span>
+            </template>
+          </Column>
+          <Column field="vehiculoInfo" header="Vehículo" :sortable="false">
+            <template #body="{ data }">
+              <span class="text-sm text-gray-700">{{ data.vehiculoInfo ?? '—' }}</span>
+            </template>
+          </Column>
+          <Column field="score" header="Score" :sortable="true" style="width: 90px">
+            <template #body="{ data }">
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold"
+                :class="data.score > 50 ? 'bg-emerald-50 text-emerald-700' : data.score > 0 ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-500'"
+              >
+                {{ data.score }}
+              </span>
+            </template>
+          </Column>
+          <Column header="" style="width: 100px">
+            <template #body="{ data }">
+              <Button
+                label="Asignar"
+                icon="pi pi-check"
+                size="small"
+                severity="success"
+                :loading="portesStore.saving"
+                @click="onAsignar(data)"
+              />
+            </template>
+          </Column>
+        </DataTable>
+      </div>
+
+      <!-- Pricing -->
+      <div v-if="porte.precio" class="bg-gray-50 rounded-xl p-4 flex items-center gap-6">
+        <div>
+          <span class="text-xs text-gray-500">Precio estimado</span>
+          <p class="text-lg font-bold text-primary">{{ porte.precio?.toFixed(2) }} €</p>
+        </div>
+      </div>
+    </div>
+  </Dialog>
+</template>

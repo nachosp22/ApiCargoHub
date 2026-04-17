@@ -3,6 +3,9 @@ package com.cargohub.backend.controller;
 import com.cargohub.backend.entity.BloqueoAgenda;
 import com.cargohub.backend.entity.Conductor;
 import com.cargohub.backend.entity.Vehiculo;
+import com.cargohub.backend.entity.enums.TipoVehiculo;
+import com.cargohub.backend.service.BloqueoRecurrenteService;
+import com.cargohub.backend.service.ConductorMatchingService;
 import com.cargohub.backend.service.ConductorService;
 import com.cargohub.backend.service.VehiculoService;
 import jakarta.validation.Valid;
@@ -25,10 +28,37 @@ public class ConductorController {
     @Autowired
     private VehiculoService vehiculoService;
 
+    @Autowired
+    private BloqueoRecurrenteService bloqueoRecurrenteService;
+
+    @Autowired
+    private ConductorMatchingService conductorMatchingService;
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<List<Conductor>> listarTodos() {
         return ResponseEntity.ok(conductorService.listarTodos());
+    }
+
+    // --- APROBACIÓN DE CONDUCTORES ---
+
+    @GetMapping("/pendientes-aprobacion")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<List<Conductor>> listarPendientesAprobacion() {
+        return ResponseEntity.ok(conductorService.listarPendientesAprobacion());
+    }
+
+    @PostMapping("/{id}/aprobar")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<Conductor> aprobarConductor(@PathVariable Long id) {
+        return ResponseEntity.ok(conductorService.aprobarConductor(id));
+    }
+
+    @PostMapping("/{id}/rechazar")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<?> rechazarConductor(@PathVariable Long id) {
+        conductorService.rechazarConductor(id);
+        return ResponseEntity.ok("Conductor rechazado y eliminado");
     }
 
     // Reportar GPS: POST /api/conductores/1/ubicacion?lat=40.4&lon=-3.7
@@ -127,5 +157,34 @@ public class ConductorController {
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','CONDUCTOR') and @ownership.canAccessConductor(authentication, #conductorId)")
     public ResponseEntity<List<Vehiculo>> getMisVehiculos(@PathVariable Long conductorId) {
         return ResponseEntity.ok(vehiculoService.listarPorConductor(conductorId));
+    }
+
+    // --- BLOQUEOS RECURRENTES ---
+
+    @GetMapping("/{id}/bloqueos-recurrentes")
+    @PreAuthorize("@ownership.canAccessConductor(authentication, #id)")
+    public ResponseEntity<List<BloqueoRecurrenteService.BloqueoRecurrenteResponse>> getBloqueoRecurrentes(
+            @PathVariable Long id) {
+        return ResponseEntity.ok(bloqueoRecurrenteService.getByConductor(id));
+    }
+
+    @PutMapping("/{id}/bloqueos-recurrentes")
+    @PreAuthorize("@ownership.canAccessConductor(authentication, #id)")
+    public ResponseEntity<List<BloqueoRecurrenteService.BloqueoRecurrenteResponse>> setBloqueoRecurrentes(
+            @PathVariable Long id, @RequestBody List<Integer> diasBloqueados) {
+        return ResponseEntity.ok(bloqueoRecurrenteService.setBulk(id, diasBloqueados));
+    }
+
+    // --- CONDUCTOR MATCHING ---
+
+    @GetMapping("/disponibles")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<List<Conductor>> buscarDisponibles(
+            @RequestParam String fecha,
+            @RequestParam(required = false) String tipoVehiculo,
+            @RequestParam(required = false) String ciudad) {
+        LocalDateTime fechaParsed = LocalDateTime.parse(fecha);
+        TipoVehiculo tipo = tipoVehiculo != null ? TipoVehiculo.valueOf(tipoVehiculo) : null;
+        return ResponseEntity.ok(conductorMatchingService.buscarDisponibles(fechaParsed, tipo, ciudad));
     }
 }

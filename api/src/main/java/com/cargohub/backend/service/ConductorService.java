@@ -46,6 +46,38 @@ public class ConductorService {
         return conductorRepository.findAll();
     }
 
+    // --- APROBACIÓN DE CONDUCTORES ---
+
+    public List<Conductor> listarPendientesAprobacion() {
+        return conductorRepository.findPendientesAprobacion();
+    }
+
+    @Transactional
+    public Conductor aprobarConductor(Long conductorId) {
+        Conductor conductor = obtenerPorId(conductorId);
+        Usuario usuario = conductor.getUsuario();
+        if (usuario == null) {
+            throw new RuntimeException("Conductor sin usuario asociado");
+        }
+        if (usuario.isActivo()) {
+            throw new RuntimeException("El conductor ya está aprobado");
+        }
+        usuario.setActivo(true);
+        usuarioRepository.save(usuario);
+        return conductor;
+    }
+
+    @Transactional
+    public void rechazarConductor(Long conductorId) {
+        Conductor conductor = obtenerPorId(conductorId);
+        Usuario usuario = conductor.getUsuario();
+        // Delete the conductor and associated user
+        conductorRepository.delete(conductor);
+        if (usuario != null) {
+            usuarioRepository.delete(usuario);
+        }
+    }
+
     // --- NUEVO: DAR DE BAJA (SOFT DELETE) ---
     @Transactional
     public void darDeBajaConductor(Long conductorId) {

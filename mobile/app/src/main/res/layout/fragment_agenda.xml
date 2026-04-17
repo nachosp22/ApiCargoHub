@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ch_surface"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/ch_space_md"
+        android:paddingTop="@dimen/ch_space_lg"
+        android:paddingBottom="@dimen/ch_space_md">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/home_menu_section_agenda"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
+            android:textColor="@color/ch_text_primary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/agendaRangeText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_xs"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+            android:textColor="@color/ch_text_secondary" />
+
+        <!-- Recurring weekly blocks section -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_md"
+            app:cardBackgroundColor="@color/ch_surface_card"
+            app:cardCornerRadius="@dimen/ch_radius_md"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/ch_blue_100"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/ch_space_md">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/agenda_recurring_title"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+                    android:textColor="@color/ch_text_primary"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/recurringDaysContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:gravity="center"
+                    android:orientation="horizontal" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- New block form -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_md"
+            app:cardBackgroundColor="@color/ch_surface_card"
+            app:cardCornerRadius="@dimen/ch_radius_md"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/ch_blue_100"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/ch_space_md">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/agenda_form_title"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+                    android:textColor="@color/ch_text_primary"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/agendaTitleLayout"
+                    style="@style/Widget.ApiCargoHub.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_md"
+                    android:hint="@string/agenda_title_label">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/agendaTitleInput"
+                        style="@style/Widget.ApiCargoHub.TextInputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/agendaStartLayout"
+                    style="@style/Widget.ApiCargoHub.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:hint="@string/agenda_start_label"
+                    app:endIconMode="custom"
+                    app:endIconDrawable="@drawable/ic_calendar"
+                    app:endIconContentDescription="@string/agenda_start_label">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/agendaStartInput"
+                        style="@style/Widget.ApiCargoHub.TextInputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:cursorVisible="false"
+                        android:inputType="none"
+                        android:hint="@string/agenda_datetime_placeholder" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/agendaEndLayout"
+                    style="@style/Widget.ApiCargoHub.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:hint="@string/agenda_end_label"
+                    app:endIconMode="custom"
+                    app:endIconDrawable="@drawable/ic_calendar"
+                    app:endIconContentDescription="@string/agenda_end_label">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/agendaEndInput"
+                        style="@style/Widget.ApiCargoHub.TextInputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:cursorVisible="false"
+                        android:inputType="none"
+                        android:hint="@string/agenda_datetime_placeholder" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:text="@string/agenda_type_label"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelLarge"
+                    android:textColor="@color/ch_text_primary" />
+
+                <Spinner
+                    android:id="@+id/agendaTypeSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_xs"
+                    android:minHeight="52dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_md"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/agendaSaveButton"
+                        style="@style/Widget.ApiCargoHub.Button.Primary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/agenda_save_action"
+                        android:textAllCaps="false" />
+
+                    <Space
+                        android:layout_width="@dimen/ch_space_sm"
+                        android:layout_height="match_parent" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/agendaRefreshButton"
+                        style="@style/Widget.ApiCargoHub.Button.Secondary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/retry_button"
+                        android:textAllCaps="false" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <ProgressBar
+            android:id="@+id/agendaLoadingProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/ch_space_lg" />
+
+        <TextView
+            android:id="@+id/agendaEmptyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_md"
+            android:text="@string/agenda_empty"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyLarge"
+            android:textColor="@color/ch_text_secondary"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/agendaRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_md"
+            android:nestedScrollingEnabled="false" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/ch_background">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/home_menu_section_ports"
+        android:textSize="@dimen/ch_text_size_title_large"
+        android:textColor="@color/ch_on_surface"
+        android:textStyle="bold"
+        android:paddingStart="@dimen/spacing_md"
+        android:paddingEnd="@dimen/spacing_md"
+        android:paddingTop="@dimen/spacing_lg"
+        android:paddingBottom="@dimen/spacing_xs" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/portes_tabs_subtitle"
+        android:textSize="@dimen/ch_text_size_body"
+        android:textColor="@color/ch_on_surface_variant"
+        android:paddingStart="@dimen/spacing_md"
+        android:paddingEnd="@dimen/spacing_md"
+        android:paddingBottom="@dimen/spacing_sm" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/portesTabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/ch_surface"
+        app:tabIndicatorColor="@color/ch_primary"
+        app:tabSelectedTextColor="@color/ch_primary"
+        app:tabTextColor="@color/ch_on_surface_variant"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        app:tabRippleColor="@color/ch_primary_container" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/portesViewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

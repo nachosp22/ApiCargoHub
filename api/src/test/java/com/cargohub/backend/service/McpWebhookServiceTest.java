@@ -27,11 +27,14 @@ class McpWebhookServiceTest {
     @Mock
     private N8nWebhookRepository n8nWebhookRepository;
 
+    @Mock
+    private GeminiCargaService geminiCargaService;
+
     private McpWebhookService mcpWebhookService;
 
     @BeforeEach
     void setUp() {
-        mcpWebhookService = new McpWebhookService(restTemplate, n8nWebhookRepository);
+        mcpWebhookService = new McpWebhookService(restTemplate, n8nWebhookRepository, geminiCargaService);
     }
 
     @Test

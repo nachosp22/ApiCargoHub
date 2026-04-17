@@ -5,6 +5,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
+import InputNumber from 'primevue/inputnumber'
+import Textarea from 'primevue/textarea'
 import PorteTable from '@/components/portes/PorteTable.vue'
 import PorteDialog from '@/components/portes/PorteDialog.vue'
 import PorteStatusBadge from '@/components/portes/PorteStatusBadge.vue'
@@ -25,6 +27,15 @@ const detailPorte = ref<Porte | null>(null)
 // --- Delete confirmation ---
 const showDeleteConfirm = ref(false)
 const deletingPorte = ref<Porte | null>(null)
+
+// --- Ajuste precio state ---
+const showAjusteDialog = ref(false)
+const ajustePorte = ref<Porte | null>(null)
+const ajusteForm = ref({ precioAjustado: 0, motivo: '' })
+
+// --- Facturar confirmation ---
+const showFacturarConfirm = ref(false)
+const facturandoPorte = ref<Porte | null>(null)
 
 // --- Lifecycle ---
 onMounted(async () => {
@@ -51,6 +62,65 @@ function onViewPorte(porte: Porte): void {
 function onConfirmDelete(porte: Porte): void {
   deletingPorte.value = porte
   showDeleteConfirm.value = true
+}
+
+function onAjustarPrecio(porte: Porte): void {
+  ajustePorte.value = porte
+  ajusteForm.value = { precioAjustado: porte.precio ?? 0, motivo: '' }
+  showAjusteDialog.value = true
+}
+
+async function onSaveAjuste(): Promise<void> {
+  if (!ajustePorte.value) return
+  try {
+    await portesStore.ajustarPrecio(ajustePorte.value.id, {
+      precioAjustado: ajusteForm.value.precioAjustado,
+      motivo: ajusteForm.value.motivo.trim(),
+    })
+    toast.add({
+      severity: 'success',
+      summary: 'Precio ajustado',
+      detail: `El precio del porte #${ajustePorte.value.id} se ha ajustado correctamente.`,
+      life: 3000,
+    })
+    showAjusteDialog.value = false
+    ajustePorte.value = null
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudo ajustar el precio. Inténtalo de nuevo.',
+      life: 5000,
+    })
+  }
+}
+
+function onConfirmFacturar(porte: Porte): void {
+  facturandoPorte.value = porte
+  showFacturarConfirm.value = true
+}
+
+async function onFacturar(): Promise<void> {
+  if (!facturandoPorte.value) return
+  try {
+    const id = facturandoPorte.value.id
+    await portesStore.facturarPorte(id)
+    toast.add({
+      severity: 'success',
+      summary: 'Porte facturado',
+      detail: `El porte #${id} se ha facturado correctamente.`,
+      life: 3000,
+    })
+    showFacturarConfirm.value = false
+    facturandoPorte.value = null
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudo facturar el porte. Inténtalo de nuevo.',
+      life: 5000,
+    })
+  }
 }
 
 async function onSavePorte(data: CreatePorteRequest & { estado?: EstadoPorte }): Promise<void> {
@@ -180,6 +250,8 @@ void authStore
       @view="onViewPorte"
       @edit="onEditPorte"
       @delete="onConfirmDelete"
+      @ajustar-precio="onAjustarPrecio"
+      @facturar="onConfirmFacturar"
     />
 
     <!-- Create/Edit Dialog -->
@@ -367,6 +439,104 @@ void authStore
             icon="pi pi-trash"
             :loading="portesStore.saving"
             @click="onDeletePorte"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Ajuste Precio Dialog -->
+    <Dialog
+      v-model:visible="showAjusteDialog"
+      header="Ajustar Precio"
+      :modal="true"
+      :closable="true"
+      :style="{ width: '450px' }"
+    >
+      <div class="space-y-4 pt-2">
+        <p class="text-sm text-gray-500">
+          Ajustar precio del porte <span class="font-semibold text-gray-800">#{{ ajustePorte?.id }}</span>
+          ({{ ajustePorte?.origen }} → {{ ajustePorte?.destino }})
+        </p>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nuevo precio (€)</label>
+          <InputNumber
+            v-model="ajusteForm.precioAjustado"
+            mode="currency"
+            currency="EUR"
+            locale="es-ES"
+            class="w-full"
+            :min="0"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Motivo del ajuste</label>
+          <Textarea
+            v-model="ajusteForm.motivo"
+            rows="3"
+            placeholder="Explica el motivo del ajuste de precio..."
+            class="w-full"
+            autoResize
+          />
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex items-center justify-end gap-3">
+          <Button
+            label="Cancelar"
+            severity="secondary"
+            text
+            @click="showAjusteDialog = false"
+          />
+          <Button
+            label="Aplicar Ajuste"
+            icon="pi pi-check"
+            :loading="portesStore.saving"
+            @click="onSaveAjuste"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Facturar Confirmation Dialog -->
+    <Dialog
+      v-model:visible="showFacturarConfirm"
+      header="Confirmar facturación"
+      :modal="true"
+      :closable="true"
+      :style="{ width: '450px' }"
+    >
+      <div class="flex items-start gap-4 py-2">
+        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+          <i class="pi pi-file text-blue-500"></i>
+        </div>
+        <div>
+          <p class="text-gray-800 font-medium">
+            ¿Facturar el porte #{{ facturandoPorte?.id }}?
+          </p>
+          <p class="text-sm text-gray-500 mt-1">
+            Se marcará como facturado el porte de {{ facturandoPorte?.origen }} a {{ facturandoPorte?.destino }}.
+          </p>
+          <p v-if="facturandoPorte?.precio" class="text-sm text-gray-600 mt-2">
+            Importe: <span class="font-semibold">{{ ((facturandoPorte.precio ?? 0) + (facturandoPorte.ajustePrecio ?? 0)).toFixed(2) }} €</span>
+          </p>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex items-center justify-end gap-3">
+          <Button
+            label="Cancelar"
+            severity="secondary"
+            text
+            @click="showFacturarConfirm = false"
+          />
+          <Button
+            label="Facturar"
+            severity="success"
+            icon="pi pi-file"
+            :loading="portesStore.saving"
+            @click="onFacturar"
           />
         </div>
       </template>

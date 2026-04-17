@@ -47,4 +47,9 @@ public class UsuarioService {
         String normalizedEmail = email != null ? email.toLowerCase() : null;
         return usuarioRepository.findByEmail(normalizedEmail);
     }
+
+    @Transactional
+    public Usuario guardar(Usuario usuario) {
+        return usuarioRepository.save(usuario);
+    }
 }

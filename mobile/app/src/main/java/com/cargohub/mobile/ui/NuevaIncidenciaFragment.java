@@ -26,10 +26,23 @@ import java.util.List;
 
 public class NuevaIncidenciaFragment extends Fragment {
 
+    private static final String ARG_PORTE_ID = "porte_id";
+
     private FragmentNuevaIncidenciaBinding binding;
     private final IncidenciaRepository repository = new IncidenciaRepository();
     private PorteSpinnerAdapter porteAdapter;
     private List<Porte> portesCache;
+    private Long preselectedPorteId;
+
+    public static NuevaIncidenciaFragment newInstance(@Nullable Long porteId) {
+        NuevaIncidenciaFragment fragment = new NuevaIncidenciaFragment();
+        Bundle args = new Bundle();
+        if (porteId != null) {
+            args.putLong(ARG_PORTE_ID, porteId);
+        }
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Nullable
     @Override
@@ -43,6 +56,9 @@ public class NuevaIncidenciaFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (getArguments() != null && getArguments().containsKey(ARG_PORTE_ID)) {
+            preselectedPorteId = getArguments().getLong(ARG_PORTE_ID);
+        }
         setupSpinners();
         setupSubmitButton();
         loadPortes();
@@ -130,6 +146,22 @@ public class NuevaIncidenciaFragment extends Fragment {
         binding.porteInputLayout.setEnabled(true);
         binding.submitButton.setEnabled(true);
         porteAdapter.setPortes(portes);
+        applyPreselectedPorte();
+    }
+
+    private void applyPreselectedPorte() {
+        if (preselectedPorteId == null || portesCache == null) {
+            return;
+        }
+        for (int i = 0; i < portesCache.size(); i++) {
+            Porte porte = portesCache.get(i);
+            if (porte.getId() != null && preselectedPorteId.equals(porte.getId())) {
+                binding.porteSpinner.setSelection(i);
+                binding.porteSpinner.setEnabled(false);
+                binding.porteInputLayout.setHelperText(getString(R.string.incidencia_preselected_trip_helper));
+                return;
+            }
+        }
     }
 
     private void validarYEnviar() {

@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/swipeRefresh"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/ch_surface">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -14,7 +15,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="22dp">
+            android:paddingHorizontal="@dimen/spacing_md"
+            android:paddingTop="@dimen/spacing_lg">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -27,7 +29,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/spacing_xs"
                 android:text="@string/incidencia_historial_subtitle"
                 android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
                 android:textColor="@color/ch_text_secondary" />
@@ -36,10 +38,10 @@
                 android:id="@+id/incidenciasRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/spacing_md"
                 android:layout_weight="1"
                 android:clipToPadding="false"
-                android:paddingBottom="16dp"
+                android:paddingBottom="@dimen/spacing_md"
                 tools:listitem="@layout/item_incidencia" />
         </LinearLayout>
 
@@ -47,6 +49,7 @@
             android:id="@+id/loadingContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/ch_surface"
             android:gravity="center"
             android:orientation="vertical"
             android:visibility="gone">
@@ -54,68 +57,74 @@
             <ProgressBar
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:text="@string/offer_list_state_loading_title"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleSmall"
+                android:textColor="@color/ch_text_primary" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/emptyContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/ch_surface"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="40dp"
+            android:padding="@dimen/spacing_3xl"
             android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="📁"
-                android:textSize="48sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:gravity="center"
+                android:background="@drawable/bg_state_surface"
+                android:padding="@dimen/spacing_md"
                 android:text="@string/incidencia_empty_historial"
                 android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
-                android:textColor="@color/ch_text_secondary" />
+                android:textColor="@color/ch_text_secondary"
+                android:gravity="center" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/errorContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/ch_surface"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="40dp"
+            android:padding="@dimen/spacing_3xl"
             android:visibility="gone">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="!"
-                android:textColor="@color/ch_error"
-                android:textSize="48sp"
-                android:textStyle="bold" />
+                android:gravity="center"
+                android:text="@string/offer_list_state_error_title"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleSmall"
+                android:textColor="@color/ch_error_text" />
 
             <TextView
                 android:id="@+id/errorMessage"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:background="@drawable/bg_error_soft"
                 android:gravity="center"
+                android:padding="@dimen/spacing_md"
                 android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
-                android:textColor="@color/ch_text_secondary" />
+                android:textColor="@color/ch_error_text" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/retryButton"
+                style="@style/Widget.ApiCargoHub.Button.Secondary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="@dimen/spacing_lg"
                 android:text="@string/retry_button"
-                android:textAllCaps="false"
-                app:backgroundTint="@color/ch_error"
-                app:cornerRadius="12dp" />
+                android:textAllCaps="false" />
         </LinearLayout>
 
     </FrameLayout>

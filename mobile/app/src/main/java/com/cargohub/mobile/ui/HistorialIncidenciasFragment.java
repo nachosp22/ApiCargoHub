@@ -19,7 +19,6 @@ import com.cargohub.mobile.data.IncidenciaRepository;
 import com.cargohub.mobile.data.model.IncidenciaResponse;
 import com.cargohub.mobile.session.SessionManager;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
@@ -66,6 +65,7 @@ public class HistorialIncidenciasFragment extends Fragment {
 
     private void setupRecyclerView() {
         adapter = new IncidenciaAdapter();
+        adapter.setOnItemClickListener(this::openIncidenciaDetail);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(adapter);
     }
@@ -108,7 +108,7 @@ public class HistorialIncidenciasFragment extends Fragment {
                     return;
                 }
                 swipeRefresh.setRefreshing(false);
-                handleError(message);
+                showError(message);
             }
         });
     }
@@ -143,11 +143,15 @@ public class HistorialIncidenciasFragment extends Fragment {
         errorMessage.setText(message);
     }
 
-    private void handleError(String message) {
-        if (message.contains("sesion") || message.contains("sesión")) {
-            requireActivity().finish();
-        } else {
-            showError(message);
+    private void openIncidenciaDetail(@NonNull IncidenciaResponse incidencia) {
+        if (incidencia.getId() == null) {
+            return;
         }
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFragmentContainer, IncidenciaDetailFragment.newInstance(incidencia.getId()))
+                .addToBackStack(null)
+                .commit();
     }
+
 }

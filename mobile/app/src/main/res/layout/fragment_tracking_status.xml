@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ch_background">
+
+    <!-- Map occupies full screen behind everything -->
+    <org.osmdroid.views.MapView
+        android:id="@+id/trackingMapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Permission / no-trip overlay (shown when tracking can't start) -->
+    <LinearLayout
+        android:id="@+id/trackingSetupOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/ch_surface"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_xl"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/trackingLoadingProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/trackingStatusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/tracking_status_idle"
+            android:textColor="@color/ch_on_surface"
+            android:textSize="@dimen/ch_text_size_title"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/trackingPermissionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:gravity="center"
+            android:textColor="@color/ch_on_surface_variant"
+            android:textSize="@dimen/ch_text_size_body" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/trackingPermissionButton"
+            style="@style/Widget.ApiCargoHub.Button.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:text="@string/tracking_permission_request"
+            android:textAllCaps="false" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/trackingToggleButton"
+            style="@style/Widget.ApiCargoHub.Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:text="@string/tracking_start_action"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+    <!-- Driving mode button - top right corner over map -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/drivingModeFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:layout_marginEnd="@dimen/spacing_md"
+        android:contentDescription="@string/driving_mode_enter"
+        android:visibility="gone"
+        app:backgroundTint="@color/ch_primary"
+        app:fabSize="mini"
+        app:maxImageSize="24dp"
+        app:srcCompat="@drawable/ic_driving_mode"
+        app:tint="@color/white" />
+
+    <!-- ══ Driving mode overlay: TOP bar ══ -->
+    <FrameLayout
+        android:id="@+id/drivingOverlayTop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="#99000000"
+        android:paddingHorizontal="@dimen/spacing_xl"
+        android:paddingTop="@dimen/spacing_3xl"
+        android:paddingBottom="@dimen/spacing_md"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Speed big -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/drivingSpeedValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/driving_speed_text_size"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_xs"
+                    android:text="@string/driving_mode_speed_unit"
+                    android:textColor="#B0FFFFFF"
+                    android:textSize="@dimen/driving_eta_text_size" />
+            </LinearLayout>
+
+            <!-- ETA + status -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/drivingEtaValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--:-- · -- min"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/driving_eta_text_size" />
+
+                <TextView
+                    android:id="@+id/drivingStatusText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_2xs"
+                    android:background="#4016A34A"
+                    android:paddingHorizontal="@dimen/spacing_xs"
+                    android:paddingVertical="2dp"
+                    android:text="@string/driving_mode_on_route"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/ch_text_size_label"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- ══ Driving mode overlay: BOTTOM bar ══ -->
+    <FrameLayout
+        android:id="@+id/drivingOverlayBottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#99000000"
+        android:paddingHorizontal="@dimen/spacing_xl"
+        android:paddingVertical="@dimen/spacing_md"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Distance remaining -->
+            <TextView
+                android:id="@+id/drivingDistanceValue"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="-- km"
+                android:textColor="#FFFFFF"
+                android:textSize="@dimen/driving_distance_text_size"
+                android:textStyle="bold" />
+
+            <!-- Mini play/pause -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/drivingPlayPauseFab"
+                android:layout_width="@dimen/driving_fab_mini_size"
+                android:layout_height="@dimen/driving_fab_mini_size"
+                android:layout_marginEnd="@dimen/spacing_sm"
+                android:contentDescription="@string/tracking_play_pause_description"
+                app:backgroundTint="@color/ch_success"
+                app:fabSize="mini"
+                app:maxImageSize="20dp"
+                app:srcCompat="@android:drawable/ic_media_pause"
+                app:tint="@color/white" />
+
+            <!-- Exit driving mode -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/drivingExitFab"
+                android:layout_width="@dimen/driving_fab_mini_size"
+                android:layout_height="@dimen/driving_fab_mini_size"
+                android:contentDescription="@string/driving_mode_exit"
+                app:backgroundTint="#80FFFFFF"
+                app:fabSize="mini"
+                app:maxImageSize="20dp"
+                app:srcCompat="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="#FFFFFF" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Status chip - top of screen over map -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/trackingStatusChipCard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/ch_success"
+        app:cardCornerRadius="@dimen/radius_xl"
+        app:cardElevation="4dp">
+
+        <TextView
+            android:id="@+id/trackingStatusChipText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/spacing_md"
+            android:paddingVertical="@dimen/spacing_xs"
+            android:text="@string/tracking_status_on_route"
+            android:textColor="@color/white"
+            android:textSize="@dimen/ch_text_size_label"
+            android:textStyle="bold" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Play/Pause FAB - between map and stats -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/trackingPlayPauseFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/trackingStatsCard"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="@dimen/spacing_md"
+        android:layout_marginBottom="@dimen/spacing_sm"
+        android:contentDescription="@string/tracking_play_pause_description"
+        android:visibility="gone"
+        app:backgroundTint="@color/ch_success"
+        app:fabSize="normal"
+        app:maxImageSize="28dp"
+        app:srcCompat="@android:drawable/ic_media_pause"
+        app:tint="@color/white" />
+
+    <!-- Stats panel - bottom card overlay on the map -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/trackingStatsCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="@dimen/spacing_sm"
+        android:layout_marginBottom="@dimen/spacing_sm"
+        android:visibility="gone"
+        app:cardBackgroundColor="#F0FFFFFF"
+        app:cardCornerRadius="@dimen/radius_lg"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_md">
+
+            <!-- ETA row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/tracking_map_eta_label"
+                    android:textColor="@color/ch_on_surface_variant"
+                    android:textSize="@dimen/ch_text_size_label" />
+
+                <TextView
+                    android:id="@+id/trackingEtaValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textColor="@color/ch_primary"
+                    android:textSize="@dimen/ch_text_size_title"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Distance remaining -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/tracking_map_distance_remaining_label"
+                    android:textColor="@color/ch_on_surface_variant"
+                    android:textSize="@dimen/ch_text_size_label" />
+
+                <TextView
+                    android:id="@+id/trackingDistanceRemainingValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textColor="@color/ch_on_surface"
+                    android:textSize="@dimen/ch_text_size_body_large"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="@dimen/spacing_xs"
+                android:background="@color/ch_outline" />
+
+            <!-- Stats grid: 2x2 row 1 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- Time worked -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/trackingTimeWorkedValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="00:00:00"
+                        android:textColor="@color/ch_on_surface"
+                        android:textSize="@dimen/ch_text_size_body_large"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tracking_map_time_worked_label"
+                        android:textColor="@color/ch_on_surface_variant"
+                        android:textSize="@dimen/ch_text_size_caption" />
+                </LinearLayout>
+
+                <!-- Distance covered -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/trackingDistanceCoveredValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.0 km"
+                        android:textColor="@color/ch_on_surface"
+                        android:textSize="@dimen/ch_text_size_body_large"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tracking_map_distance_covered_label"
+                        android:textColor="@color/ch_on_surface_variant"
+                        android:textSize="@dimen/ch_text_size_caption" />
+                </LinearLayout>
+
+                <!-- Speed -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/trackingSpeedValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 km/h"
+                        android:textColor="@color/ch_on_surface"
+                        android:textSize="@dimen/ch_text_size_body_large"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tracking_map_speed_label"
+                        android:textColor="@color/ch_on_surface_variant"
+                        android:textSize="@dimen/ch_text_size_caption" />
+                </LinearLayout>
+
+                <!-- Avg speed -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/trackingAvgSpeedValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 km/h"
+                        android:textColor="@color/ch_on_surface"
+                        android:textSize="@dimen/ch_text_size_body_large"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tracking_map_avg_speed_label"
+                        android:textColor="@color/ch_on_surface_variant"
+                        android:textSize="@dimen/ch_text_size_caption" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="@dimen/spacing_xs"
+                android:background="@color/ch_outline" />
+
+            <!-- Pause stats row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- Time paused -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/trackingTimePausedValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="00:00"
+                        android:textColor="@color/ch_warning"
+                        android:textSize="@dimen/ch_text_size_body_large"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tracking_map_time_paused_label"
+                        android:textColor="@color/ch_on_surface_variant"
+                        android:textSize="@dimen/ch_text_size_caption" />
+                </LinearLayout>
+
+                <!-- Pause count -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/trackingPauseCountValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="@color/ch_on_surface"
+                        android:textSize="@dimen/ch_text_size_body_large"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tracking_map_pause_count_label"
+                        android:textColor="@color/ch_on_surface_variant"
+                        android:textSize="@dimen/ch_text_size_caption" />
+                </LinearLayout>
+
+                <!-- Total time -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/trackingTimeTotalValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="00:00:00"
+                        android:textColor="@color/ch_on_surface"
+                        android:textSize="@dimen/ch_text_size_body_large"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tracking_map_time_total_label"
+                        android:textColor="@color/ch_on_surface_variant"
+                        android:textSize="@dimen/ch_text_size_caption" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Finalizar jornada button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/trackingStopButton"
+                style="@style/Widget.ApiCargoHub.Button.Primary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:backgroundTint="@color/ch_error"
+                android:text="@string/tracking_finalize_action"
+                android:textAllCaps="false" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</RelativeLayout>

@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,19 +46,19 @@ public class HomeFragment extends Fragment {
         View quickUpcomingTripsCard = view.findViewById(R.id.quickUpcomingTripsCard);
         View quickNewIncidentCard = view.findViewById(R.id.quickNewIncidentCard);
 
-        quickCurrentTripCard.setOnClickListener(v -> showPlaceholderAction(R.string.home_quick_current_trip));
-        quickUpcomingTripsCard.setOnClickListener(v -> showPlaceholderAction(R.string.home_quick_upcoming_trips));
-        quickNewIncidentCard.setOnClickListener(v -> showPlaceholderAction(R.string.home_quick_new_incident));
+        quickCurrentTripCard.setOnClickListener(v -> navigateTo(TripListFragment.newInstance(TripListFragment.MODE_ACTIVE)));
+        quickUpcomingTripsCard.setOnClickListener(v -> navigateTo(TripListFragment.newInstance(TripListFragment.MODE_UPCOMING)));
+        quickNewIncidentCard.setOnClickListener(v -> navigateTo(NuevaIncidenciaFragment.newInstance(null)));
 
         loadConductorProfile();
     }
 
-    private void showPlaceholderAction(int labelRes) {
-        if (getContext() == null) {
-            return;
-        }
-        String message = getString(R.string.home_placeholder_action, getString(labelRes));
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    private void navigateTo(@NonNull Fragment fragment) {
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFragmentContainer, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void loadConductorProfile() {
