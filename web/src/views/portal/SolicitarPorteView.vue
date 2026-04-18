@@ -29,32 +29,18 @@
       <form @submit.prevent="handleSubmit" class="space-y-5">
         <!-- Origen / Destino -->
         <div class="grid md:grid-cols-2 gap-4">
-          <div>
-            <label for="origen" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ t('portal.solicitar.origin') }} <span class="text-red-500">*</span>
-            </label>
-            <InputText
-              id="origen"
-              v-model="form.origen"
-              :placeholder="t('portal.solicitar.originPlaceholder')"
-              class="w-full"
-              :disabled="portesStore.submitting"
-              required
-            />
-          </div>
-          <div>
-            <label for="destino" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ t('portal.solicitar.destination') }} <span class="text-red-500">*</span>
-            </label>
-            <InputText
-              id="destino"
-              v-model="form.destino"
-              :placeholder="t('portal.solicitar.destinationPlaceholder')"
-              class="w-full"
-              :disabled="portesStore.submitting"
-              required
-            />
-          </div>
+          <AddressAutocomplete
+            v-model="form.origen"
+            :label="`${t('portal.solicitar.origin')} *`"
+            :placeholder="t('portal.solicitar.originPlaceholder')"
+            @select="onOrigenSelect"
+          />
+          <AddressAutocomplete
+            v-model="form.destino"
+            :label="`${t('portal.solicitar.destination')} *`"
+            :placeholder="t('portal.solicitar.destinationPlaceholder')"
+            @select="onDestinoSelect"
+          />
         </div>
 
         <!-- Descripción de carga -->
@@ -115,7 +101,7 @@ import { ref, reactive, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePortesStore } from '@/stores/portes'
 import type { SolicitudPorteRequest } from '@/stores/portes'
-import InputText from 'primevue/inputtext'
+import AddressAutocomplete from '@/components/AddressAutocomplete.vue'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import Button from 'primevue/button'
@@ -127,6 +113,12 @@ const form = reactive({
   origen: '',
   destino: '',
   descripcionCliente: '',
+  ciudadOrigen: '',
+  ciudadDestino: '',
+  latitudOrigen: undefined as number | undefined,
+  longitudOrigen: undefined as number | undefined,
+  latitudDestino: undefined as number | undefined,
+  longitudDestino: undefined as number | undefined,
 })
 
 const fechaRecogida = ref<Date | null>(null)
@@ -138,12 +130,30 @@ const minDate = computed(() => {
   return d
 })
 
+function onOrigenSelect(addr: { city: string; fullAddress: string; lat: number; lon: number }): void {
+  form.ciudadOrigen = addr.city
+  form.latitudOrigen = addr.lat || undefined
+  form.longitudOrigen = addr.lon || undefined
+}
+
+function onDestinoSelect(addr: { city: string; fullAddress: string; lat: number; lon: number }): void {
+  form.ciudadDestino = addr.city
+  form.latitudDestino = addr.lat || undefined
+  form.longitudDestino = addr.lon || undefined
+}
+
 async function handleSubmit() {
   successMessage.value = ''
 
   const request: SolicitudPorteRequest = {
     origen: form.origen,
     destino: form.destino,
+    ciudadOrigen: form.ciudadOrigen || undefined,
+    ciudadDestino: form.ciudadDestino || undefined,
+    latitudOrigen: form.latitudOrigen,
+    longitudOrigen: form.longitudOrigen,
+    latitudDestino: form.latitudDestino,
+    longitudDestino: form.longitudDestino,
     descripcionCliente: form.descripcionCliente,
     fechaRecogida: fechaRecogida.value?.toISOString(),
   }
@@ -155,6 +165,12 @@ async function handleSubmit() {
     form.origen = ''
     form.destino = ''
     form.descripcionCliente = ''
+    form.ciudadOrigen = ''
+    form.ciudadDestino = ''
+    form.latitudOrigen = undefined
+    form.longitudOrigen = undefined
+    form.latitudDestino = undefined
+    form.longitudDestino = undefined
     fechaRecogida.value = null
   } catch {
     // Error is shown via portesStore.error

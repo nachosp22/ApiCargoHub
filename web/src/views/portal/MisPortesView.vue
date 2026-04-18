@@ -39,8 +39,20 @@
             <span class="font-mono text-sm text-gray-500">#{{ data.id }}</span>
           </template>
         </Column>
-        <Column field="origen" :header="t('portal.portes.origin')" />
-        <Column field="destino" :header="t('portal.portes.destination')" />
+        <Column field="origen" :header="t('portal.portes.origin')">
+          <template #body="{ data }">
+            <span class="font-medium text-gray-800 dark:text-gray-200">
+              {{ data.ciudadOrigen || truncateAddress(data.origen) }}
+            </span>
+          </template>
+        </Column>
+        <Column field="destino" :header="t('portal.portes.destination')">
+          <template #body="{ data }">
+            <span class="font-medium text-gray-800 dark:text-gray-200">
+              {{ data.ciudadDestino || truncateAddress(data.destino) }}
+            </span>
+          </template>
+        </Column>
         <Column field="estado" :header="t('portal.portes.status')">
           <template #body="{ data }">
             <span
@@ -76,6 +88,14 @@
         <template #expansion="{ data }">
           <div class="p-4 bg-gray-50 dark:bg-gray-800/50">
             <div class="grid md:grid-cols-3 gap-4 text-sm">
+              <div>
+                <p class="text-gray-500 dark:text-gray-400 mb-1">{{ t('portal.portes.origin') }}</p>
+                <p class="text-gray-900 dark:text-gray-100 font-medium">{{ data.origen }}</p>
+              </div>
+              <div>
+                <p class="text-gray-500 dark:text-gray-400 mb-1">{{ t('portal.portes.destination') }}</p>
+                <p class="text-gray-900 dark:text-gray-100 font-medium">{{ data.destino }}</p>
+              </div>
               <div>
                 <p class="text-gray-500 mb-1">{{ t('portal.portes.description') }}</p>
                 <p class="text-gray-900">{{ data.descripcionCliente ?? '—' }}</p>
@@ -144,6 +164,13 @@ async function loadData() {
   if (cId) {
     await portesStore.fetchOwn(cId)
   }
+}
+
+function truncateAddress(addr: string): string {
+  if (!addr || addr === '—') return '—'
+  // Try to extract city: last meaningful segment
+  const parts = addr.split(',')
+  return parts[parts.length - 1]?.trim() || addr.substring(0, 20)
 }
 
 function formatCurrency(amount: number): string {

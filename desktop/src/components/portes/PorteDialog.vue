@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import Dialog from 'primevue/dialog'
-import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import Button from 'primevue/button'
+import AddressAutocomplete from '@/components/AddressAutocomplete.vue'
 import type { Porte, CreatePorteRequest, EstadoPorte, Conductor, Vehiculo, Cliente } from '@/stores/portes'
 
 interface Props {
@@ -34,6 +34,12 @@ const dialogTitle = computed(() => (isEditing.value ? `Editar Porte #${props.por
 const form = ref({
   origen: '',
   destino: '',
+  ciudadOrigen: '',
+  ciudadDestino: '',
+  latitudOrigen: undefined as number | undefined,
+  longitudOrigen: undefined as number | undefined,
+  latitudDestino: undefined as number | undefined,
+  longitudDestino: undefined as number | undefined,
   clienteId: null as number | null,
   conductorId: null as number | null,
   vehiculoId: null as number | null,
@@ -98,6 +104,12 @@ watch(
         form.value = {
           origen: props.porte.origen,
           destino: props.porte.destino,
+          ciudadOrigen: props.porte.ciudadOrigen ?? '',
+          ciudadDestino: props.porte.ciudadDestino ?? '',
+          latitudOrigen: undefined,
+          longitudOrigen: undefined,
+          latitudDestino: undefined,
+          longitudDestino: undefined,
           clienteId: props.porte.cliente?.id ?? null,
           conductorId: props.porte.conductor?.id ?? null,
           vehiculoId: null,
@@ -110,6 +122,12 @@ watch(
         form.value = {
           origen: '',
           destino: '',
+          ciudadOrigen: '',
+          ciudadDestino: '',
+          latitudOrigen: undefined,
+          longitudOrigen: undefined,
+          latitudDestino: undefined,
+          longitudDestino: undefined,
           clienteId: null,
           conductorId: null,
           vehiculoId: null,
@@ -130,6 +148,12 @@ function onSubmit(): void {
   const data: CreatePorteRequest & { estado?: EstadoPorte } = {
     origen: form.value.origen.trim(),
     destino: form.value.destino.trim(),
+    ciudadOrigen: form.value.ciudadOrigen || undefined,
+    ciudadDestino: form.value.ciudadDestino || undefined,
+    latitudOrigen: form.value.latitudOrigen,
+    longitudOrigen: form.value.longitudOrigen,
+    latitudDestino: form.value.latitudDestino,
+    longitudDestino: form.value.longitudDestino,
     clienteId: form.value.clienteId,
     descripcionCliente: form.value.descripcionCliente.trim() || undefined,
     fechaRecogida: form.value.fechaRecogida ? form.value.fechaRecogida.toISOString() : undefined,
@@ -146,6 +170,18 @@ function onSubmit(): void {
 function onClose(): void {
   emit('update:visible', false)
 }
+
+function onOrigenSelect(addr: { city: string; fullAddress: string; lat: number; lon: number }): void {
+  form.value.ciudadOrigen = addr.city
+  form.value.latitudOrigen = addr.lat || undefined
+  form.value.longitudOrigen = addr.lon || undefined
+}
+
+function onDestinoSelect(addr: { city: string; fullAddress: string; lat: number; lon: number }): void {
+  form.value.ciudadDestino = addr.city
+  form.value.latitudDestino = addr.lat || undefined
+  form.value.longitudDestino = addr.lon || undefined
+}
 </script>
 
 <template>
@@ -161,26 +197,24 @@ function onClose(): void {
       <!-- Origen / Destino -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Origen <span class="text-red-500">*</span>
           </label>
-          <InputText
+          <AddressAutocomplete
             v-model="form.origen"
             placeholder="Ciudad de origen"
-            class="w-full"
-            :invalid="errors.origen"
+            @select="onOrigenSelect"
           />
           <small v-if="errors.origen" class="text-red-500 text-xs mt-1">Campo requerido</small>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Destino <span class="text-red-500">*</span>
           </label>
-          <InputText
+          <AddressAutocomplete
             v-model="form.destino"
             placeholder="Ciudad de destino"
-            class="w-full"
-            :invalid="errors.destino"
+            @select="onDestinoSelect"
           />
           <small v-if="errors.destino" class="text-red-500 text-xs mt-1">Campo requerido</small>
         </div>

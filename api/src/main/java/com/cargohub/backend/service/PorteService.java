@@ -85,6 +85,8 @@ public class PorteService {
         porte.setCliente(cliente);
         porte.setOrigen(request.getOrigen());
         porte.setDestino(request.getDestino());
+        porte.setCiudadOrigen(request.getCiudadOrigen());
+        porte.setCiudadDestino(request.getCiudadDestino());
         porte.setLatitudOrigen(request.getLatitudOrigen());
         porte.setLongitudOrigen(request.getLongitudOrigen());
         porte.setLatitudDestino(request.getLatitudDestino());

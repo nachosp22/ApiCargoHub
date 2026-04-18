@@ -19,6 +19,9 @@ public class SolicitudPorteRequest {
     @NotBlank(message = "El destino es obligatorio")
     private String destino;
 
+    private String ciudadOrigen;
+    private String ciudadDestino;
+
     private Double latitudOrigen;
     private Double longitudOrigen;
     private Double latitudDestino;

@@ -17,6 +17,8 @@ export interface Porte {
   id: number
   origen: string
   destino: string
+  ciudadOrigen?: string
+  ciudadDestino?: string
   distanciaKm?: number
   precio?: number
   descripcionCliente?: string
@@ -35,6 +37,8 @@ export interface Porte {
 export interface SolicitudPorteRequest {
   origen: string
   destino: string
+  ciudadOrigen?: string
+  ciudadDestino?: string
   latitudOrigen?: number
   longitudOrigen?: number
   latitudDestino?: number
@@ -137,6 +141,8 @@ export const usePortesStore = defineStore('portes', () => {
       id: Number(p.id ?? 0),
       origen: String(p.origen ?? '—'),
       destino: String(p.destino ?? '—'),
+      ciudadOrigen: p.ciudadOrigen ? String(p.ciudadOrigen) : undefined,
+      ciudadDestino: p.ciudadDestino ? String(p.ciudadDestino) : undefined,
       distanciaKm: p.distanciaKm != null ? Number(p.distanciaKm) : undefined,
       precio: p.precio != null ? Number(p.precio) : undefined,
       descripcionCliente: p.descripcionCliente ? String(p.descripcionCliente) : undefined,

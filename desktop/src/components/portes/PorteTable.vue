@@ -168,7 +168,9 @@ function formatDate(dateStr: string | undefined): string {
         <template #body="slotProps">
           <div class="flex items-center gap-2">
             <i class="pi pi-map-marker text-xs text-gray-400"></i>
-            <span class="text-gray-700 dark:text-gray-300">{{ slotProps.data.origen }}</span>
+            <span class="text-gray-700 dark:text-gray-300">
+              {{ slotProps.data.ciudadOrigen || slotProps.data.origen }}
+            </span>
           </div>
         </template>
       </Column>
@@ -178,7 +180,9 @@ function formatDate(dateStr: string | undefined): string {
         <template #body="slotProps">
           <div class="flex items-center gap-2">
             <i class="pi pi-flag text-xs text-gray-400"></i>
-            <span class="text-gray-700 dark:text-gray-300">{{ slotProps.data.destino }}</span>
+            <span class="text-gray-700 dark:text-gray-300">
+              {{ slotProps.data.ciudadDestino || slotProps.data.destino }}
+            </span>
           </div>
         </template>
       </Column>

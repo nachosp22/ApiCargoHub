@@ -25,6 +25,10 @@ public class Porte {
     // --- RUTA ---
     private String origen;
     private String destino;
+    @Column(nullable = true)
+    private String ciudadOrigen;
+    @Column(nullable = true)
+    private String ciudadDestino;
     private Double latitudOrigen;
     private Double longitudOrigen;
     private Double latitudDestino;
