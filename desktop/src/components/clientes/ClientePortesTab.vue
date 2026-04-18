@@ -77,7 +77,7 @@ const _loading = computed(() => props.loading)
     <!-- ID -->
     <Column field="id" header="ID" :sortable="true" style="min-width: 70px">
       <template #body="slotProps">
-        <span class="font-semibold text-gray-800">#{{ slotProps.data.id }}</span>
+        <span class="font-semibold text-gray-800 dark:text-gray-100">#{{ slotProps.data.id }}</span>
       </template>
     </Column>
 
@@ -86,7 +86,8 @@ const _loading = computed(() => props.loading)
       <template #body="slotProps">
         <div class="flex items-center gap-2">
           <i class="pi pi-map-marker text-xs text-gray-400"></i>
-          <span class="text-gray-700 text-sm">{{ slotProps.data.origen }}</span>
+          <span class="text-gray-700 dark:text-gray-300 text-sm">{{ slotProps.data.origen }}</span>
+          
         </div>
       </template>
     </Column>
@@ -96,7 +97,7 @@ const _loading = computed(() => props.loading)
       <template #body="slotProps">
         <div class="flex items-center gap-2">
           <i class="pi pi-flag text-xs text-gray-400"></i>
-          <span class="text-gray-700 text-sm">{{ slotProps.data.destino }}</span>
+          <span class="text-gray-700 dark:text-gray-300 text-sm">{{ slotProps.data.destino }}</span>
         </div>
       </template>
     </Column>
@@ -120,22 +121,22 @@ const _loading = computed(() => props.loading)
     <!-- Fecha -->
     <Column field="fechaRecogida" header="Fecha" :sortable="true" style="min-width: 120px">
       <template #body="slotProps">
-        <span class="text-gray-600 text-sm">{{ formatDate(slotProps.data.fechaRecogida) }}</span>
+        <span class="text-gray-600 dark:text-gray-400 text-sm">{{ formatDate(slotProps.data.fechaRecogida) }}</span>
       </template>
     </Column>
 
     <!-- Precio -->
     <Column field="precio" header="Precio" :sortable="true" style="min-width: 100px; text-align: right">
       <template #body="slotProps">
-        <span class="text-gray-800 text-sm font-medium">{{ formatPrice(slotProps.data.precio) }}</span>
+        <span class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ formatPrice(slotProps.data.precio) }}</span>
       </template>
     </Column>
 
     <!-- Empty state -->
     <template #empty>
       <div class="text-center py-8">
-        <i class="pi pi-truck text-3xl text-gray-300 mb-2"></i>
-        <p class="text-gray-500 text-sm">Este cliente no tiene portes registrados</p>
+        <i class="pi pi-truck text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Este cliente no tiene portes registrados</p>
       </div>
     </template>
   </DataTable>
@@ -158,5 +159,25 @@ const _loading = computed(() => props.loading)
 :deep(.p-datatable-tbody > tr > td) {
   padding: 0.5rem 0.75rem;
   border-color: #F3F4F6;
+}
+
+/* Dark mode */
+.dark :deep(.p-datatable-thead > tr > th) {
+  background: #1F2937;
+  color: #9CA3AF;
+  border-color: #374151;
+}
+.dark :deep(.p-datatable-tbody > tr > td) {
+  border-color: #374151;
+  color: #D1D5DB;
+}
+.dark :deep(.p-datatable-tbody > tr) {
+  background: #111827;
+}
+.dark :deep(.p-datatable-tbody > tr:nth-child(even)) {
+  background: #1F2937;
+}
+.dark :deep(.p-datatable-tbody > tr:hover) {
+  background: #374151 !important;
 }
 </style>

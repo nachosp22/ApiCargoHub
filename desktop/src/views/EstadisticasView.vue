@@ -135,8 +135,8 @@ function formatTrend(val: number): string {
   <div class="space-y-6">
     <!-- Page Header -->
     <div>
-      <h1 class="text-2xl font-bold text-gray-800">Estadísticas Globales</h1>
-      <p class="text-sm text-gray-500 mt-1">
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Estadísticas Globales</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
         Panel de análisis y métricas de la plataforma
       </p>
     </div>
@@ -195,18 +195,18 @@ function formatTrend(val: number): string {
       <!-- Charts Row -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <!-- Bar Chart: Portes por mes -->
-        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-1">Portes por Mes</h3>
-          <p class="text-sm text-gray-500 mb-4">Últimos 12 meses</p>
+        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Portes por Mes</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Últimos 12 meses</p>
           <div class="h-64">
             <Bar :data="barChartData" :options="barChartOptions" />
           </div>
         </div>
 
         <!-- Doughnut: Portes por estado -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-1">Portes por Estado</h3>
-          <p class="text-sm text-gray-500 mb-4">Distribución actual</p>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Portes por Estado</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Distribución actual</p>
           <div class="h-64">
             <Doughnut :data="doughnutChartData" :options="doughnutChartOptions" />
           </div>
@@ -214,9 +214,9 @@ function formatTrend(val: number): string {
       </div>
 
       <!-- Line Chart: Ingresos por mes -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 class="text-lg font-semibold text-gray-800 mb-1">Ingresos por Mes</h3>
-        <p class="text-sm text-gray-500 mb-4">Evolución de facturación (últimos 12 meses)</p>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Ingresos por Mes</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Evolución de facturación (últimos 12 meses)</p>
         <div class="h-64">
           <Line :data="lineChartData" :options="lineChartOptions" />
         </div>
@@ -224,31 +224,31 @@ function formatTrend(val: number): string {
 
       <!-- Facturas Summary Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 flex items-center gap-4">
           <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
             <i class="pi pi-file text-blue-600"></i>
           </div>
           <div>
-            <p class="text-sm text-gray-500">Facturas Emitidas</p>
-            <p class="text-xl font-bold text-gray-800">{{ store.data.facturasEmitidas }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Facturas Emitidas</p>
+            <p class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ store.data.facturasEmitidas }}</p>
           </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 flex items-center gap-4">
           <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
             <i class="pi pi-check-circle text-emerald-600"></i>
           </div>
           <div>
-            <p class="text-sm text-gray-500">Facturas Pagadas</p>
-            <p class="text-xl font-bold text-gray-800">{{ store.data.facturasPagadas }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Facturas Pagadas</p>
+            <p class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ store.data.facturasPagadas }}</p>
           </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 flex items-center gap-4">
           <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
             <i class="pi pi-clock text-amber-600"></i>
           </div>
           <div>
-            <p class="text-sm text-gray-500">Facturas Pendientes</p>
-            <p class="text-xl font-bold text-gray-800">{{ store.data.facturasPendientes }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Facturas Pendientes</p>
+            <p class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ store.data.facturasPendientes }}</p>
           </div>
         </div>
       </div>
@@ -256,26 +256,26 @@ function formatTrend(val: number): string {
       <!-- Top Tables Row -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <!-- Top 5 Conductores -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Top 5 Conductores</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Top 5 Conductores</h3>
           <table class="w-full text-sm">
             <thead>
-              <tr class="border-b border-gray-100">
-                <th class="text-left py-2 text-gray-500 font-medium">#</th>
-                <th class="text-left py-2 text-gray-500 font-medium">Nombre</th>
-                <th class="text-right py-2 text-gray-500 font-medium">Portes</th>
-                <th class="text-right py-2 text-gray-500 font-medium">Rating</th>
+              <tr class="border-b border-gray-100 dark:border-gray-700">
+                <th class="text-left py-2 text-gray-500 dark:text-gray-400 font-medium">#</th>
+                <th class="text-left py-2 text-gray-500 dark:text-gray-400 font-medium">Nombre</th>
+                <th class="text-right py-2 text-gray-500 dark:text-gray-400 font-medium">Portes</th>
+                <th class="text-right py-2 text-gray-500 dark:text-gray-400 font-medium">Rating</th>
               </tr>
             </thead>
             <tbody>
               <tr
                 v-for="(c, i) in store.data.topConductores"
                 :key="i"
-                class="border-b border-gray-50 last:border-0"
+                class="border-b border-gray-50 dark:border-gray-700/50 last:border-0"
               >
-                <td class="py-2.5 text-gray-400 font-medium">{{ i + 1 }}</td>
-                <td class="py-2.5 text-gray-800 font-medium">{{ c.nombre }}</td>
-                <td class="py-2.5 text-right text-gray-600">{{ c.portes }}</td>
+                <td class="py-2.5 text-gray-400 dark:text-gray-500 font-medium">{{ i + 1 }}</td>
+                <td class="py-2.5 text-gray-800 dark:text-gray-100 font-medium">{{ c.nombre }}</td>
+                <td class="py-2.5 text-right text-gray-600 dark:text-gray-400">{{ c.portes }}</td>
                 <td class="py-2.5 text-right">
                   <span class="inline-flex items-center gap-1 text-amber-600">
                     <i class="pi pi-star-fill text-xs"></i>
@@ -284,37 +284,37 @@ function formatTrend(val: number): string {
                 </td>
               </tr>
               <tr v-if="!store.data.topConductores.length">
-                <td colspan="4" class="py-4 text-center text-gray-400">Sin datos</td>
+                <td colspan="4" class="py-4 text-center text-gray-400 dark:text-gray-500">Sin datos</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <!-- Top 5 Clientes -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Top 5 Clientes</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Top 5 Clientes</h3>
           <table class="w-full text-sm">
             <thead>
-              <tr class="border-b border-gray-100">
-                <th class="text-left py-2 text-gray-500 font-medium">#</th>
-                <th class="text-left py-2 text-gray-500 font-medium">Empresa</th>
-                <th class="text-right py-2 text-gray-500 font-medium">Facturado</th>
-                <th class="text-right py-2 text-gray-500 font-medium">Portes</th>
+              <tr class="border-b border-gray-100 dark:border-gray-700">
+                <th class="text-left py-2 text-gray-500 dark:text-gray-400 font-medium">#</th>
+                <th class="text-left py-2 text-gray-500 dark:text-gray-400 font-medium">Empresa</th>
+                <th class="text-right py-2 text-gray-500 dark:text-gray-400 font-medium">Facturado</th>
+                <th class="text-right py-2 text-gray-500 dark:text-gray-400 font-medium">Portes</th>
               </tr>
             </thead>
             <tbody>
               <tr
                 v-for="(c, i) in store.data.topClientes"
                 :key="i"
-                class="border-b border-gray-50 last:border-0"
+                class="border-b border-gray-50 dark:border-gray-700/50 last:border-0"
               >
-                <td class="py-2.5 text-gray-400 font-medium">{{ i + 1 }}</td>
-                <td class="py-2.5 text-gray-800 font-medium">{{ c.nombreEmpresa }}</td>
-                <td class="py-2.5 text-right text-gray-600">{{ formatCurrency(c.totalFacturado) }}</td>
-                <td class="py-2.5 text-right text-gray-600">{{ c.portes }}</td>
+                <td class="py-2.5 text-gray-400 dark:text-gray-500 font-medium">{{ i + 1 }}</td>
+                <td class="py-2.5 text-gray-800 dark:text-gray-100 font-medium">{{ c.nombreEmpresa }}</td>
+                <td class="py-2.5 text-right text-gray-600 dark:text-gray-400">{{ formatCurrency(c.totalFacturado) }}</td>
+                <td class="py-2.5 text-right text-gray-600 dark:text-gray-400">{{ c.portes }}</td>
               </tr>
               <tr v-if="!store.data.topClientes.length">
-                <td colspan="4" class="py-4 text-center text-gray-400">Sin datos</td>
+                <td colspan="4" class="py-4 text-center text-gray-400 dark:text-gray-500">Sin datos</td>
               </tr>
             </tbody>
           </table>

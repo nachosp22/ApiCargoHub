@@ -61,13 +61,13 @@ function getInitials(cliente: Cliente): string {
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
     <!-- Table Header with Filters -->
-    <div class="p-5 border-b border-gray-100">
+    <div class="p-5 border-b border-gray-100 dark:border-gray-700">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h3 class="text-lg font-semibold text-gray-800">Lista de Clientes</h3>
-          <p class="text-sm text-gray-500 mt-0.5">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Lista de Clientes</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {{ filteredClientes.length }} clientes encontrados
           </p>
         </div>
@@ -109,8 +109,8 @@ function getInitials(cliente: Cliente): string {
               </span>
             </div>
             <div>
-              <p class="text-gray-800 font-medium text-sm">{{ slotProps.data.nombreEmpresa }}</p>
-              <p class="text-gray-400 text-xs">{{ slotProps.data.ciudad || '—' }}</p>
+              <p class="text-gray-800 dark:text-gray-100 font-medium text-sm">{{ slotProps.data.nombreEmpresa }}</p>
+              <p class="text-gray-400 dark:text-gray-500 text-xs">{{ slotProps.data.ciudad || '—' }}</p>
             </div>
           </div>
         </template>
@@ -119,7 +119,7 @@ function getInitials(cliente: Cliente): string {
       <!-- CIF/NIF -->
       <Column field="cif" header="CIF/NIF" :sortable="true" style="min-width: 120px">
         <template #body="slotProps">
-          <span class="text-gray-600 text-sm font-mono">{{ slotProps.data.cif || '—' }}</span>
+          <span class="text-gray-600 dark:text-gray-400 text-sm font-mono">{{ slotProps.data.cif || '—' }}</span>
         </template>
       </Column>
 
@@ -128,7 +128,7 @@ function getInitials(cliente: Cliente): string {
         <template #body="slotProps">
           <div class="flex items-center gap-2">
             <i class="pi pi-envelope text-xs text-gray-400"></i>
-            <span class="text-gray-700 text-sm">{{ slotProps.data.emailContacto || '—' }}</span>
+            <span class="text-gray-700 dark:text-gray-300 text-sm">{{ slotProps.data.emailContacto || '—' }}</span>
           </div>
         </template>
       </Column>
@@ -136,14 +136,14 @@ function getInitials(cliente: Cliente): string {
       <!-- Teléfono -->
       <Column field="telefono" header="Teléfono" style="min-width: 130px">
         <template #body="slotProps">
-          <span class="text-gray-600 text-sm">{{ slotProps.data.telefono || '—' }}</span>
+          <span class="text-gray-600 dark:text-gray-400 text-sm">{{ slotProps.data.telefono || '—' }}</span>
         </template>
       </Column>
 
       <!-- Dirección -->
       <Column field="direccion" header="Dirección" style="min-width: 200px">
         <template #body="slotProps">
-          <span class="text-gray-600 text-sm">{{ slotProps.data.direccion || '—' }}</span>
+          <span class="text-gray-600 dark:text-gray-400 text-sm">{{ slotProps.data.direccion || '—' }}</span>
         </template>
       </Column>
 
@@ -186,9 +186,9 @@ function getInitials(cliente: Cliente): string {
       <!-- Empty state -->
       <template #empty>
         <div class="text-center py-12">
-          <i class="pi pi-building text-4xl text-gray-300 mb-3"></i>
-          <p class="text-gray-500">No se encontraron clientes</p>
-          <p class="text-gray-400 text-sm mt-1">Intenta ajustar los filtros o crear un nuevo cliente</p>
+          <i class="pi pi-building text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+          <p class="text-gray-500 dark:text-gray-400">No se encontraron clientes</p>
+          <p class="text-gray-400 dark:text-gray-500 text-sm mt-1">Intenta ajustar los filtros o crear un nuevo cliente</p>
         </div>
       </template>
     </DataTable>
@@ -231,5 +231,30 @@ function getInitials(cliente: Cliente): string {
   background: #2563EB;
   color: white;
   border-radius: 0.5rem;
+}
+
+/* Dark mode overrides */
+.dark :deep(.p-datatable-thead > tr > th) {
+  background: #1F2937;
+  color: #9CA3AF;
+  border-color: #374151;
+}
+.dark :deep(.p-datatable-tbody > tr > td) {
+  border-color: #374151;
+  color: #D1D5DB;
+}
+.dark :deep(.p-datatable-tbody > tr) {
+  background: #1F2937;
+}
+.dark :deep(.p-datatable-tbody > tr:nth-child(even)) {
+  background: #111827;
+}
+.dark :deep(.p-datatable-tbody > tr:hover) {
+  background-color: #374151 !important;
+}
+.dark :deep(.p-paginator) {
+  background: #1F2937;
+  color: #9CA3AF;
+  border-color: #374151;
 }
 </style>

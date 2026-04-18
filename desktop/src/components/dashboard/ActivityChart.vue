@@ -90,14 +90,14 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h3 class="text-lg font-semibold text-gray-800">Portes por Mes</h3>
-        <p class="text-sm text-gray-500 mt-0.5">Actividad de transporte en los últimos 12 meses</p>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Portes por Mes</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Actividad de transporte en los últimos 12 meses</p>
       </div>
-      <div class="flex items-center gap-2 text-sm text-gray-500">
+      <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
         <i class="pi pi-calendar text-xs"></i>
         <span>2025 – 2026</span>
       </div>

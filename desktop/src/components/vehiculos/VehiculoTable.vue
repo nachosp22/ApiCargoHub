@@ -106,15 +106,15 @@ type StyleConfig = {
 }
 
 const estadoConfig: Record<string, StyleConfig> = {
-  DISPONIBLE: { bg: 'bg-emerald-50', text: 'text-emerald-700', ring: 'ring-emerald-600/20', label: 'Disponible' },
-  EN_MANTENIMIENTO: { bg: 'bg-amber-50', text: 'text-amber-700', ring: 'ring-amber-600/20', label: 'En Mantenimiento' },
-  BAJA: { bg: 'bg-gray-50', text: 'text-gray-600', ring: 'ring-gray-500/20', label: 'Baja' },
+  DISPONIBLE: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', ring: 'ring-emerald-600/20 dark:ring-emerald-500/30', label: 'Disponible' },
+  EN_MANTENIMIENTO: { bg: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', ring: 'ring-amber-600/20 dark:ring-amber-500/30', label: 'En Mantenimiento' },
+  BAJA: { bg: 'bg-gray-50 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-300', ring: 'ring-gray-500/20 dark:ring-gray-400/30', label: 'Baja' },
 }
 
 const defaultEstadoConfig: StyleConfig = {
-  bg: 'bg-gray-50',
-  text: 'text-gray-600',
-  ring: 'ring-gray-500/20',
+  bg: 'bg-gray-50 dark:bg-gray-700',
+  text: 'text-gray-600 dark:text-gray-300',
+  ring: 'ring-gray-500/20 dark:ring-gray-400/30',
   label: '',
 }
 
@@ -123,16 +123,16 @@ function getEstadoConfig(estado: string): StyleConfig {
 }
 
 const tipoConfig: Record<string, StyleConfig> = {
-  FURGONETA: { bg: 'bg-blue-50', text: 'text-blue-700', ring: 'ring-blue-600/20', label: 'Furgoneta' },
-  RIGIDO: { bg: 'bg-indigo-50', text: 'text-indigo-700', ring: 'ring-indigo-600/20', label: 'Rígido' },
-  TRAILER: { bg: 'bg-purple-50', text: 'text-purple-700', ring: 'ring-purple-600/20', label: 'Tráiler' },
-  ESPECIAL: { bg: 'bg-orange-50', text: 'text-orange-700', ring: 'ring-orange-600/20', label: 'Especial' },
+  FURGONETA: { bg: 'bg-blue-50 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', ring: 'ring-blue-600/20 dark:ring-blue-500/30', label: 'Furgoneta' },
+  RIGIDO: { bg: 'bg-indigo-50 dark:bg-indigo-900/30', text: 'text-indigo-700 dark:text-indigo-400', ring: 'ring-indigo-600/20 dark:ring-indigo-500/30', label: 'Rígido' },
+  TRAILER: { bg: 'bg-purple-50 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400', ring: 'ring-purple-600/20 dark:ring-purple-500/30', label: 'Tráiler' },
+  ESPECIAL: { bg: 'bg-orange-50 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-400', ring: 'ring-orange-600/20 dark:ring-orange-500/30', label: 'Especial' },
 }
 
 const defaultTipoConfig: StyleConfig = {
-  bg: 'bg-gray-50',
-  text: 'text-gray-600',
-  ring: 'ring-gray-500/20',
+  bg: 'bg-gray-50 dark:bg-gray-700',
+  text: 'text-gray-600 dark:text-gray-300',
+  ring: 'ring-gray-500/20 dark:ring-gray-400/30',
   label: '',
 }
 
@@ -142,13 +142,13 @@ function getTipoConfig(tipo: string): StyleConfig {
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
     <!-- Table Header with Filters -->
-    <div class="p-5 border-b border-gray-100">
+    <div class="p-5 border-b border-gray-100 dark:border-gray-700">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h3 class="text-lg font-semibold text-gray-800">Flota de Vehículos</h3>
-          <p class="text-sm text-gray-500 mt-0.5">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Flota de Vehículos</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {{ filteredVehiculos.length }} vehículos encontrados
           </p>
         </div>
@@ -203,7 +203,7 @@ function getTipoConfig(tipo: string): StyleConfig {
       <!-- Matrícula -->
       <Column header="Matrícula" :sortable="true" field="matricula" style="min-width: 130px">
         <template #body="slotProps">
-          <span class="text-gray-800 font-bold text-sm font-mono">{{ slotProps.data.matricula }}</span>
+          <span class="text-gray-800 dark:text-gray-100 font-bold text-sm font-mono">{{ slotProps.data.matricula }}</span>
         </template>
       </Column>
 
@@ -211,8 +211,8 @@ function getTipoConfig(tipo: string): StyleConfig {
       <Column header="Marca / Modelo" :sortable="true" field="marca" style="min-width: 200px">
         <template #body="slotProps">
           <div>
-            <p class="text-gray-800 font-medium text-sm">{{ slotProps.data.marca }}</p>
-            <p class="text-gray-400 text-xs">{{ slotProps.data.modelo }}</p>
+            <p class="text-gray-800 dark:text-gray-100 font-medium text-sm">{{ slotProps.data.marca }}</p>
+            <p class="text-gray-400 dark:text-gray-500 text-xs">{{ slotProps.data.modelo }}</p>
           </div>
         </template>
       </Column>
@@ -236,7 +236,7 @@ function getTipoConfig(tipo: string): StyleConfig {
       <!-- Capacidad -->
       <Column field="capacidadCargaKg" header="Capacidad" :sortable="true" style="min-width: 110px">
         <template #body="slotProps">
-          <span class="text-gray-700 text-sm">{{ formatCapacidad(slotProps.data.capacidadCargaKg) }}</span>
+          <span class="text-gray-700 dark:text-gray-300 text-sm">{{ formatCapacidad(slotProps.data.capacidadCargaKg) }}</span>
         </template>
       </Column>
 
@@ -257,7 +257,7 @@ function getTipoConfig(tipo: string): StyleConfig {
             </div>
             <span
               class="text-sm"
-              :class="slotProps.data.conductor ? 'text-gray-700' : 'text-gray-400 italic'"
+              :class="slotProps.data.conductor ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400 italic'"
             >
               {{ getConductorName(slotProps.data) }}
             </span>
@@ -355,5 +355,22 @@ function getTipoConfig(tipo: string): StyleConfig {
   background: #2563EB;
   color: white;
   border-radius: 0.5rem;
+}
+
+/* Dark mode overrides — .dark class on <html> */
+.dark :deep(.p-datatable-thead > tr > th) {
+  background: #111827 !important;
+  color: #9CA3AF !important;
+  border-color: #374151 !important;
+}
+.dark :deep(.p-datatable-tbody > tr > td) {
+  border-color: #374151 !important;
+}
+.dark :deep(.p-datatable-tbody > tr:hover) {
+  background-color: #374151 !important;
+}
+.dark :deep(.p-paginator) {
+  background-color: #1f2937;
+  border-color: #374151;
 }
 </style>

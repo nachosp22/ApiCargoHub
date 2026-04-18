@@ -101,15 +101,15 @@ type StyleConfig = {
 }
 
 const estadoConfig: Record<string, StyleConfig> = {
-  DISPONIBLE: { bg: 'bg-emerald-50', text: 'text-emerald-700', ring: 'ring-emerald-600/20', label: 'Disponible' },
-  EN_MANTENIMIENTO: { bg: 'bg-amber-50', text: 'text-amber-700', ring: 'ring-amber-600/20', label: 'En Mantenimiento' },
-  BAJA: { bg: 'bg-gray-50', text: 'text-gray-600', ring: 'ring-gray-500/20', label: 'Baja' },
+  DISPONIBLE: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', ring: 'ring-emerald-600/20 dark:ring-emerald-500/30', label: 'Disponible' },
+  EN_MANTENIMIENTO: { bg: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', ring: 'ring-amber-600/20 dark:ring-amber-500/30', label: 'En Mantenimiento' },
+  BAJA: { bg: 'bg-gray-50 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-300', ring: 'ring-gray-500/20 dark:ring-gray-400/30', label: 'Baja' },
 }
 
 const defaultConfig: StyleConfig = {
-  bg: 'bg-gray-50',
-  text: 'text-gray-600',
-  ring: 'ring-gray-500/20',
+  bg: 'bg-gray-50 dark:bg-gray-700',
+  text: 'text-gray-600 dark:text-gray-300',
+  ring: 'ring-gray-500/20 dark:ring-gray-400/30',
   label: '',
 }
 
@@ -118,10 +118,10 @@ function getEstadoConfig(estado: string): StyleConfig {
 }
 
 const tipoConfig: Record<string, StyleConfig> = {
-  FURGONETA: { bg: 'bg-blue-50', text: 'text-blue-700', ring: 'ring-blue-600/20', label: 'Furgoneta' },
-  RIGIDO: { bg: 'bg-indigo-50', text: 'text-indigo-700', ring: 'ring-indigo-600/20', label: 'Rígido' },
-  TRAILER: { bg: 'bg-purple-50', text: 'text-purple-700', ring: 'ring-purple-600/20', label: 'Tráiler' },
-  ESPECIAL: { bg: 'bg-orange-50', text: 'text-orange-700', ring: 'ring-orange-600/20', label: 'Especial' },
+  FURGONETA: { bg: 'bg-blue-50 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', ring: 'ring-blue-600/20 dark:ring-blue-500/30', label: 'Furgoneta' },
+  RIGIDO: { bg: 'bg-indigo-50 dark:bg-indigo-900/30', text: 'text-indigo-700 dark:text-indigo-400', ring: 'ring-indigo-600/20 dark:ring-indigo-500/30', label: 'Rígido' },
+  TRAILER: { bg: 'bg-purple-50 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400', ring: 'ring-purple-600/20 dark:ring-purple-500/30', label: 'Tráiler' },
+  ESPECIAL: { bg: 'bg-orange-50 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-400', ring: 'ring-orange-600/20 dark:ring-orange-500/30', label: 'Especial' },
 }
 
 function getTipoConfig(tipo: string): StyleConfig {
@@ -134,12 +134,12 @@ function getTipoConfig(tipo: string): StyleConfig {
     <!-- Page Header -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+        <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
           <i class="pi pi-car text-2xl"></i>
         </div>
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">Vehículos</h1>
-          <p class="text-sm text-gray-500 mt-0.5">Gestión de flota y mantenimiento</p>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Vehículos</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Gestión de flota y mantenimiento</p>
         </div>
       </div>
     </div>
@@ -155,47 +155,47 @@ function getTipoConfig(tipo: string): StyleConfig {
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-4 gap-4">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+          <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <i class="pi pi-car text-lg"></i>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-800">{{ vehiculosStore.totalVehiculos }}</p>
-            <p class="text-xs text-gray-500">Total Flota</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ vehiculosStore.totalVehiculos }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Total Flota</p>
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <i class="pi pi-check-circle text-lg"></i>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-800">{{ vehiculosStore.disponibles.length }}</p>
-            <p class="text-xs text-gray-500">Disponibles</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ vehiculosStore.disponibles.length }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Disponibles</p>
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+          <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center">
             <i class="pi pi-wrench text-lg"></i>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-800">{{ vehiculosStore.enMantenimiento.length }}</p>
-            <p class="text-xs text-gray-500">En Mantenimiento</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ vehiculosStore.enMantenimiento.length }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">En Mantenimiento</p>
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 flex items-center justify-center">
             <i class="pi pi-ban text-lg"></i>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-800">{{ vehiculosStore.enBaja.length }}</p>
-            <p class="text-xs text-gray-500">De Baja</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ vehiculosStore.enBaja.length }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">De Baja</p>
           </div>
         </div>
       </div>
@@ -239,8 +239,8 @@ function getTipoConfig(tipo: string): StyleConfig {
               ></i>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-gray-800 font-mono">{{ detailVehiculo.matricula }}</h3>
-              <p class="text-sm text-gray-500">{{ detailVehiculo.marca }} {{ detailVehiculo.modelo }}</p>
+              <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 font-mono">{{ detailVehiculo.matricula }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ detailVehiculo.marca }} {{ detailVehiculo.modelo }}</p>
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -268,35 +268,35 @@ function getTipoConfig(tipo: string): StyleConfig {
         </div>
 
         <!-- Vehicle Info -->
-        <div class="bg-gray-50 rounded-xl p-5">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Información del Vehículo</h4>
+        <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-5">
+          <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Información del Vehículo</h4>
           <div class="grid grid-cols-2 gap-4">
             <div class="flex items-center gap-3">
-              <i class="pi pi-id-card text-gray-400"></i>
+              <i class="pi pi-id-card text-gray-400 dark:text-gray-500"></i>
               <div>
-                <span class="text-xs text-gray-500">Matrícula</span>
-                <p class="text-gray-800 text-sm font-medium font-mono">{{ detailVehiculo.matricula }}</p>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Matrícula</span>
+                <p class="text-gray-800 dark:text-gray-100 text-sm font-medium font-mono">{{ detailVehiculo.matricula }}</p>
               </div>
             </div>
             <div class="flex items-center gap-3">
-              <i class="pi pi-tag text-gray-400"></i>
+              <i class="pi pi-tag text-gray-400 dark:text-gray-500"></i>
               <div>
-                <span class="text-xs text-gray-500">Marca / Modelo</span>
-                <p class="text-gray-800 text-sm font-medium">{{ detailVehiculo.marca }} {{ detailVehiculo.modelo }}</p>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Marca / Modelo</span>
+                <p class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ detailVehiculo.marca }} {{ detailVehiculo.modelo }}</p>
               </div>
             </div>
             <div class="flex items-center gap-3">
-              <i class="pi pi-box text-gray-400"></i>
+              <i class="pi pi-box text-gray-400 dark:text-gray-500"></i>
               <div>
-                <span class="text-xs text-gray-500">Capacidad de Carga</span>
-                <p class="text-gray-800 text-sm font-medium">{{ formatCapacidad(detailVehiculo.capacidadCargaKg) }}</p>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Capacidad de Carga</span>
+                <p class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ formatCapacidad(detailVehiculo.capacidadCargaKg) }}</p>
               </div>
             </div>
             <div class="flex items-center gap-3">
-              <i class="pi pi-user text-gray-400"></i>
+              <i class="pi pi-user text-gray-400 dark:text-gray-500"></i>
               <div>
-                <span class="text-xs text-gray-500">Conductor Asignado</span>
-                <p class="text-sm font-medium" :class="detailVehiculo.conductor ? 'text-gray-800' : 'text-gray-400 italic'">
+                <span class="text-xs text-gray-500 dark:text-gray-400">Conductor Asignado</span>
+                <p class="text-sm font-medium" :class="detailVehiculo.conductor ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 italic'">
                   {{ getConductorName(detailVehiculo) }}
                 </p>
         </div>
@@ -310,27 +310,27 @@ function getTipoConfig(tipo: string): StyleConfig {
         </div>
 
         <!-- Dimensions -->
-        <div class="bg-gray-50 rounded-xl p-5">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Dimensiones y Equipamiento</h4>
+        <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-5">
+          <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Dimensiones y Equipamiento</h4>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <span class="text-xs text-gray-500">Largo útil</span>
-              <p class="text-gray-800 text-sm font-medium">{{ formatDimension(detailVehiculo.largoUtilMm) }}</p>
+              <span class="text-xs text-gray-500 dark:text-gray-400">Largo útil</span>
+              <p class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ formatDimension(detailVehiculo.largoUtilMm) }}</p>
             </div>
             <div>
-              <span class="text-xs text-gray-500">Ancho útil</span>
-              <p class="text-gray-800 text-sm font-medium">{{ formatDimension(detailVehiculo.anchoUtilMm) }}</p>
+              <span class="text-xs text-gray-500 dark:text-gray-400">Ancho útil</span>
+              <p class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ formatDimension(detailVehiculo.anchoUtilMm) }}</p>
             </div>
             <div>
-              <span class="text-xs text-gray-500">Alto útil</span>
-              <p class="text-gray-800 text-sm font-medium">{{ formatDimension(detailVehiculo.altoUtilMm) }}</p>
+              <span class="text-xs text-gray-500 dark:text-gray-400">Alto útil</span>
+              <p class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ formatDimension(detailVehiculo.altoUtilMm) }}</p>
             </div>
             <div>
-              <span class="text-xs text-gray-500">Volumen</span>
-              <p class="text-gray-800 text-sm font-medium">{{ detailVehiculo.volumenM3 != null ? `${detailVehiculo.volumenM3} m³` : '--' }}</p>
+              <span class="text-xs text-gray-500 dark:text-gray-400">Volumen</span>
+              <p class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ detailVehiculo.volumenM3 != null ? `${detailVehiculo.volumenM3} m³` : '--' }}</p>
             </div>
             <div>
-              <span class="text-xs text-gray-500">Trampilla elevadora</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400">Trampilla elevadora</span>
               <p class="mt-1">
                 <span
                   class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"

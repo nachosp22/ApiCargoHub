@@ -54,8 +54,8 @@ async function executeConfirm() {
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-gray-800">Aprobaci&oacute;n de Conductores</h1>
-        <p class="text-sm text-gray-500 mt-1">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Aprobaci&oacute;n de Conductores</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Conductores registrados pendientes de aprobaci&oacute;n
         </p>
       </div>
@@ -70,7 +70,7 @@ async function executeConfirm() {
     <!-- Empty state -->
     <div
       v-if="!store.pendientesLoading && store.pendientesAprobacion.length === 0"
-      class="flex flex-col items-center justify-center py-20 text-gray-400"
+      class="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-500"
     >
       <i class="pi pi-check-circle text-5xl mb-4"></i>
       <p class="text-lg font-medium">No hay conductores pendientes</p>
@@ -131,7 +131,7 @@ async function executeConfirm() {
       :style="{ width: '28rem' }"
       modal
     >
-      <p class="text-sm text-gray-600">
+      <p class="text-sm text-gray-600 dark:text-gray-400">
         <template v-if="confirmAction === 'aprobar'">
           &iquest;Aprobar al conductor
           <strong>{{ confirmConductor?.nombre }} {{ confirmConductor?.apellidos }}</strong>?

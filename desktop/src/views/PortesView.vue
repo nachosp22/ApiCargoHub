@@ -224,8 +224,8 @@ void authStore
           <i class="pi pi-truck text-2xl"></i>
         </div>
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">Portes</h1>
-          <p class="text-sm text-gray-500 mt-0.5">Gestión de portes y envíos</p>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Portes</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Gestión de portes y envíos</p>
         </div>
       </div>
       <Button
@@ -278,7 +278,7 @@ void authStore
         <!-- Status & ID Header -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <span class="text-lg font-bold text-gray-800">#{{ detailPorte.id }}</span>
+            <span class="text-lg font-bold text-gray-800 dark:text-gray-100">#{{ detailPorte.id }}</span>
             <PorteStatusBadge :estado="detailPorte.estado" />
           </div>
           <div class="flex items-center gap-2">
@@ -295,42 +295,42 @@ void authStore
         </div>
 
         <!-- Route Info -->
-        <div class="bg-gray-50 rounded-xl p-5">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Ruta</h4>
+        <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-5">
+          <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Ruta</h4>
           <div class="flex items-center gap-4">
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
                 <i class="pi pi-map-marker text-blue-500"></i>
-                <span class="text-sm text-gray-500">Origen</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Origen</span>
               </div>
-              <p class="text-gray-800 font-medium">{{ detailPorte.origen }}</p>
+              <p class="text-gray-800 dark:text-gray-100 font-medium">{{ detailPorte.origen }}</p>
             </div>
             <div class="flex-shrink-0">
-              <i class="pi pi-arrow-right text-gray-300 text-xl"></i>
+              <i class="pi pi-arrow-right text-gray-300 dark:text-gray-600 text-xl"></i>
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
                 <i class="pi pi-flag text-emerald-500"></i>
-                <span class="text-sm text-gray-500">Destino</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Destino</span>
               </div>
-              <p class="text-gray-800 font-medium">{{ detailPorte.destino }}</p>
+              <p class="text-gray-800 dark:text-gray-100 font-medium">{{ detailPorte.destino }}</p>
             </div>
           </div>
-          <div v-if="detailPorte.distanciaKm" class="mt-3 pt-3 border-t border-gray-200">
-            <span class="text-sm text-gray-500">Distancia:</span>
-            <span class="text-sm font-medium text-gray-700 ml-1">{{ detailPorte.distanciaKm }} km</span>
+          <div v-if="detailPorte.distanciaKm" class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Distancia:</span>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">{{ detailPorte.distanciaKm }} km</span>
           </div>
         </div>
 
         <!-- Details Grid -->
         <div class="grid grid-cols-2 gap-5">
           <!-- Conductor -->
-          <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Conductor</h4>
+          <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
+            <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Conductor</h4>
             <div class="flex items-center gap-3">
               <div
                 class="w-10 h-10 rounded-full flex items-center justify-center"
-                :class="detailPorte.conductor ? 'bg-primary/10' : 'bg-gray-200'"
+                :class="detailPorte.conductor ? 'bg-primary/10' : 'bg-gray-200 dark:bg-gray-700'"
               >
                 <span
                   class="text-sm font-semibold"
@@ -340,8 +340,8 @@ void authStore
                 </span>
               </div>
               <div>
-                <p class="text-gray-800 font-medium">{{ getConductorFullName(detailPorte) }}</p>
-                <p v-if="detailPorte.conductor?.telefono" class="text-sm text-gray-500">
+                <p class="text-gray-800 dark:text-gray-100 font-medium">{{ getConductorFullName(detailPorte) }}</p>
+                <p v-if="detailPorte.conductor?.telefono" class="text-sm text-gray-500 dark:text-gray-400">
                   {{ detailPorte.conductor.telefono }}
                 </p>
               </div>
@@ -349,10 +349,10 @@ void authStore
           </div>
 
           <!-- Cliente -->
-          <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Cliente</h4>
-            <p class="text-gray-800 font-medium">{{ detailPorte.cliente?.nombreEmpresa ?? 'Sin cliente' }}</p>
-            <p v-if="detailPorte.cliente?.emailContacto" class="text-sm text-gray-500 mt-0.5">
+          <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
+            <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Cliente</h4>
+            <p class="text-gray-800 dark:text-gray-100 font-medium">{{ detailPorte.cliente?.nombreEmpresa ?? 'Sin cliente' }}</p>
+            <p v-if="detailPorte.cliente?.emailContacto" class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {{ detailPorte.cliente.emailContacto }}
             </p>
           </div>
@@ -361,33 +361,33 @@ void authStore
         <!-- Dates -->
         <div class="grid grid-cols-3 gap-4">
           <div>
-            <span class="text-sm text-gray-500">Creación</span>
-            <p class="text-sm font-medium text-gray-700">{{ formatDateTime(detailPorte.fechaCreacion) }}</p>
+            <span class="text-sm text-gray-500 dark:text-gray-400">Creación</span>
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ formatDateTime(detailPorte.fechaCreacion) }}</p>
           </div>
           <div>
-            <span class="text-sm text-gray-500">Recogida</span>
-            <p class="text-sm font-medium text-gray-700">{{ formatDateTime(detailPorte.fechaRecogida) }}</p>
+            <span class="text-sm text-gray-500 dark:text-gray-400">Recogida</span>
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ formatDateTime(detailPorte.fechaRecogida) }}</p>
           </div>
           <div>
-            <span class="text-sm text-gray-500">Entrega</span>
-            <p class="text-sm font-medium text-gray-700">{{ formatDateTime(detailPorte.fechaEntrega) }}</p>
+            <span class="text-sm text-gray-500 dark:text-gray-400">Entrega</span>
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ formatDateTime(detailPorte.fechaEntrega) }}</p>
           </div>
         </div>
 
         <!-- Pricing -->
-        <div v-if="detailPorte.precio" class="bg-gray-50 rounded-xl p-4">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Económico</h4>
+        <div v-if="detailPorte.precio" class="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
+          <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Económico</h4>
           <div class="grid grid-cols-3 gap-4">
             <div>
-              <span class="text-sm text-gray-500">Precio Base</span>
-              <p class="text-gray-800 font-medium">{{ detailPorte.precio?.toFixed(2) }} €</p>
+              <span class="text-sm text-gray-500 dark:text-gray-400">Precio Base</span>
+              <p class="text-gray-800 dark:text-gray-100 font-medium">{{ detailPorte.precio?.toFixed(2) }} €</p>
             </div>
             <div v-if="detailPorte.ajustePrecio">
-              <span class="text-sm text-gray-500">Ajuste</span>
-              <p class="text-gray-800 font-medium">{{ detailPorte.ajustePrecio.toFixed(2) }} €</p>
+              <span class="text-sm text-gray-500 dark:text-gray-400">Ajuste</span>
+              <p class="text-gray-800 dark:text-gray-100 font-medium">{{ detailPorte.ajustePrecio.toFixed(2) }} €</p>
             </div>
             <div>
-              <span class="text-sm text-gray-500">Total</span>
+              <span class="text-sm text-gray-500 dark:text-gray-400">Total</span>
               <p class="text-lg font-bold text-primary">
                 {{ ((detailPorte.precio ?? 0) + (detailPorte.ajustePrecio ?? 0)).toFixed(2) }} €
               </p>
@@ -397,8 +397,8 @@ void authStore
 
         <!-- Description -->
         <div v-if="detailPorte.descripcionCliente">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Descripción</h4>
-          <p class="text-gray-700 text-sm bg-gray-50 rounded-xl p-4">{{ detailPorte.descripcionCliente }}</p>
+          <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Descripción</h4>
+          <p class="text-gray-700 dark:text-gray-300 text-sm bg-gray-50 dark:bg-gray-900 rounded-xl p-4">{{ detailPorte.descripcionCliente }}</p>
         </div>
 
         <!-- Fotos de carga -->
@@ -419,10 +419,10 @@ void authStore
           <i class="pi pi-exclamation-triangle text-red-500"></i>
         </div>
         <div>
-          <p class="text-gray-800 font-medium">
+          <p class="text-gray-800 dark:text-gray-100 font-medium">
             ¿Eliminar el porte #{{ deletingPorte?.id }}?
           </p>
-          <p class="text-sm text-gray-500 mt-1">
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Esta acción no se puede deshacer. Se eliminará permanentemente el porte
             de {{ deletingPorte?.origen }} a {{ deletingPorte?.destino }}.
           </p>
@@ -457,12 +457,12 @@ void authStore
       :style="{ width: '450px' }"
     >
       <div class="space-y-4 pt-2">
-        <p class="text-sm text-gray-500">
-          Ajustar precio del porte <span class="font-semibold text-gray-800">#{{ ajustePorte?.id }}</span>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Ajustar precio del porte <span class="font-semibold text-gray-800 dark:text-gray-100">#{{ ajustePorte?.id }}</span>
           ({{ ajustePorte?.origen }} → {{ ajustePorte?.destino }})
         </p>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nuevo precio (€)</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nuevo precio (€)</label>
           <InputNumber
             v-model="ajusteForm.precioAjustado"
             mode="currency"
@@ -473,7 +473,7 @@ void authStore
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Motivo del ajuste</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo del ajuste</label>
           <Textarea
             v-model="ajusteForm.motivo"
             rows="3"
@@ -515,13 +515,13 @@ void authStore
           <i class="pi pi-file text-blue-500"></i>
         </div>
         <div>
-          <p class="text-gray-800 font-medium">
+          <p class="text-gray-800 dark:text-gray-100 font-medium">
             ¿Facturar el porte #{{ facturandoPorte?.id }}?
           </p>
-          <p class="text-sm text-gray-500 mt-1">
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Se marcará como facturado el porte de {{ facturandoPorte?.origen }} a {{ facturandoPorte?.destino }}.
           </p>
-          <p v-if="facturandoPorte?.precio" class="text-sm text-gray-600 mt-2">
+          <p v-if="facturandoPorte?.precio" class="text-sm text-gray-600 dark:text-gray-400 mt-2">
             Importe: <span class="font-semibold">{{ ((facturandoPorte.precio ?? 0) + (facturandoPorte.ajustePrecio ?? 0)).toFixed(2) }} €</span>
           </p>
         </div>

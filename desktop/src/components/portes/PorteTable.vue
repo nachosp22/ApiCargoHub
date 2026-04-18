@@ -107,13 +107,13 @@ function formatDate(dateStr: string | undefined): string {
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
     <!-- Table Header with Filters -->
-    <div class="p-5 border-b border-gray-100">
+    <div class="p-5 border-b border-gray-100 dark:border-gray-700">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h3 class="text-lg font-semibold text-gray-800">Lista de Portes</h3>
-          <p class="text-sm text-gray-500 mt-0.5">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Lista de Portes</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {{ filteredPortes.length }} portes encontrados
           </p>
         </div>
@@ -159,7 +159,7 @@ function formatDate(dateStr: string | undefined): string {
       <!-- ID -->
       <Column field="id" header="ID" :sortable="true" style="min-width: 80px">
         <template #body="slotProps">
-          <span class="font-semibold text-gray-800">#{{ slotProps.data.id }}</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-100">#{{ slotProps.data.id }}</span>
         </template>
       </Column>
 
@@ -168,7 +168,7 @@ function formatDate(dateStr: string | undefined): string {
         <template #body="slotProps">
           <div class="flex items-center gap-2">
             <i class="pi pi-map-marker text-xs text-gray-400"></i>
-            <span class="text-gray-700">{{ slotProps.data.origen }}</span>
+            <span class="text-gray-700 dark:text-gray-300">{{ slotProps.data.origen }}</span>
           </div>
         </template>
       </Column>
@@ -178,7 +178,7 @@ function formatDate(dateStr: string | undefined): string {
         <template #body="slotProps">
           <div class="flex items-center gap-2">
             <i class="pi pi-flag text-xs text-gray-400"></i>
-            <span class="text-gray-700">{{ slotProps.data.destino }}</span>
+            <span class="text-gray-700 dark:text-gray-300">{{ slotProps.data.destino }}</span>
           </div>
         </template>
       </Column>
@@ -189,7 +189,7 @@ function formatDate(dateStr: string | undefined): string {
           <div class="flex items-center gap-2">
             <div
               class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-              :class="slotProps.data.conductor ? 'bg-primary/10' : 'bg-gray-100'"
+              :class="slotProps.data.conductor ? 'bg-primary/10' : 'bg-gray-100 dark:bg-gray-700'"
             >
               <span
                 class="text-xs font-semibold"
@@ -198,7 +198,7 @@ function formatDate(dateStr: string | undefined): string {
                 {{ getConductorInitials(slotProps.data) }}
               </span>
             </div>
-            <span class="text-gray-700">{{ getConductorName(slotProps.data) }}</span>
+            <span class="text-gray-700 dark:text-gray-300">{{ getConductorName(slotProps.data) }}</span>
           </div>
         </template>
       </Column>
@@ -213,7 +213,7 @@ function formatDate(dateStr: string | undefined): string {
       <!-- Fecha Recogida -->
       <Column field="fechaRecogida" header="Fecha Programada" :sortable="true" style="min-width: 140px">
         <template #body="slotProps">
-          <span class="text-gray-600 text-sm">{{ formatDate(slotProps.data.fechaRecogida) }}</span>
+          <span class="text-gray-600 dark:text-gray-400 text-sm">{{ formatDate(slotProps.data.fechaRecogida) }}</span>
         </template>
       </Column>
 
@@ -275,9 +275,9 @@ function formatDate(dateStr: string | undefined): string {
       <!-- Empty state -->
       <template #empty>
         <div class="text-center py-12">
-          <i class="pi pi-truck text-4xl text-gray-300 mb-3"></i>
-          <p class="text-gray-500">No se encontraron portes</p>
-          <p class="text-gray-400 text-sm mt-1">Intenta ajustar los filtros o crear un nuevo porte</p>
+          <i class="pi pi-truck text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+          <p class="text-gray-500 dark:text-gray-400">No se encontraron portes</p>
+          <p class="text-gray-400 dark:text-gray-500 text-sm mt-1">Intenta ajustar los filtros o crear un nuevo porte</p>
         </div>
       </template>
     </DataTable>
@@ -320,5 +320,30 @@ function formatDate(dateStr: string | undefined): string {
   background: #2563EB;
   color: white;
   border-radius: 0.5rem;
+}
+
+/* Dark mode overrides */
+.dark :deep(.p-datatable-thead > tr > th) {
+  background: #1F2937;
+  color: #9CA3AF;
+  border-color: #374151;
+}
+.dark :deep(.p-datatable-tbody > tr > td) {
+  border-color: #374151;
+  color: #D1D5DB;
+}
+.dark :deep(.p-datatable-tbody > tr) {
+  background: #1F2937;
+}
+.dark :deep(.p-datatable-tbody > tr:nth-child(even)) {
+  background: #111827;
+}
+.dark :deep(.p-datatable-tbody > tr:hover) {
+  background-color: #374151 !important;
+}
+.dark :deep(.p-paginator) {
+  background: #1F2937;
+  color: #9CA3AF;
+  border-color: #374151;
 }
 </style>

@@ -67,8 +67,8 @@ void toast
           <i class="pi pi-eye text-2xl"></i>
         </div>
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">Revisión de Portes</h1>
-          <p class="text-sm text-gray-500 mt-0.5">
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Revisión de Portes</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             Portes pendientes de revisión manual — ajusta dimensiones y asigna conductores
           </p>
         </div>
@@ -92,7 +92,7 @@ void toast
     </div>
 
     <!-- Pending Review Table -->
-    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       <DataTable
         :value="portesStore.pendientesRevision"
         :loading="portesStore.loading"
@@ -108,7 +108,7 @@ void toast
       >
         <Column field="id" header="ID" :sortable="true" style="width: 80px">
           <template #body="{ data }">
-            <span class="font-mono font-bold text-gray-800">#{{ data.id }}</span>
+            <span class="font-mono font-bold text-gray-800 dark:text-gray-100">#{{ data.id }}</span>
           </template>
         </Column>
         <Column field="estado" header="Estado" :sortable="true" style="width: 130px">
@@ -119,15 +119,15 @@ void toast
         <Column header="Ruta" :sortable="false">
           <template #body="{ data }">
             <div class="flex items-center gap-2">
-              <span class="text-gray-800">{{ data.origen }}</span>
-              <i class="pi pi-arrow-right text-gray-300 text-xs"></i>
-              <span class="text-gray-800">{{ data.destino }}</span>
+              <span class="text-gray-800 dark:text-gray-100">{{ data.origen }}</span>
+              <i class="pi pi-arrow-right text-gray-300 dark:text-gray-600 text-xs"></i>
+              <span class="text-gray-800 dark:text-gray-100">{{ data.destino }}</span>
             </div>
           </template>
         </Column>
         <Column header="Cliente" :sortable="false">
           <template #body="{ data }">
-            <span class="text-gray-700">{{ data.cliente?.nombreEmpresa ?? '—' }}</span>
+            <span class="text-gray-700 dark:text-gray-300">{{ data.cliente?.nombreEmpresa ?? '—' }}</span>
           </template>
         </Column>
         <Column header="Motivo" :sortable="false">
@@ -139,7 +139,7 @@ void toast
         </Column>
         <Column field="fechaCreacion" header="Fecha" :sortable="true" style="width: 160px">
           <template #body="{ data }">
-            <span class="text-sm text-gray-600">{{ formatDateTime(data.fechaCreacion) }}</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ formatDateTime(data.fechaCreacion) }}</span>
           </template>
         </Column>
         <Column header="" style="width: 100px">

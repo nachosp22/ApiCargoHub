@@ -124,8 +124,8 @@ async function onDeleteCliente(): Promise<void> {
           <i class="pi pi-building text-2xl"></i>
         </div>
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">Clientes</h1>
-          <p class="text-sm text-gray-500 mt-0.5">Gestión de clientes y sus portes</p>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Clientes</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Gestión de clientes y sus portes</p>
         </div>
       </div>
       <Button
@@ -146,36 +146,36 @@ async function onDeleteCliente(): Promise<void> {
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-3 gap-4">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
             <i class="pi pi-building text-lg"></i>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-800">{{ clientesStore.totalClientes }}</p>
-            <p class="text-xs text-gray-500">Total Clientes</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ clientesStore.totalClientes }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Total Clientes</p>
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
             <i class="pi pi-envelope text-lg"></i>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-800">{{ clientesStore.clientes.filter(c => c.emailContacto).length }}</p>
-            <p class="text-xs text-gray-500">Con Email</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ clientesStore.clientes.filter(c => c.emailContacto).length }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Con Email</p>
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
             <i class="pi pi-phone text-lg"></i>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-800">{{ clientesStore.clientes.filter(c => c.telefono).length }}</p>
-            <p class="text-xs text-gray-500">Con Teléfono</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ clientesStore.clientes.filter(c => c.telefono).length }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Con Teléfono</p>
           </div>
         </div>
       </div>

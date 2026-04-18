@@ -31,12 +31,12 @@ const filteredPortes = computed(() => {
 type EstadoType = 'COMPLETADO' | 'ENTREGADO' | 'EN_RUTA' | 'PENDIENTE' | 'PROGRAMADO' | 'CANCELADO'
 
 const estadoStyles: Record<EstadoType, string> = {
-  COMPLETADO: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-  ENTREGADO: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-  EN_RUTA: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-  PENDIENTE: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-  PROGRAMADO: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-  CANCELADO: 'bg-gray-50 text-gray-600 ring-gray-500/20',
+  COMPLETADO: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-emerald-600/20 dark:ring-emerald-500/30',
+  ENTREGADO: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-emerald-600/20 dark:ring-emerald-500/30',
+  EN_RUTA: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 ring-amber-600/20 dark:ring-amber-500/30',
+  PENDIENTE: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 ring-amber-600/20 dark:ring-amber-500/30',
+  PROGRAMADO: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 ring-blue-600/20 dark:ring-blue-500/30',
+  CANCELADO: 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 ring-gray-500/20 dark:ring-gray-400/30',
 }
 
 const estadoLabels: Record<string, string> = {
@@ -49,7 +49,7 @@ const estadoLabels: Record<string, string> = {
 }
 
 function getEstadoClass(estado: string): string {
-  return estadoStyles[estado as EstadoType] ?? 'bg-gray-50 text-gray-600 ring-gray-500/20'
+  return estadoStyles[estado as EstadoType] ?? 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 ring-gray-500/20 dark:ring-gray-400/30'
 }
 
 function getEstadoLabel(estado: string): string {
@@ -72,12 +72,12 @@ function formatDate(fecha: string): string {
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
     <!-- Header -->
     <div class="flex items-center justify-between mb-5">
       <div>
-        <h3 class="text-lg font-semibold text-gray-800">Portes Recientes</h3>
-        <p class="text-sm text-gray-500 mt-0.5">Últimos portes registrados en el sistema</p>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Portes Recientes</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Últimos portes registrados en el sistema</p>
       </div>
 
       <!-- Search -->
@@ -105,15 +105,15 @@ function formatDate(fecha: string): string {
     >
       <Column field="id" header="ID" :sortable="true" style="min-width: 80px">
         <template #body="{ data }">
-          <span class="font-semibold text-gray-800">#{{ data.id }}</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-100">#{{ data.id }}</span>
         </template>
       </Column>
 
       <Column field="origen" header="Origen" :sortable="true" style="min-width: 130px">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
-            <i class="pi pi-map-marker text-xs text-gray-400"></i>
-            <span class="text-gray-700">{{ data.origen }}</span>
+            <i class="pi pi-map-marker text-xs text-gray-400 dark:text-gray-500"></i>
+            <span class="text-gray-700 dark:text-gray-300">{{ data.origen }}</span>
           </div>
         </template>
       </Column>
@@ -121,8 +121,8 @@ function formatDate(fecha: string): string {
       <Column field="destino" header="Destino" :sortable="true" style="min-width: 130px">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
-            <i class="pi pi-flag text-xs text-gray-400"></i>
-            <span class="text-gray-700">{{ data.destino }}</span>
+            <i class="pi pi-flag text-xs text-gray-400 dark:text-gray-500"></i>
+            <span class="text-gray-700 dark:text-gray-300">{{ data.destino }}</span>
           </div>
         </template>
       </Column>
@@ -133,7 +133,7 @@ function formatDate(fecha: string): string {
             <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <span class="text-xs font-semibold text-primary">{{ data.conductor.charAt(0) }}</span>
             </div>
-            <span class="text-gray-700">{{ data.conductor }}</span>
+            <span class="text-gray-700 dark:text-gray-300">{{ data.conductor }}</span>
           </div>
         </template>
       </Column>
@@ -151,7 +151,7 @@ function formatDate(fecha: string): string {
 
       <Column field="fecha" header="Fecha" :sortable="true" style="min-width: 130px">
         <template #body="{ data }">
-          <span class="text-gray-600 text-sm">{{ formatDate(data.fecha) }}</span>
+          <span class="text-gray-600 dark:text-gray-400 text-sm">{{ formatDate(data.fecha) }}</span>
         </template>
       </Column>
 
@@ -202,5 +202,22 @@ function formatDate(fecha: string): string {
   background: #2563EB;
   color: white;
   border-radius: 0.5rem;
+}
+
+/* Dark mode overrides */
+.dark :deep(.p-datatable-thead > tr > th) {
+  background: #111827 !important;
+  color: #9CA3AF !important;
+  border-color: #374151 !important;
+}
+.dark :deep(.p-datatable-tbody > tr > td) {
+  border-color: #374151 !important;
+}
+.dark :deep(.p-datatable-tbody > tr:hover) {
+  background-color: #374151 !important;
+}
+.dark :deep(.p-paginator) {
+  background-color: #1f2937;
+  border-color: #374151;
 }
 </style>

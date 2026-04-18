@@ -19,12 +19,12 @@ function formatNumber(val: number | string): string {
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 transition-all duration-200 hover:shadow-md">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 transition-all duration-200 hover:shadow-md">
     <div class="flex items-start justify-between">
       <!-- Text Content -->
       <div class="flex-1 min-w-0">
-        <p class="text-sm font-medium text-gray-500 truncate">{{ title }}</p>
-        <p class="text-3xl font-bold text-gray-800 mt-1">{{ formatNumber(value) }}</p>
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ title }}</p>
+        <p class="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ formatNumber(value) }}</p>
 
         <!-- Trend Indicator -->
         <div v-if="trend" class="flex items-center gap-1 mt-2">

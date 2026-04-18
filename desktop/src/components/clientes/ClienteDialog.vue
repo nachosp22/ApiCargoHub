@@ -122,7 +122,7 @@ function onClose(): void {
     <div class="space-y-5 pt-2">
       <!-- Nombre Empresa -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Nombre / Razón Social <span class="text-red-500">*</span>
         </label>
         <InputText
@@ -137,7 +137,7 @@ function onClose(): void {
       <!-- CIF / Email -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             CIF/NIF <span class="text-red-500">*</span>
           </label>
           <InputText
@@ -149,7 +149,7 @@ function onClose(): void {
           <small v-if="errors.cif" class="text-red-500 text-xs mt-1">Campo requerido</small>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Email <span class="text-red-500">*</span>
           </label>
           <InputText
@@ -164,7 +164,7 @@ function onClose(): void {
 
       <!-- Teléfono -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teléfono</label>
         <InputText
           v-model="form.telefono"
           placeholder="911234567"
@@ -174,7 +174,7 @@ function onClose(): void {
 
       <!-- Dirección -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dirección</label>
         <InputText
           v-model="form.direccion"
           placeholder="Calle, número, piso..."
@@ -185,7 +185,7 @@ function onClose(): void {
       <!-- Ciudad / CP / País -->
       <div class="grid grid-cols-3 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ciudad</label>
           <InputText
             v-model="form.ciudad"
             placeholder="Madrid"
@@ -193,7 +193,7 @@ function onClose(): void {
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Código Postal</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Código Postal</label>
           <InputText
             v-model="form.codigoPostal"
             placeholder="28001"
@@ -201,7 +201,7 @@ function onClose(): void {
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">País</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">País</label>
           <InputText
             v-model="form.pais"
             placeholder="España"

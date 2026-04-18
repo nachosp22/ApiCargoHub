@@ -163,15 +163,15 @@ type StyleConfig = {
 }
 
 const estadoConfig: Record<string, StyleConfig> = {
-  ACTIVO: { bg: 'bg-emerald-50', text: 'text-emerald-700', ring: 'ring-emerald-600/20', label: 'Activo' },
-  INACTIVO: { bg: 'bg-gray-50', text: 'text-gray-600', ring: 'ring-gray-500/20', label: 'Inactivo' },
-  SUSPENDIDO: { bg: 'bg-red-50', text: 'text-red-700', ring: 'ring-red-600/20', label: 'Suspendido' },
+  ACTIVO: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', ring: 'ring-emerald-600/20 dark:ring-emerald-500/30', label: 'Activo' },
+  INACTIVO: { bg: 'bg-gray-50 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-300', ring: 'ring-gray-500/20 dark:ring-gray-400/30', label: 'Inactivo' },
+  SUSPENDIDO: { bg: 'bg-red-50 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', ring: 'ring-red-600/20 dark:ring-red-500/30', label: 'Suspendido' },
 }
 
 const defaultConfig: StyleConfig = {
-  bg: 'bg-gray-50',
-  text: 'text-gray-600',
-  ring: 'ring-gray-500/20',
+  bg: 'bg-gray-50 dark:bg-gray-700',
+  text: 'text-gray-600 dark:text-gray-300',
+  ring: 'ring-gray-500/20 dark:ring-gray-400/30',
   label: '',
 }
 
@@ -197,12 +197,12 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
     <!-- Page Header -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center">
+        <div class="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
           <i class="pi pi-users text-2xl"></i>
         </div>
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">Conductores</h1>
-          <p class="text-sm text-gray-500 mt-0.5">Gestión de conductores y asignaciones</p>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Conductores</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Gestión de conductores y asignaciones</p>
         </div>
       </div>
       <Button
@@ -223,47 +223,47 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-4 gap-4">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+          <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <i class="pi pi-users text-lg"></i>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-800">{{ conductoresStore.totalConductores }}</p>
-            <p class="text-xs text-gray-500">Total</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ conductoresStore.totalConductores }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Total</p>
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <i class="pi pi-check-circle text-lg"></i>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-800">{{ conductoresStore.activos.length }}</p>
-            <p class="text-xs text-gray-500">Activos</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ conductoresStore.activos.length }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Activos</p>
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center">
+          <div class="w-10 h-10 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
             <i class="pi pi-map-marker text-lg"></i>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-800">{{ conductoresStore.disponibles.length }}</p>
-            <p class="text-xs text-gray-500">Disponibles</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ conductoresStore.disponibles.length }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Disponibles</p>
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 flex items-center justify-center">
             <i class="pi pi-ban text-lg"></i>
           </div>
           <div>
-            <p class="text-2xl font-bold text-gray-800">{{ (conductoresStore.conductoresByEstado['INACTIVO'] ?? 0) + (conductoresStore.conductoresByEstado['SUSPENDIDO'] ?? 0) }}</p>
-            <p class="text-xs text-gray-500">Inactivos</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ (conductoresStore.conductoresByEstado['INACTIVO'] ?? 0) + (conductoresStore.conductoresByEstado['SUSPENDIDO'] ?? 0) }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Inactivos</p>
           </div>
         </div>
       </div>
@@ -310,8 +310,8 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
               </span>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-gray-800">{{ getFullName(detailConductor) }}</h3>
-              <p class="text-sm text-gray-500">{{ detailConductor.ciudadBase || 'Sin ciudad base' }}</p>
+              <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">{{ getFullName(detailConductor) }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ detailConductor.ciudadBase || 'Sin ciudad base' }}</p>
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -343,35 +343,35 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
           <TabPanel value="0" header="Información">
             <div class="space-y-5 pt-3">
               <!-- Contact Info -->
-              <div class="bg-gray-50 rounded-xl p-5">
-                <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Información de Contacto</h4>
+              <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-5">
+                <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Información de Contacto</h4>
                 <div class="grid grid-cols-2 gap-4">
                   <div class="flex items-center gap-3">
-                    <i class="pi pi-envelope text-gray-400"></i>
+                    <i class="pi pi-envelope text-gray-400 dark:text-gray-500"></i>
                     <div>
-                      <span class="text-xs text-gray-500">Email</span>
-                      <p class="text-gray-800 text-sm font-medium">{{ detailConductor.email || '—' }}</p>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">Email</span>
+                      <p class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ detailConductor.email || '—' }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
-                    <i class="pi pi-phone text-gray-400"></i>
+                    <i class="pi pi-phone text-gray-400 dark:text-gray-500"></i>
                     <div>
-                      <span class="text-xs text-gray-500">Teléfono</span>
-                      <p class="text-gray-800 text-sm font-medium">{{ detailConductor.telefono || '—' }}</p>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">Teléfono</span>
+                      <p class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ detailConductor.telefono || '—' }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
-                    <i class="pi pi-id-card text-gray-400"></i>
+                    <i class="pi pi-id-card text-gray-400 dark:text-gray-500"></i>
                     <div>
-                      <span class="text-xs text-gray-500">DNI / Licencia</span>
-                      <p class="text-gray-800 text-sm font-medium font-mono">{{ detailConductor.dni || '—' }}</p>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">DNI / Licencia</span>
+                      <p class="text-gray-800 dark:text-gray-100 text-sm font-medium font-mono">{{ detailConductor.dni || '—' }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
-                    <i class="pi pi-map-marker text-gray-400"></i>
+                    <i class="pi pi-map-marker text-gray-400 dark:text-gray-500"></i>
                     <div>
-                      <span class="text-xs text-gray-500">Ciudad Base</span>
-                      <p class="text-gray-800 text-sm font-medium">{{ detailConductor.ciudadBase || '—' }}</p>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">Ciudad Base</span>
+                      <p class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ detailConductor.ciudadBase || '—' }}</p>
                     </div>
                   </div>
                 </div>
@@ -397,11 +397,11 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
               </div>
 
               <!-- Work Preferences -->
-              <div class="bg-gray-50 rounded-xl p-5">
-                <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Preferencias</h4>
+              <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-5">
+                <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Preferencias</h4>
                 <div class="grid grid-cols-2 gap-4">
                   <div>
-                    <span class="text-xs text-gray-500">Días Laborables</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Días Laborables</span>
                     <div class="flex gap-1 mt-1">
                       <span
                         v-for="day in ['L', 'M', 'X', 'J', 'V', 'S', 'D']"
@@ -418,7 +418,7 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
                     </div>
                   </div>
                   <div>
-                    <span class="text-xs text-gray-500">Disponibilidad</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Disponibilidad</span>
                     <p class="mt-1">
                       <span
                         class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
@@ -450,14 +450,14 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
                 <div
                   v-for="bloqueo in conductoresStore.detailAgenda"
                   :key="bloqueo.id"
-                  class="bg-gray-50 rounded-lg p-4 flex items-start justify-between"
+                  class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 flex items-start justify-between"
                 >
                   <div>
                     <div class="flex items-center gap-2 mb-1">
                       <Tag :value="bloqueo.tipo" severity="warn" class="text-xs" />
-                      <span class="text-sm font-medium text-gray-800">{{ bloqueo.descripcion }}</span>
+                      <span class="text-sm font-medium text-gray-800 dark:text-gray-100">{{ bloqueo.descripcion }}</span>
                     </div>
-                    <p class="text-xs text-gray-500">{{ bloqueo.fechaInicio }} — {{ bloqueo.fechaFin }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ bloqueo.fechaInicio }} — {{ bloqueo.fechaFin }}</p>
                     <!-- Recurring day chips -->
                     <div v-if="bloqueo.diaSemana != null" class="flex gap-1 mt-2">
                       <span
@@ -589,13 +589,13 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
           ></i>
         </div>
         <div>
-          <p class="text-gray-800 font-medium">
+          <p class="text-gray-800 dark:text-gray-100 font-medium">
             {{ togglingConductor?.estado === 'ACTIVO'
               ? `¿Desactivar a ${togglingConductor?.nombre} ${togglingConductor?.apellidos}?`
               : `¿Activar a ${togglingConductor?.nombre} ${togglingConductor?.apellidos}?`
             }}
           </p>
-          <p class="text-sm text-gray-500 mt-1">
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {{ togglingConductor?.estado === 'ACTIVO'
               ? 'El conductor no podrá recibir nuevos portes y se bloqueará su acceso al sistema.'
               : 'El conductor podrá volver a recibir portes y acceder al sistema.'

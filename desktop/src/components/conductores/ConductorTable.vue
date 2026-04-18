@@ -84,15 +84,15 @@ type StyleConfig = {
 }
 
 const estadoConfig: Record<string, StyleConfig> = {
-  ACTIVO: { bg: 'bg-emerald-50', text: 'text-emerald-700', ring: 'ring-emerald-600/20', label: 'Activo' },
-  INACTIVO: { bg: 'bg-gray-50', text: 'text-gray-600', ring: 'ring-gray-500/20', label: 'Inactivo' },
-  SUSPENDIDO: { bg: 'bg-red-50', text: 'text-red-700', ring: 'ring-red-600/20', label: 'Suspendido' },
+  ACTIVO: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', ring: 'ring-emerald-600/20 dark:ring-emerald-500/30', label: 'Activo' },
+  INACTIVO: { bg: 'bg-gray-50 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-300', ring: 'ring-gray-500/20 dark:ring-gray-400/30', label: 'Inactivo' },
+  SUSPENDIDO: { bg: 'bg-red-50 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', ring: 'ring-red-600/20 dark:ring-red-500/30', label: 'Suspendido' },
 }
 
 const defaultConfig: StyleConfig = {
-  bg: 'bg-gray-50',
-  text: 'text-gray-600',
-  ring: 'ring-gray-500/20',
+  bg: 'bg-gray-50 dark:bg-gray-700',
+  text: 'text-gray-600 dark:text-gray-300',
+  ring: 'ring-gray-500/20 dark:ring-gray-400/30',
   label: '',
 }
 
@@ -102,13 +102,13 @@ function getEstadoConfig(estado: string): StyleConfig {
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
     <!-- Table Header with Filters -->
-    <div class="p-5 border-b border-gray-100">
+    <div class="p-5 border-b border-gray-100 dark:border-gray-700">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h3 class="text-lg font-semibold text-gray-800">Lista de Conductores</h3>
-          <p class="text-sm text-gray-500 mt-0.5">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Lista de Conductores</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {{ filteredConductores.length }} conductores encontrados
           </p>
         </div>
@@ -167,8 +167,8 @@ function getEstadoConfig(estado: string): StyleConfig {
               </span>
             </div>
             <div>
-              <p class="text-gray-800 font-medium text-sm">{{ getFullName(slotProps.data) }}</p>
-              <p class="text-gray-400 text-xs">{{ slotProps.data.ciudadBase || '—' }}</p>
+              <p class="text-gray-800 dark:text-gray-100 font-medium text-sm">{{ getFullName(slotProps.data) }}</p>
+              <p class="text-gray-400 dark:text-gray-500 text-xs">{{ slotProps.data.ciudadBase || '—' }}</p>
             </div>
           </div>
         </template>
@@ -179,7 +179,7 @@ function getEstadoConfig(estado: string): StyleConfig {
         <template #body="slotProps">
           <div class="flex items-center gap-2">
             <i class="pi pi-envelope text-xs text-gray-400"></i>
-            <span class="text-gray-700 text-sm">{{ slotProps.data.email || '—' }}</span>
+            <span class="text-gray-700 dark:text-gray-300 text-sm">{{ slotProps.data.email || '—' }}</span>
           </div>
         </template>
       </Column>
@@ -187,14 +187,14 @@ function getEstadoConfig(estado: string): StyleConfig {
       <!-- Teléfono -->
       <Column field="telefono" header="Teléfono" style="min-width: 130px">
         <template #body="slotProps">
-          <span class="text-gray-600 text-sm">{{ slotProps.data.telefono || '—' }}</span>
+          <span class="text-gray-600 dark:text-gray-300 text-sm">{{ slotProps.data.telefono || '—' }}</span>
         </template>
       </Column>
 
       <!-- Licencia / DNI -->
       <Column field="dni" header="Licencia / DNI" style="min-width: 130px">
         <template #body="slotProps">
-          <span class="text-gray-600 text-sm font-mono">{{ slotProps.data.dni || '—' }}</span>
+          <span class="text-gray-600 dark:text-gray-300 text-sm font-mono">{{ slotProps.data.dni || '—' }}</span>
         </template>
       </Column>
 
@@ -309,5 +309,22 @@ function getEstadoConfig(estado: string): StyleConfig {
   background: #2563EB;
   color: white;
   border-radius: 0.5rem;
+}
+
+/* Dark mode overrides — .dark class on <html> */
+.dark :deep(.p-datatable-thead > tr > th) {
+  background: #111827 !important;
+  color: #9CA3AF !important;
+  border-color: #374151 !important;
+}
+.dark :deep(.p-datatable-tbody > tr > td) {
+  border-color: #374151 !important;
+}
+.dark :deep(.p-datatable-tbody > tr:hover) {
+  background-color: #374151 !important;
+}
+.dark :deep(.p-paginator) {
+  background-color: #1f2937;
+  border-color: #374151;
 }
 </style>

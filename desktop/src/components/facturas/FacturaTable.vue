@@ -110,13 +110,13 @@ function getClienteName(factura: Factura): string {
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
     <!-- Table Header with Filters -->
-    <div class="p-5 border-b border-gray-100">
+    <div class="p-5 border-b border-gray-100 dark:border-gray-700">
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-          <h3 class="text-lg font-semibold text-gray-800">Lista de Facturas</h3>
-          <p class="text-sm text-gray-500 mt-0.5">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Lista de Facturas</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {{ filteredFacturas.length }} facturas encontradas
           </p>
         </div>
@@ -192,42 +192,42 @@ function getClienteName(factura: Factura): string {
       <!-- Nº Serie -->
       <Column field="numeroSerie" header="Nº Serie" :sortable="true" style="min-width: 150px">
         <template #body="slotProps">
-          <span class="font-semibold text-gray-800">{{ slotProps.data.numeroSerie }}</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-100">{{ slotProps.data.numeroSerie }}</span>
         </template>
       </Column>
 
       <!-- Fecha Emisión -->
       <Column field="fechaEmision" header="Fecha Emisión" :sortable="true" style="min-width: 130px">
         <template #body="slotProps">
-          <span class="text-gray-600 text-sm">{{ formatDate(slotProps.data.fechaEmision) }}</span>
+          <span class="text-gray-600 dark:text-gray-400 text-sm">{{ formatDate(slotProps.data.fechaEmision) }}</span>
         </template>
       </Column>
 
       <!-- Cliente -->
       <Column header="Cliente" :sortable="false" style="min-width: 180px">
         <template #body="slotProps">
-          <span class="text-gray-700">{{ getClienteName(slotProps.data) }}</span>
+          <span class="text-gray-700 dark:text-gray-300">{{ getClienteName(slotProps.data) }}</span>
         </template>
       </Column>
 
       <!-- Base Imponible -->
       <Column field="baseImponible" header="Base Imponible" :sortable="true" style="min-width: 130px">
         <template #body="slotProps">
-          <span class="text-gray-600 text-sm">{{ formatCurrency(slotProps.data.baseImponible) }}</span>
+          <span class="text-gray-600 dark:text-gray-400 text-sm">{{ formatCurrency(slotProps.data.baseImponible) }}</span>
         </template>
       </Column>
 
       <!-- IVA -->
       <Column field="iva" header="IVA" :sortable="true" style="min-width: 100px">
         <template #body="slotProps">
-          <span class="text-gray-600 text-sm">{{ formatCurrency(slotProps.data.iva) }}</span>
+          <span class="text-gray-600 dark:text-gray-400 text-sm">{{ formatCurrency(slotProps.data.iva) }}</span>
         </template>
       </Column>
 
       <!-- Total -->
       <Column field="importeTotal" header="Total" :sortable="true" style="min-width: 120px">
         <template #body="slotProps">
-          <span class="font-semibold text-gray-800">{{ formatCurrency(slotProps.data.importeTotal) }}</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-100">{{ formatCurrency(slotProps.data.importeTotal) }}</span>
         </template>
       </Column>
 
@@ -261,9 +261,9 @@ function getClienteName(factura: Factura): string {
       <!-- Empty state -->
       <template #empty>
         <div class="text-center py-12">
-          <i class="pi pi-file text-4xl text-gray-300 mb-3"></i>
-          <p class="text-gray-500">No se encontraron facturas</p>
-          <p class="text-gray-400 text-sm mt-1">Intenta ajustar los filtros de búsqueda</p>
+          <i class="pi pi-file text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+          <p class="text-gray-500 dark:text-gray-400">No se encontraron facturas</p>
+          <p class="text-gray-400 dark:text-gray-500 text-sm mt-1">Intenta ajustar los filtros de búsqueda</p>
         </div>
       </template>
     </DataTable>
@@ -305,5 +305,30 @@ function getClienteName(factura: Factura): string {
   background: #2563EB;
   color: white;
   border-radius: 0.5rem;
+}
+
+/* Dark mode overrides */
+.dark :deep(.p-datatable-thead > tr > th) {
+  background: #1F2937;
+  color: #9CA3AF;
+  border-color: #374151;
+}
+.dark :deep(.p-datatable-tbody > tr > td) {
+  border-color: #374151;
+  color: #D1D5DB;
+}
+.dark :deep(.p-datatable-tbody > tr) {
+  background: #1F2937;
+}
+.dark :deep(.p-datatable-tbody > tr:nth-child(even)) {
+  background: #111827;
+}
+.dark :deep(.p-datatable-tbody > tr:hover) {
+  background-color: #374151 !important;
+}
+.dark :deep(.p-paginator) {
+  background: #1F2937;
+  color: #9CA3AF;
+  border-color: #374151;
 }
 </style>

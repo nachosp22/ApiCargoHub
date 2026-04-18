@@ -113,7 +113,7 @@ function copyToClipboard(text: string, label: string): void {
       <!-- Status & Route Header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <span class="text-lg font-bold text-gray-800">#{{ porte.id }}</span>
+          <span class="text-lg font-bold text-gray-800 dark:text-gray-100">#{{ porte.id }}</span>
           <PorteStatusBadge :estado="porte.estado" />
           <span
             v-if="porte.revisionManual"
@@ -138,48 +138,48 @@ function copyToClipboard(text: string, label: string): void {
       </div>
 
       <!-- Route Info -->
-      <div class="bg-gray-50 rounded-xl p-4">
+      <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
         <div class="flex items-center gap-4">
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
               <i class="pi pi-map-marker text-blue-500"></i>
-              <span class="text-xs text-gray-500 uppercase tracking-wide">Origen</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Origen</span>
             </div>
-            <p class="text-gray-800 font-medium">{{ porte.origen }}</p>
+            <p class="text-gray-800 dark:text-gray-100 font-medium">{{ porte.origen }}</p>
           </div>
-          <i class="pi pi-arrow-right text-gray-300 text-xl flex-shrink-0"></i>
+          <i class="pi pi-arrow-right text-gray-300 dark:text-gray-600 text-xl flex-shrink-0"></i>
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
               <i class="pi pi-flag text-emerald-500"></i>
-              <span class="text-xs text-gray-500 uppercase tracking-wide">Destino</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Destino</span>
             </div>
-            <p class="text-gray-800 font-medium">{{ porte.destino }}</p>
+            <p class="text-gray-800 dark:text-gray-100 font-medium">{{ porte.destino }}</p>
           </div>
           <div v-if="porte.distanciaKm" class="text-right flex-shrink-0">
-            <span class="text-xs text-gray-500">Distancia</span>
-            <p class="text-gray-800 font-medium">{{ porte.distanciaKm?.toFixed(0) }} km</p>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Distancia</span>
+            <p class="text-gray-800 dark:text-gray-100 font-medium">{{ porte.distanciaKm?.toFixed(0) }} km</p>
           </div>
         </div>
       </div>
 
       <!-- Client Info Card -->
-      <div class="bg-blue-50/50 rounded-xl p-5 border border-blue-100">
-        <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-2">
+      <div class="bg-blue-50/50 dark:bg-blue-950/30 rounded-xl p-5 border border-blue-100 dark:border-blue-900">
+        <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-2">
           <i class="pi pi-building text-blue-500"></i>
           Datos del Cliente
         </h4>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <span class="text-xs text-gray-500">Empresa</span>
-            <p class="text-gray-800 font-medium">{{ porte.cliente?.nombreEmpresa ?? 'Sin cliente' }}</p>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Empresa</span>
+            <p class="text-gray-800 dark:text-gray-100 font-medium">{{ porte.cliente?.nombreEmpresa ?? 'Sin cliente' }}</p>
           </div>
           <div>
-            <span class="text-xs text-gray-500">CIF</span>
-            <p class="text-gray-800 font-medium">{{ porte.cliente?.cif ?? '—' }}</p>
+            <span class="text-xs text-gray-500 dark:text-gray-400">CIF</span>
+            <p class="text-gray-800 dark:text-gray-100 font-medium">{{ porte.cliente?.cif ?? '—' }}</p>
           </div>
           <div>
-            <span class="text-xs text-gray-500">Teléfono</span>
-            <p v-if="porte.cliente?.telefono" class="text-gray-800 font-medium flex items-center gap-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400">Teléfono</span>
+            <p v-if="porte.cliente?.telefono" class="text-gray-800 dark:text-gray-100 font-medium flex items-center gap-2">
               {{ porte.cliente.telefono }}
               <button
                 class="text-blue-500 hover:text-blue-700 transition-colors"
@@ -191,8 +191,8 @@ function copyToClipboard(text: string, label: string): void {
             <p v-else class="text-gray-400">—</p>
           </div>
           <div>
-            <span class="text-xs text-gray-500">Email</span>
-            <p v-if="porte.cliente?.emailContacto" class="text-gray-800 font-medium flex items-center gap-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400">Email</span>
+            <p v-if="porte.cliente?.emailContacto" class="text-gray-800 dark:text-gray-100 font-medium flex items-center gap-2">
               {{ porte.cliente.emailContacto }}
               <button
                 class="text-blue-500 hover:text-blue-700 transition-colors"
@@ -207,20 +207,20 @@ function copyToClipboard(text: string, label: string): void {
       </div>
 
       <!-- Description -->
-      <div v-if="porte.descripcionCliente" class="bg-gray-50 rounded-xl p-4">
-        <h4 class="text-xs text-gray-500 uppercase tracking-wide mb-2">Descripción del cliente</h4>
-        <p class="text-gray-700 text-sm">{{ porte.descripcionCliente }}</p>
+      <div v-if="porte.descripcionCliente" class="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
+        <h4 class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Descripción del cliente</h4>
+        <p class="text-gray-700 dark:text-gray-300 text-sm">{{ porte.descripcionCliente }}</p>
       </div>
 
       <!-- Cargo Dimensions - Editable -->
-      <div class="bg-white rounded-xl p-5 border border-gray-200">
-        <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4 flex items-center gap-2">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+        <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-4 flex items-center gap-2">
           <i class="pi pi-box text-orange-500"></i>
           Dimensiones de Carga
         </h4>
         <div class="grid grid-cols-3 gap-4 mb-4">
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Peso (kg)</label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Peso (kg)</label>
             <InputNumber
               v-model="dimForm.pesoTotalKg"
               :minFractionDigits="1"
@@ -231,7 +231,7 @@ function copyToClipboard(text: string, label: string): void {
             />
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Volumen (m³)</label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Volumen (m³)</label>
             <InputNumber
               v-model="dimForm.volumenTotalM3"
               :minFractionDigits="1"
@@ -242,7 +242,7 @@ function copyToClipboard(text: string, label: string): void {
             />
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Tipo Vehículo</label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Tipo Vehículo</label>
             <Select
               v-model="dimForm.tipoVehiculoRequerido"
               :options="tipoVehiculoOptions"
@@ -253,7 +253,7 @@ function copyToClipboard(text: string, label: string): void {
             />
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Largo máx. (m)</label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Largo máx. (m)</label>
             <InputNumber
               v-model="dimForm.largoMaxPaquete"
               :minFractionDigits="1"
@@ -264,7 +264,7 @@ function copyToClipboard(text: string, label: string): void {
             />
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Ancho máx. (m)</label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Ancho máx. (m)</label>
             <InputNumber
               v-model="dimForm.anchoMaxPaquete"
               :minFractionDigits="1"
@@ -275,7 +275,7 @@ function copyToClipboard(text: string, label: string): void {
             />
           </div>
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Alto máx. (m)</label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Alto máx. (m)</label>
             <InputNumber
               v-model="dimForm.altoMaxPaquete"
               :minFractionDigits="1"
@@ -306,9 +306,9 @@ function copyToClipboard(text: string, label: string): void {
       </div>
 
       <!-- Conductor Candidates Table -->
-      <div v-if="showCandidatos" class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
-          <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-2">
+      <div v-if="showCandidatos" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="px-5 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+          <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide flex items-center gap-2">
             <i class="pi pi-users text-primary"></i>
             Conductores Candidatos
             <span class="text-xs font-normal text-gray-400">({{ portesStore.conductorCandidatos.length }} encontrados)</span>
@@ -327,8 +327,8 @@ function copyToClipboard(text: string, label: string): void {
           <Column header="Conductor" :sortable="false">
             <template #body="{ data }">
               <div>
-                <span class="font-medium text-gray-800">{{ data.nombre }} {{ data.apellidos ?? '' }}</span>
-                <span v-if="data.ciudadBase" class="block text-xs text-gray-500">{{ data.ciudadBase }}</span>
+                <span class="font-medium text-gray-800 dark:text-gray-100">{{ data.nombre }} {{ data.apellidos ?? '' }}</span>
+                <span v-if="data.ciudadBase" class="block text-xs text-gray-500 dark:text-gray-400">{{ data.ciudadBase }}</span>
               </div>
             </template>
           </Column>
@@ -337,14 +337,14 @@ function copyToClipboard(text: string, label: string): void {
               <div v-if="data.rating != null" class="flex items-center gap-1">
                 <i class="pi pi-star-fill text-amber-400 text-xs"></i>
                 <span class="text-sm font-medium">{{ data.rating?.toFixed(1) }}</span>
-                <span class="text-xs text-gray-400">({{ data.numeroValoraciones }})</span>
+                <span class="text-xs text-gray-400 dark:text-gray-500">({{ data.numeroValoraciones }})</span>
               </div>
               <span v-else class="text-gray-400 text-sm">—</span>
             </template>
           </Column>
           <Column field="vehiculoInfo" header="Vehículo" :sortable="false">
             <template #body="{ data }">
-              <span class="text-sm text-gray-700">{{ data.vehiculoInfo ?? '—' }}</span>
+              <span class="text-sm text-gray-700 dark:text-gray-300">{{ data.vehiculoInfo ?? '—' }}</span>
             </template>
           </Column>
           <Column field="score" header="Score" :sortable="true" style="width: 90px">
@@ -373,12 +373,34 @@ function copyToClipboard(text: string, label: string): void {
       </div>
 
       <!-- Pricing -->
-      <div v-if="porte.precio" class="bg-gray-50 rounded-xl p-4 flex items-center gap-6">
+      <div v-if="porte.precio" class="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 flex items-center gap-6">
         <div>
-          <span class="text-xs text-gray-500">Precio estimado</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">Precio estimado</span>
           <p class="text-lg font-bold text-primary">{{ porte.precio?.toFixed(2) }} €</p>
         </div>
       </div>
     </div>
   </Dialog>
 </template>
+
+<style scoped>
+/* Dark mode for candidates DataTable */
+.dark :deep(.p-datatable-thead > tr > th) {
+  background: #1F2937;
+  color: #9CA3AF;
+  border-color: #374151;
+}
+.dark :deep(.p-datatable-tbody > tr > td) {
+  border-color: #374151;
+  color: #D1D5DB;
+}
+.dark :deep(.p-datatable-tbody > tr) {
+  background: #111827;
+}
+.dark :deep(.p-datatable-tbody > tr:nth-child(even)) {
+  background: #1F2937;
+}
+.dark :deep(.p-datatable-tbody > tr:hover) {
+  background: #374151 !important;
+}
+</style>
