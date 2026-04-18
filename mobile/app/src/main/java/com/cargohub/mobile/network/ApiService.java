@@ -177,6 +177,17 @@ public interface ApiService {
     Call<Void> eliminarFotoCarga(@Path("porteId") long porteId,
                                  @Path("fotoId") long fotoId);
 
+    // ── Foto de perfil ──
+
+    @POST("api/usuarios/me/foto")
+    Call<java.util.Map<String, String>> subirFotoPerfil(@Body java.util.Map<String, String> body);
+
+    @DELETE("api/usuarios/me/foto")
+    Call<Void> eliminarFotoPerfil();
+
+    @GET("api/usuarios/me/foto")
+    Call<java.util.Map<String, String>> obtenerFotoPerfil();
+
     // ── Firma de entrega ──
 
     @POST("api/portes/{porteId}/firma")

@@ -48,7 +48,7 @@ async function handleLogout(): Promise<void> {
     <!-- Logo -->
     <div class="h-16 flex items-center gap-3 px-5 border-b border-gray-200 dark:border-gray-700 shrink-0">
       <div class="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
-        <i class="pi pi-truck text-white text-sm"></i>
+        <svg viewBox="0 0 512 512" fill="none" class="w-5 h-5"><path d="M256 296L88 199v148l168 97V296z" fill="#1E40AF"/><path d="M256 296l168-97v148l-168 97V296z" fill="#2563EB"/><path d="M256 102L88 199l168 97 168-97L256 102z" fill="#3B82F6"/><path d="M216 199l40-28 40 28-16 11v34h-48v-34L216 199z" fill="white" opacity=".92"/></svg>
       </div>
       <span class="text-lg font-semibold text-gray-800 dark:text-white">CargoHub</span>
     </div>

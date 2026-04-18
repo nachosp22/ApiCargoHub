@@ -21,13 +21,22 @@
 
         <ImageView
             android:id="@+id/companyLogo"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
             android:background="@drawable/bg_login_logo_placeholder"
             android:contentDescription="@string/app_name"
             android:padding="@dimen/spacing_lg"
             android:src="@drawable/ic_cargohub_logo"
             app:tint="@color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:text="@string/app_name"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleLarge"
+            android:textColor="@color/ch_primary"
+            android:textStyle="bold" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/emailInputLayout"

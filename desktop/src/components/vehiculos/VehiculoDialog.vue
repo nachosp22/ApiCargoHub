@@ -46,11 +46,10 @@ const submitted = ref(false)
 
 // Tipo options
 const tipoOptions = [
-  { label: 'Frigorífico', value: 'FRIGORIFICO' },
-  { label: 'Lona', value: 'LONA' },
-  { label: 'Plataforma', value: 'PLATAFORMA' },
-  { label: 'Cisterna', value: 'CISTERNA' },
-  { label: 'Portacontenedores', value: 'PORTACONTENEDORES' },
+  { label: 'Furgoneta', value: 'FURGONETA' },
+  { label: 'Rígido', value: 'RIGIDO' },
+  { label: 'Tráiler', value: 'TRAILER' },
+  { label: 'Especial', value: 'ESPECIAL' },
 ]
 
 // Validation

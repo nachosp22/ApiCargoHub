@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/ch_surface"
+    android:background="@color/ch_background"
     android:orientation="vertical">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -53,10 +53,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/ch_space_md"
                         app:cardBackgroundColor="@color/ch_surface_card"
-                        app:cardCornerRadius="@dimen/ch_radius_md"
-                        app:cardElevation="0dp"
-                        app:strokeColor="@color/ch_blue_100"
-                        app:strokeWidth="1dp">
+                        app:cardCornerRadius="@dimen/radius_md"
+                        app:cardElevation="2dp"
+                        app:strokeColor="@android:color/transparent"
+                        app:strokeWidth="0dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -104,10 +104,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/ch_space_sm"
                         app:cardBackgroundColor="@color/ch_surface_card"
-                        app:cardCornerRadius="@dimen/ch_radius_md"
-                        app:cardElevation="0dp"
-                        app:strokeColor="@color/ch_blue_100"
-                        app:strokeWidth="1dp">
+                        app:cardCornerRadius="@dimen/radius_md"
+                        app:cardElevation="2dp"
+                        app:strokeColor="@android:color/transparent"
+                        app:strokeWidth="0dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -151,10 +151,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/ch_space_sm"
                         app:cardBackgroundColor="@color/ch_surface_card"
-                        app:cardCornerRadius="@dimen/ch_radius_md"
-                        app:cardElevation="0dp"
-                        app:strokeColor="@color/ch_blue_100"
-                        app:strokeWidth="1dp">
+                        app:cardCornerRadius="@dimen/radius_md"
+                        app:cardElevation="2dp"
+                        app:strokeColor="@android:color/transparent"
+                        app:strokeWidth="0dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -207,10 +207,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/ch_space_sm"
                         app:cardBackgroundColor="@color/ch_surface_card"
-                        app:cardCornerRadius="@dimen/ch_radius_md"
-                        app:cardElevation="0dp"
-                        app:strokeColor="@color/ch_blue_100"
-                        app:strokeWidth="1dp">
+                        app:cardCornerRadius="@dimen/radius_md"
+                        app:cardElevation="2dp"
+                        app:strokeColor="@android:color/transparent"
+                        app:strokeWidth="0dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"

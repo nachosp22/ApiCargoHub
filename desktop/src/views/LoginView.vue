@@ -65,7 +65,7 @@ async function handleLogin(): Promise<void> {
         <div
           class="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4"
         >
-          <i class="pi pi-truck text-white text-3xl"></i>
+          <svg viewBox="0 0 512 512" fill="none" class="w-8 h-8"><path d="M256 296L88 199v148l168 97V296z" fill="#1E40AF"/><path d="M256 296l168-97v148l-168 97V296z" fill="#2563EB"/><path d="M256 102L88 199l168 97 168-97L256 102z" fill="#3B82F6"/><path d="M216 199l40-28 40 28-16 11v34h-48v-34L216 199z" fill="white" opacity=".92"/></svg>
         </div>
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white">CargoHub</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Plataforma de Gestión Logística</p>

@@ -90,6 +90,23 @@ export const getResumenPortes = (anio?: number, mes?: number) =>
 export const getIncidenciasPendientes = () =>
   api.get('/incidencias/contador')
 
+// --- Profile photo ---
+
+export interface ProfilePhotoResponse {
+  url: string
+}
+
+export const uploadProfilePhoto = (imagen: string) =>
+  api.post<ProfilePhotoResponse>('/usuarios/me/foto', { imagen })
+
+export const deleteProfilePhoto = () =>
+  api.delete('/usuarios/me/foto')
+
+export const getProfilePhoto = () =>
+  api.get<ProfilePhotoResponse>('/usuarios/me/foto', {
+    validateStatus: (status) => status === 200 || status === 204,
+  })
+
 // --- Request Interceptor: attach Bearer token ---
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {

@@ -7,7 +7,7 @@
           <!-- Logo -->
           <router-link to="/" class="flex items-center gap-2">
             <div class="w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center">
-              <i class="pi pi-truck text-white text-lg"></i>
+              <svg viewBox="0 0 512 512" fill="none" class="w-5 h-5"><path d="M256 296L88 199v148l168 97V296z" fill="#1E40AF"/><path d="M256 296l168-97v148l-168 97V296z" fill="#2563EB"/><path d="M256 102L88 199l168 97 168-97L256 102z" fill="#3B82F6"/><path d="M216 199l40-28 40 28-16 11v34h-48v-34L216 199z" fill="white" opacity=".92"/></svg>
             </div>
             <span class="text-xl font-bold text-gray-900 dark:text-white">Cargo<span class="text-primary">Hub</span></span>
           </router-link>
@@ -53,7 +53,7 @@
           <div class="md:col-span-2">
             <div class="flex items-center gap-2 mb-4">
               <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
-                <i class="pi pi-truck text-white"></i>
+                <svg viewBox="0 0 512 512" fill="none" class="w-4 h-4"><path d="M256 296L88 199v148l168 97V296z" fill="#1E40AF"/><path d="M256 296l168-97v148l-168 97V296z" fill="#2563EB"/><path d="M256 102L88 199l168 97 168-97L256 102z" fill="#3B82F6"/><path d="M216 199l40-28 40 28-16 11v34h-48v-34L216 199z" fill="white" opacity=".92"/></svg>
               </div>
               <span class="text-lg font-bold text-white">CargoHub</span>
             </div>

@@ -13,6 +13,7 @@ export interface User {
   nombre: string
   email: string
   role: string
+  fotoUrl?: string | null
 }
 
 interface LoginResponse {
@@ -227,6 +228,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /**
+   * Update the user's profile photo URL in local state.
+   */
+  function setFotoUrl(url: string | null): void {
+    if (user.value) {
+      user.value = { ...user.value, fotoUrl: url }
+      localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(user.value))
+    }
+  }
+
   // Return ALL state, getters, and actions (Pinia setup store best practice)
   return {
     // State
@@ -238,5 +249,6 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     loadFromStorage,
+    setFotoUrl,
   }
 })

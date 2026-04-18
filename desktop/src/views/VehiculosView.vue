@@ -346,58 +346,7 @@ function getTipoConfig(tipo: string): StyleConfig {
           </div>
         </div>
 
-        <!-- Stats (Mock) -->
-        <div class="grid grid-cols-3 gap-4">
-          <div class="bg-blue-50 rounded-xl p-4 text-center">
-            <p class="text-2xl font-bold text-blue-700">{{ Math.floor(Math.random() * 50000 + 10000).toLocaleString() }}</p>
-            <p class="text-xs text-blue-600 mt-0.5">Km Recorridos</p>
-          </div>
-          <div class="bg-amber-50 rounded-xl p-4 text-center">
-            <p class="text-2xl font-bold text-amber-700">{{ Math.floor(Math.random() * 80 + 5) }}</p>
-            <p class="text-xs text-amber-600 mt-0.5">Portes Completados</p>
-          </div>
-          <div class="bg-green-50 rounded-xl p-4 text-center">
-            <p class="text-2xl font-bold text-green-700">{{ Math.floor(Math.random() * 12 + 1) }}</p>
-            <p class="text-xs text-green-600 mt-0.5">Meses desde último mantenimiento</p>
-          </div>
-        </div>
 
-        <!-- Maintenance History (Mock) -->
-        <div class="bg-gray-50 rounded-xl p-5">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Historial de Mantenimiento</h4>
-          <div class="space-y-3">
-            <div class="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-100">
-              <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
-                <i class="pi pi-wrench text-sm"></i>
-              </div>
-              <div class="flex-1">
-                <p class="text-sm text-gray-800 font-medium">Revisión ITV</p>
-                <p class="text-xs text-gray-400">15/01/2026</p>
-              </div>
-              <span class="text-xs text-emerald-600 font-medium">Aprobado</span>
-            </div>
-            <div class="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-100">
-              <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-                <i class="pi pi-cog text-sm"></i>
-              </div>
-              <div class="flex-1">
-                <p class="text-sm text-gray-800 font-medium">Cambio de aceite y filtros</p>
-                <p class="text-xs text-gray-400">28/11/2025</p>
-              </div>
-              <span class="text-xs text-gray-500 font-medium">Completado</span>
-            </div>
-            <div class="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-100">
-              <div class="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0">
-                <i class="pi pi-exclamation-triangle text-sm"></i>
-              </div>
-              <div class="flex-1">
-                <p class="text-sm text-gray-800 font-medium">Reparación frenos</p>
-                <p class="text-xs text-gray-400">03/09/2025</p>
-              </div>
-              <span class="text-xs text-gray-500 font-medium">Completado</span>
-            </div>
-          </div>
-        </div>
       </div>
     </Dialog>
   </div>

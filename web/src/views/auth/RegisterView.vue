@@ -5,7 +5,7 @@
         <div
           class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center mx-auto mb-4"
         >
-          <i class="pi pi-truck text-white text-xl"></i>
+          <svg viewBox="0 0 512 512" fill="none" class="w-6 h-6"><path d="M256 296L88 199v148l168 97V296z" fill="#1E40AF"/><path d="M256 296l168-97v148l-168 97V296z" fill="#2563EB"/><path d="M256 102L88 199l168 97 168-97L256 102z" fill="#3B82F6"/><path d="M216 199l40-28 40 28-16 11v34h-48v-34L216 199z" fill="white" opacity=".92"/></svg>
         </div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('auth.register.title') }}</h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('auth.register.subtitle') }}</p>

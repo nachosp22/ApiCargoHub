@@ -11,8 +11,8 @@
     <color name="ch_blue_900">#1E3A8A</color>
 
     <!-- ── Semantic: Primary ── -->
-    <color name="ch_primary">@color/ch_blue_800</color>
-    <color name="ch_primary_dark">@color/ch_blue_900</color>
+    <color name="ch_primary">@color/ch_blue_600</color>
+    <color name="ch_primary_dark">@color/ch_blue_800</color>
     <color name="ch_primary_light">@color/ch_blue_500</color>
     <color name="ch_on_primary">@color/white</color>
     <color name="ch_primary_container">@color/ch_blue_100</color>
@@ -24,7 +24,7 @@
     <color name="ch_on_accent_primary">@color/ch_on_primary</color>
 
     <!-- ── Semantic: Surface / Background ── -->
-    <color name="ch_background">#F8FAFC</color>
+    <color name="ch_background">#F9FAFB</color>
     <color name="ch_surface">#FFFFFF</color>
     <color name="ch_surface_alt">#F1F5F9</color>
     <color name="ch_surface_card">@color/ch_surface</color>
@@ -36,7 +36,7 @@
     <color name="ch_text_secondary">@color/ch_on_surface_variant</color>
 
     <!-- ── Semantic: Outline / Divider ── -->
-    <color name="ch_outline">#E2E8F0</color>
+    <color name="ch_outline">#E5E7EB</color>
     <color name="ch_card_stroke">@color/ch_outline</color>
 
     <!-- ── Semantic: Status ── -->

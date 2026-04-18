@@ -56,9 +56,9 @@ public class Conductor {
     private boolean disponible = true;
 
     // --- RATINGS ---
-    private Double rating = 4.0;
-    private Integer numeroValoraciones = 10;
-    private Double sumaPuntuaciones = 40.0;
+    private Double rating = 4.0;          // Display default for new conductors
+    private Integer numeroValoraciones = 0;
+    private Double sumaPuntuaciones = 0.0;
 
     public void recibirValoracion(int estrellas) {
         this.sumaPuntuaciones += estrellas;

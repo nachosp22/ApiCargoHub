@@ -151,6 +151,19 @@
     <string name="profile_deactivate_dialog_confirm">Confirmar baja</string>
     <string name="profile_open_agenda">Abrir agenda</string>
     <string name="profile_open_vehicle">Abrir vehiculos</string>
+
+    <!-- Profile photo -->
+    <string name="profile_photo_change">Cambiar foto de perfil</string>
+    <string name="profile_photo_dialog_title">Foto de perfil</string>
+    <string name="profile_photo_take">Tomar foto</string>
+    <string name="profile_photo_gallery">Elegir de galería</string>
+    <string name="profile_photo_remove">Eliminar foto</string>
+    <string name="profile_photo_upload_success">Foto de perfil actualizada.</string>
+    <string name="profile_photo_upload_error">No se pudo subir la foto de perfil.</string>
+    <string name="profile_photo_remove_success">Foto de perfil eliminada.</string>
+    <string name="profile_photo_remove_error">No se pudo eliminar la foto de perfil.</string>
+    <string name="profile_photo_no_camera">No se encontró una app de cámara.</string>
+    <string name="profile_photo_too_large">La imagen es demasiado grande. Máximo 500KB.</string>
     <string name="incidencia_detail_retry">Reintentar</string>
     <string name="incidencia_detail_title_fallback">Incidencia #%1$d</string>
     <string name="incidencia_detail_state_unknown">Estado pendiente</string>

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/ch_surface"
+    android:background="@color/ch_background"
     android:orientation="vertical">
 
     <ScrollView
@@ -34,21 +34,56 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/ch_space_md"
                 app:cardBackgroundColor="@color/ch_surface_card"
-                app:cardCornerRadius="@dimen/ch_radius_md"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/ch_blue_100"
-                app:strokeWidth="1dp">
+                app:cardCornerRadius="@dimen/radius_md"
+                app:cardElevation="2dp"
+                app:strokeColor="@android:color/transparent"
+                app:strokeWidth="0dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/ch_space_md">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/ch_space_md">
 
                     <ProgressBar
                         android:id="@+id/profileLoadingProgress"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
+
+                    <!-- Avatar section -->
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_sm"
+                        android:gravity="center_horizontal">
+
+                        <FrameLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal">
+
+                            <com.google.android.material.imageview.ShapeableImageView
+                                android:id="@+id/profileAvatarImage"
+                                android:layout_width="96dp"
+                                android:layout_height="96dp"
+                                android:background="@color/ch_blue_100"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/ic_nav_profile"
+                                app:shapeAppearanceOverlay="@style/ShapeAppearance.ApiCargoHub.Circle" />
+
+                            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                                android:id="@+id/profileAvatarEditFab"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="bottom|end"
+                                android:contentDescription="@string/profile_photo_change"
+                                android:src="@android:drawable/ic_menu_camera"
+                                app:fabSize="mini"
+                                app:backgroundTint="@color/ch_blue_700"
+                                app:tint="@android:color/white"
+                                app:elevation="4dp" />
+                        </FrameLayout>
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/profileNameTextView"
@@ -98,10 +133,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/ch_space_sm"
                 app:cardBackgroundColor="@color/ch_surface_card"
-                app:cardCornerRadius="@dimen/ch_radius_md"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/ch_blue_100"
-                app:strokeWidth="1dp">
+                app:cardCornerRadius="@dimen/radius_md"
+                app:cardElevation="2dp"
+                app:strokeColor="@android:color/transparent"
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"

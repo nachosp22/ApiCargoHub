@@ -2,7 +2,6 @@
 import { onMounted } from 'vue'
 import { useDashboardStore } from '@/stores/dashboard'
 import KpiCard from '@/components/dashboard/KpiCard.vue'
-import StatMiniCard from '@/components/dashboard/StatMiniCard.vue'
 import ActivityChart from '@/components/dashboard/ActivityChart.vue'
 import RecentPortesTable from '@/components/dashboard/RecentPortesTable.vue'
 
@@ -67,28 +66,6 @@ onMounted(() => {
         icon="pi-exclamation-triangle"
         icon-bg-color="bg-amber-50"
         icon-text-color="text-amber-600"
-      />
-    </div>
-
-    <!-- Floating Mini Stat Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <StatMiniCard
-        label="Entregas Hoy"
-        value="12"
-        icon="pi-check-circle"
-        icon-color="text-emerald-500"
-      />
-      <StatMiniCard
-        label="SLA Cumplimiento"
-        value="94%"
-        icon="pi-chart-line"
-        icon-color="text-blue-500"
-      />
-      <StatMiniCard
-        label="Km Recorridos (Hoy)"
-        value="2,847"
-        icon="pi-map"
-        icon-color="text-violet-500"
       />
     </div>
 

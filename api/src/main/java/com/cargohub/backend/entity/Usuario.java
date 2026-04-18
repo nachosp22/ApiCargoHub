@@ -42,4 +42,7 @@ public class Usuario {
     private LocalDateTime ultimoAcceso;
 
     private String tokenRecuperacion;
+
+    @Column(name = "foto_url")
+    private String fotoUrl;
 }

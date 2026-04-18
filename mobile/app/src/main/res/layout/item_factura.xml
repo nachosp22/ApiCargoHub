@@ -4,15 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/spacing_xs"
+    android:layout_marginBottom="@dimen/spacing_sm"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/ch_surface_card"
     app:cardCornerRadius="@dimen/radius_md"
-    app:cardElevation="0dp"
-    app:strokeColor="@color/ch_outline"
-    app:strokeWidth="1dp">
+    app:cardElevation="2dp"
+    app:strokeColor="@android:color/transparent"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"

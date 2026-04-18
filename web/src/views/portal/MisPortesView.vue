@@ -109,6 +109,12 @@
                 {{ t('portal.portes.manualReview', { reason: data.motivoRevision ?? t('portal.portes.manualReviewNoReason') }) }}
               </p>
             </div>
+
+            <!-- Rating section for delivered/invoiced portes -->
+            <PorteRating
+              v-if="data.estado === 'ENTREGADO' || data.estado === 'FACTURADO'"
+              :porte-id="data.id"
+            />
           </div>
         </template>
       </DataTable>
@@ -124,6 +130,7 @@ import { usePortesStore } from '@/stores/portes'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
+import PorteRating from '@/components/PorteRating.vue'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
