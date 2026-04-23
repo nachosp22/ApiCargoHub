@@ -16,9 +16,16 @@ public interface PorteRepository extends JpaRepository<Porte, Long> {
     // 1. Marketplace
     List<Porte> findByEstadoOrderByFechaRecogidaAsc(EstadoPorte estado);
 
-    @Query("SELECT p FROM Porte p WHERE p.estado = :estado AND :conductorId NOT MEMBER OF p.conductoresRechazados ORDER BY p.fechaRecogida ASC")
-    List<Porte> findPendingOffersForConductor(@Param("estado") EstadoPorte estado,
-                                              @Param("conductorId") Long conductorId);
+    @Query("""
+            SELECT p FROM Porte p
+            WHERE p.estado = :estado
+              AND p.revisionManual = false
+              AND p.conductor IS NULL
+              AND :conductorId NOT MEMBER OF p.conductoresRechazados
+            ORDER BY p.fechaRecogida ASC
+            """)
+    List<Porte> findDriverOffers(@Param("estado") EstadoPorte estado,
+                                 @Param("conductorId") Long conductorId);
 
     // 2. Mis Viajes (Búsqueda directa por Conductor)
     List<Porte> findByConductorId(Long conductorId);

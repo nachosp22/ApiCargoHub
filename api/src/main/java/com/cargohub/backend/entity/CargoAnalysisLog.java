@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "n8n_webhooks")
-public class N8nWebhook {
+@Table(name = "cargo_analysis_logs")
+public class CargoAnalysisLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

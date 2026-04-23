@@ -1,9 +1,9 @@
 package com.cargohub.backend.service;
 
-import com.cargohub.backend.dto.McpWebhookResponse;
-import com.cargohub.backend.entity.N8nWebhook;
+import com.cargohub.backend.dto.CargoAnalysisResponse;
+import com.cargohub.backend.entity.CargoAnalysisLog;
 import com.cargohub.backend.entity.Porte;
-import com.cargohub.backend.repository.N8nWebhookRepository;
+import com.cargohub.backend.repository.CargoAnalysisLogRepository;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -12,39 +12,53 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
 public class GeminiCargaService {
 
+    private static final String USER_FACING_FALLBACK_REASON =
+            "No se pudo analizar la carga automaticamente. Tu solicitud se creo correctamente y quedo pendiente de revision manual.";
+
+    private static final Set<String> ALLOWED_VEHICLE_TYPES = Set.of("FURGONETA", "RIGIDO", "TRAILER");
+    private static final Set<String> REQUIRED_JSON_FIELDS = Set.of(
+            "pesoTotalKg",
+            "volumenTotalM3",
+            "largoMaxPaquete",
+            "tipoVehiculoRequerido",
+            "revisionManual",
+            "motivoRevision"
+    );
+
     private static final String SYSTEM_PROMPT = """
-            Eres un experto en logística de transporte de mercancías en España.
-            Dado una descripción de carga del cliente, debes estimar las dimensiones y peso del envío.
-            
-            Responde EXCLUSIVAMENTE con un JSON válido (sin markdown, sin texto extra) con estos campos:
+            Rol: sos un experto en logística y gestión de flota para ApiCargoHub.
+            Analizá el mensaje del cliente y devolvé SOLO un JSON válido, puro, sin markdown ni texto adicional.
+
+            Contrato de salida obligatorio:
             {
-              "pesoTotalKg": <número decimal>,
-              "volumenTotalM3": <número decimal>,
-              "largoMaxPaquete": <número decimal en metros>,
-              "anchoMaxPaquete": <número decimal en metros>,
-              "altoMaxPaquete": <número decimal en metros>,
-              "tipoVehiculoRequerido": "<FURGONETA|RIGIDO|TRAILER|ESPECIAL>",
-              "revisionManual": <true|false>,
-              "motivoRevision": "<motivo si revisionManual es true, null si false>"
+              "pesoTotalKg": number o 0.0,
+              "volumenTotalM3": number o 0.0,
+              "largoMaxPaquete": number en metros o 0.0,
+              "tipoVehiculoRequerido": "FURGONETA" | "RIGIDO" | "TRAILER",
+              "revisionManual": boolean,
+              "motivoRevision": string o null
             }
-            
-            Reglas:
-            - Si la descripción es ambigua, pon revisionManual=true con el motivo.
-            - largoMaxPaquete, anchoMaxPaquete y altoMaxPaquete representan la dimensión máxima
-              del paquete más grande del envío en cada eje (largo, ancho, alto) en metros.
-            - tipoVehiculoRequerido se basa en peso y volumen:
-              * FURGONETA: hasta 1500kg y 8m³
-              * RIGIDO: hasta 10000kg y 40m³
-              * TRAILER: hasta 24000kg y 80m³
-              * ESPECIAL: cargas fuera de rango o peligrosas
-            - Si no puedes estimar, devuelve valores 0 con revisionManual=true.
+
+            Reglas de selección de vehículo:
+            - FURGONETA: hasta 1200 kg y largo máximo de paquete hasta 3 m.
+            - RIGIDO: entre 1200 y 8000 kg, o largo de paquete entre 3 y 7 m.
+            - TRAILER: más de 8000 kg o largo de paquete mayor a 7 m.
+
+            Reglas de revisión manual:
+            - revisionManual debe ser true si NO se puede calcular o deducir claramente alguno de estos: peso total, volumen total (m3), largo máximo.
+            - Si falta volumen, aunque exista el peso, revisionManual debe ser true y explicar el motivo.
+            - revisionManual puede ser false SOLO si todas las dimensiones están 100% claras.
+
+            Si no hay datos suficientes, devolvé 0.0 en los campos numéricos y explicá el motivo en motivoRevision.
             """;
 
     private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s";
@@ -55,12 +69,12 @@ public class GeminiCargaService {
     @Value("${gemini.model.id:gemini-2.0-flash}")
     private String modelId;
 
-    private final N8nWebhookRepository n8nWebhookRepository;
+    private final CargoAnalysisLogRepository analysisLogRepository;
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
 
-    public GeminiCargaService(N8nWebhookRepository n8nWebhookRepository, ObjectMapper objectMapper) {
-        this.n8nWebhookRepository = n8nWebhookRepository;
+    public GeminiCargaService(CargoAnalysisLogRepository cargoAnalysisLogRepository, ObjectMapper objectMapper) {
+        this.analysisLogRepository = cargoAnalysisLogRepository;
         this.objectMapper = objectMapper;
         this.restClient = RestClient.create();
     }
@@ -74,28 +88,28 @@ public class GeminiCargaService {
 
     /**
      * Calls Google Gemini to parse cargo description into structured dimensions.
-     * Maintains the same McpWebhookResponse contract as the n8n webhook.
+     * Maintains the current response contract used by the porte flow.
      */
-    public McpWebhookResponse calcularDimensiones(String descripcionCliente, Porte porte) {
+    public CargoAnalysisResponse calcularDimensiones(String descripcionCliente, Porte porte) {
         if (descripcionCliente == null || descripcionCliente.isBlank()) {
             String errorMsg = "Descripción de carga vacía";
-            saveLog(descripcionCliente, null, false, errorMsg, porte);
-            return createDefaultResponse(errorMsg);
+            saveAnalysisLog(descripcionCliente, null, false, errorMsg, porte);
+            return createDefaultResponse(USER_FACING_FALLBACK_REASON);
         }
 
         if (!isAvailable()) {
             String errorMsg = "Gemini API key no configurada";
-            saveLog(descripcionCliente, null, false, errorMsg, porte);
-            return createDefaultResponse(errorMsg);
+            saveAnalysisLog(descripcionCliente, null, false, errorMsg, porte);
+            return createDefaultResponse(USER_FACING_FALLBACK_REASON);
         }
 
-        N8nWebhook webhookLog = new N8nWebhook();
-        webhookLog.setRequestTimestamp(LocalDateTime.now());
-        webhookLog.setRequestData(descripcionCliente);
-        webhookLog.setPorte(porte);
+        CargoAnalysisLog analysisLog = new CargoAnalysisLog();
+        analysisLog.setRequestTimestamp(LocalDateTime.now());
+        analysisLog.setRequestData(descripcionCliente);
+        analysisLog.setPorte(porte);
 
         try {
-            String userPrompt = "Descripción del cliente: " + descripcionCliente;
+            String userPrompt = "Mensaje del cliente para analizar: " + descripcionCliente;
 
             // Build Gemini REST API request body
             Map<String, Object> requestBody = Map.of(
@@ -104,6 +118,10 @@ public class GeminiCargaService {
                     ),
                     "contents", List.of(
                             Map.of("parts", List.of(Map.of("text", userPrompt)))
+                    ),
+                    "generationConfig", Map.of(
+                            "responseMimeType", "application/json",
+                            "temperature", 0
                     )
             );
 
@@ -118,54 +136,36 @@ public class GeminiCargaService {
 
             // Parse the Gemini response
             JsonNode root = objectMapper.readTree(responseBody);
-            String responseText = root.path("candidates").get(0)
-                    .path("content").path("parts").get(0)
-                    .path("text").asText().trim();
-
-            // Strip markdown code fences if present
-            if (responseText.startsWith("```")) {
-                responseText = responseText.replaceAll("^```(?:json)?\\s*", "")
-                        .replaceAll("\\s*```$", "");
-            }
-
-            // Parse JSON response
-            JsonNode json = objectMapper.readTree(responseText);
-            McpWebhookResponse response = new McpWebhookResponse();
-            response.setPesoTotalKg(json.path("pesoTotalKg").asDouble(0.0));
-            response.setVolumenTotalM3(json.path("volumenTotalM3").asDouble(0.0));
-            response.setLargoMaxPaquete(json.path("largoMaxPaquete").asDouble(0.0));
-            response.setAnchoMaxPaquete(json.path("anchoMaxPaquete").asDouble(0.0));
-            response.setAltoMaxPaquete(json.path("altoMaxPaquete").asDouble(0.0));
-            response.setTipoVehiculoRequerido(json.path("tipoVehiculoRequerido").asText(null));
-            response.setRevisionManual(json.path("revisionManual").asBoolean(true));
-            response.setMotivoRevision(json.path("motivoRevision").isNull() ? null : json.path("motivoRevision").asText(null));
+            String responseText = extractCandidateText(root);
+            CargoAnalysisResponse response = parseAndValidateStrictJson(responseText);
+            applyBusinessRules(response);
 
             // Log success
-            webhookLog.setResponseTimestamp(LocalDateTime.now());
-            webhookLog.setResponseData(responseText);
-            webhookLog.setSuccess(true);
-            webhookLog.setPesoTotalKg(response.getPesoTotalKg());
-            webhookLog.setVolumenTotalM3(response.getVolumenTotalM3());
-            webhookLog.setLargoMaxPaquete(response.getLargoMaxPaquete());
-            webhookLog.setTipoVehiculoRequerido(response.getTipoVehiculoRequerido());
-            webhookLog.setRevisionManual(response.getRevisionManual());
-            n8nWebhookRepository.save(webhookLog);
+            analysisLog.setResponseTimestamp(LocalDateTime.now());
+            analysisLog.setResponseData(responseText);
+            analysisLog.setSuccess(true);
+            analysisLog.setPesoTotalKg(response.getPesoTotalKg());
+            analysisLog.setVolumenTotalM3(response.getVolumenTotalM3());
+            analysisLog.setLargoMaxPaquete(response.getLargoMaxPaquete());
+            analysisLog.setTipoVehiculoRequerido(response.getTipoVehiculoRequerido());
+            analysisLog.setRevisionManual(response.getRevisionManual());
+            analysisLogRepository.save(analysisLog);
 
             return response;
 
         } catch (Exception e) {
             log.error("Error calling Gemini API: {}", e.getMessage(), e);
             String errorMsg = "Error al conectar con Gemini: " + e.getMessage();
-            webhookLog.setSuccess(false);
-            webhookLog.setErrorMessage(errorMsg);
-            webhookLog.setResponseTimestamp(LocalDateTime.now());
-            n8nWebhookRepository.save(webhookLog);
-            return createDefaultResponse(errorMsg);
+            analysisLog.setSuccess(false);
+            analysisLog.setErrorMessage(errorMsg);
+            analysisLog.setResponseTimestamp(LocalDateTime.now());
+            analysisLogRepository.save(analysisLog);
+            return createDefaultResponse(USER_FACING_FALLBACK_REASON);
         }
     }
 
-    private McpWebhookResponse createDefaultResponse(String motivo) {
-        McpWebhookResponse response = new McpWebhookResponse();
+    private CargoAnalysisResponse createDefaultResponse(String motivo) {
+        CargoAnalysisResponse response = new CargoAnalysisResponse();
         response.setPesoTotalKg(0.0);
         response.setVolumenTotalM3(0.0);
         response.setLargoMaxPaquete(0.0);
@@ -177,15 +177,142 @@ public class GeminiCargaService {
         return response;
     }
 
-    private void saveLog(String requestData, String responseData, boolean success, String errorMessage, Porte porte) {
-        N8nWebhook webhookLog = new N8nWebhook();
-        webhookLog.setRequestTimestamp(LocalDateTime.now());
-        webhookLog.setResponseTimestamp(LocalDateTime.now());
-        webhookLog.setRequestData(requestData);
-        webhookLog.setResponseData(responseData);
-        webhookLog.setSuccess(success);
-        webhookLog.setErrorMessage(errorMessage);
-        webhookLog.setPorte(porte);
-        n8nWebhookRepository.save(webhookLog);
+    private String extractCandidateText(JsonNode root) {
+        JsonNode candidates = root.path("candidates");
+        if (!candidates.isArray() || candidates.isEmpty()) {
+            throw new IllegalArgumentException("Gemini response without candidates");
+        }
+
+        JsonNode firstCandidate = candidates.get(0);
+        JsonNode parts = firstCandidate.path("content").path("parts");
+        if (!parts.isArray() || parts.isEmpty()) {
+            throw new IllegalArgumentException("Gemini response without content parts");
+        }
+
+        String text = parts.get(0).path("text").asText(null);
+        if (text == null || text.isBlank()) {
+            throw new IllegalArgumentException("Gemini response text is empty");
+        }
+
+        return text.trim();
+    }
+
+    private CargoAnalysisResponse parseAndValidateStrictJson(String responseText) throws Exception {
+        JsonNode json = objectMapper.readTree(responseText);
+        if (!json.isObject()) {
+            throw new IllegalArgumentException("Gemini response is not a JSON object");
+        }
+
+        validateRequiredFields(json);
+
+        double peso = readRequiredNumber(json, "pesoTotalKg");
+        double volumen = readRequiredNumber(json, "volumenTotalM3");
+        double largo = readRequiredNumber(json, "largoMaxPaquete");
+        String tipoVehiculo = readRequiredText(json, "tipoVehiculoRequerido");
+        if (!ALLOWED_VEHICLE_TYPES.contains(tipoVehiculo)) {
+            throw new IllegalArgumentException("Unsupported vehicle type: " + tipoVehiculo);
+        }
+
+        JsonNode revisionManualNode = json.get("revisionManual");
+        if (revisionManualNode == null || !revisionManualNode.isBoolean()) {
+            throw new IllegalArgumentException("revisionManual must be boolean");
+        }
+
+        JsonNode motivoNode = json.get("motivoRevision");
+        if (motivoNode == null || (!motivoNode.isTextual() && !motivoNode.isNull())) {
+            throw new IllegalArgumentException("motivoRevision must be string or null");
+        }
+
+        CargoAnalysisResponse response = new CargoAnalysisResponse();
+        response.setPesoTotalKg(peso);
+        response.setVolumenTotalM3(volumen);
+        response.setLargoMaxPaquete(largo);
+        response.setAnchoMaxPaquete(0.0);
+        response.setAltoMaxPaquete(0.0);
+        response.setTipoVehiculoRequerido(tipoVehiculo);
+        response.setRevisionManual(revisionManualNode.asBoolean());
+        response.setMotivoRevision(motivoNode.isNull() ? null : motivoNode.asText());
+        return response;
+    }
+
+    private void validateRequiredFields(JsonNode json) {
+        for (String field : REQUIRED_JSON_FIELDS) {
+            if (json.get(field) == null) {
+                throw new IllegalArgumentException("Gemini response missing required field: " + field);
+            }
+        }
+    }
+
+    private double readRequiredNumber(JsonNode json, String field) {
+        JsonNode value = json.get(field);
+        if (value == null || !value.isNumber()) {
+            throw new IllegalArgumentException(field + " must be numeric");
+        }
+        return value.asDouble();
+    }
+
+    private String readRequiredText(JsonNode json, String field) {
+        JsonNode value = json.get(field);
+        if (value == null || !value.isTextual() || value.asText().isBlank()) {
+            throw new IllegalArgumentException(field + " must be non-empty string");
+        }
+        return value.asText().trim();
+    }
+
+    private void applyBusinessRules(CargoAnalysisResponse response) {
+        double peso = defaultIfNull(response.getPesoTotalKg());
+        double volumen = defaultIfNull(response.getVolumenTotalM3());
+        double largo = defaultIfNull(response.getLargoMaxPaquete());
+
+        response.setTipoVehiculoRequerido(resolveVehicleType(peso, largo));
+
+        List<String> missing = new ArrayList<>();
+        if (peso <= 0) {
+            missing.add("peso total");
+        }
+        if (volumen <= 0) {
+            missing.add("volumen total");
+        }
+        if (largo <= 0) {
+            missing.add("largo maximo");
+        }
+
+        boolean revisionManual = !missing.isEmpty();
+        response.setRevisionManual(revisionManual);
+        if (revisionManual) {
+            if (volumen <= 0) {
+                response.setMotivoRevision("Falta volumen total (m3), se requiere revision manual.");
+            } else {
+                response.setMotivoRevision("Faltan datos claros para: " + String.join(", ", missing) + ".");
+            }
+        } else {
+            response.setMotivoRevision(null);
+        }
+    }
+
+    private String resolveVehicleType(double pesoTotalKg, double largoMaxPaquete) {
+        if (pesoTotalKg > 8000 || largoMaxPaquete > 7) {
+            return "TRAILER";
+        }
+        if ((pesoTotalKg >= 1200 && pesoTotalKg <= 8000) || (largoMaxPaquete >= 3 && largoMaxPaquete <= 7)) {
+            return "RIGIDO";
+        }
+        return "FURGONETA";
+    }
+
+    private double defaultIfNull(Double value) {
+        return value == null ? 0.0 : value;
+    }
+
+    private void saveAnalysisLog(String requestData, String responseData, boolean success, String errorMessage, Porte porte) {
+        CargoAnalysisLog analysisLog = new CargoAnalysisLog();
+        analysisLog.setRequestTimestamp(LocalDateTime.now());
+        analysisLog.setResponseTimestamp(LocalDateTime.now());
+        analysisLog.setRequestData(requestData);
+        analysisLog.setResponseData(responseData);
+        analysisLog.setSuccess(success);
+        analysisLog.setErrorMessage(errorMessage);
+        analysisLog.setPorte(porte);
+        analysisLogRepository.save(analysisLog);
     }
 }

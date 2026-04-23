@@ -23,7 +23,9 @@ public class Porte {
     private Long id;
 
     // --- RUTA ---
+    @Column(columnDefinition = "TEXT")
     private String origen;
+    @Column(columnDefinition = "TEXT")
     private String destino;
     @Column(nullable = true)
     private String ciudadOrigen;

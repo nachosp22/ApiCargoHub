@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class McpWebhookResponse {
+public class CargoAnalysisResponse {
     private Double pesoTotalKg;
     private Double volumenTotalM3;
     private Double largoMaxPaquete;

@@ -1,7 +1,7 @@
 package com.cargohub.backend.service;
 
 import com.cargohub. backend.dto.CrearPorteRequest;
-import com.cargohub.backend.dto.McpWebhookResponse;
+import com.cargohub.backend.dto.CargoAnalysisResponse;
 import com.cargohub.backend.dto.SolicitudPorteRequest;
 import com.cargohub.backend.entity.Cliente;
 import com.cargohub.backend.entity.Factura;
@@ -26,7 +26,6 @@ import com.cargohub.backend.dto.ConductorCandidatoResponse;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +41,7 @@ public class PorteService {
     @Autowired private CalculadoraPrecioService calculadoraPrecio;
     @Autowired private FacturaService facturaService;
     @Autowired private ConductorRepository conductorRepository;
-    @Autowired private McpWebhookService mcpWebhookService;
+    @Autowired private CargoAnalysisService cargoAnalysisService;
     @Autowired private ClienteRepository clienteRepository;
     @Autowired private ConductorMatchingService conductorMatchingService;
 
@@ -106,45 +105,49 @@ public class PorteService {
 
     @Transactional
     public Porte crearPorte(Porte porte) {
-        // 0.  LLAMAR AL MCP WEBHOOK PARA CALCULAR DIMENSIONES
+        // 0. Analizar carga con Gemini para inferir dimensiones
         if (porte.getDescripcionCliente() != null && !porte.getDescripcionCliente().isEmpty()) {
-            McpWebhookResponse mcpResponse = mcpWebhookService.calcularDimensiones(porte.getDescripcionCliente());
+            CargoAnalysisResponse cargoAnalysisResponse = cargoAnalysisService.calcularDimensiones(porte.getDescripcionCliente());
 
-            if (mcpResponse != null) {
-                // Aplicar dimensiones calculadas por el MCP
-                if (mcpResponse.getPesoTotalKg() != null && mcpResponse.getPesoTotalKg() > 0) {
-                    porte.setPesoTotalKg(mcpResponse.getPesoTotalKg());
+            if (cargoAnalysisResponse != null) {
+                // Aplicar dimensiones inferidas por IA
+                if (cargoAnalysisResponse.getPesoTotalKg() != null && cargoAnalysisResponse.getPesoTotalKg() > 0) {
+                    porte.setPesoTotalKg(cargoAnalysisResponse.getPesoTotalKg());
                 }
-                if (mcpResponse.getVolumenTotalM3() != null && mcpResponse.getVolumenTotalM3() > 0) {
-                    porte.setVolumenTotalM3(mcpResponse.getVolumenTotalM3());
+                if (cargoAnalysisResponse.getVolumenTotalM3() != null && cargoAnalysisResponse.getVolumenTotalM3() > 0) {
+                    porte.setVolumenTotalM3(cargoAnalysisResponse.getVolumenTotalM3());
                 }
-                if (mcpResponse. getLargoMaxPaquete() != null && mcpResponse.getLargoMaxPaquete() > 0) {
-                    porte.setLargoMaxPaquete(mcpResponse.getLargoMaxPaquete());
+                if (cargoAnalysisResponse. getLargoMaxPaquete() != null && cargoAnalysisResponse.getLargoMaxPaquete() > 0) {
+                    porte.setLargoMaxPaquete(cargoAnalysisResponse.getLargoMaxPaquete());
                 }
-                if (mcpResponse.getAnchoMaxPaquete() != null && mcpResponse.getAnchoMaxPaquete() > 0) {
-                    porte.setAnchoMaxPaquete(mcpResponse.getAnchoMaxPaquete());
+                if (cargoAnalysisResponse.getAnchoMaxPaquete() != null && cargoAnalysisResponse.getAnchoMaxPaquete() > 0) {
+                    porte.setAnchoMaxPaquete(cargoAnalysisResponse.getAnchoMaxPaquete());
                 }
-                if (mcpResponse.getAltoMaxPaquete() != null && mcpResponse.getAltoMaxPaquete() > 0) {
-                    porte.setAltoMaxPaquete(mcpResponse.getAltoMaxPaquete());
+                if (cargoAnalysisResponse.getAltoMaxPaquete() != null && cargoAnalysisResponse.getAltoMaxPaquete() > 0) {
+                    porte.setAltoMaxPaquete(cargoAnalysisResponse.getAltoMaxPaquete());
                 }
 
                 // Aplicar tipo de vehículo si fue calculado
-                if (mcpResponse.getTipoVehiculoRequerido() != null && ! mcpResponse.getTipoVehiculoRequerido().isEmpty()) {
-                    TipoVehiculo tipoCalculado = mcpWebhookService.convertirTipoVehiculo(mcpResponse.getTipoVehiculoRequerido());
+                if (cargoAnalysisResponse.getTipoVehiculoRequerido() != null && ! cargoAnalysisResponse.getTipoVehiculoRequerido().isEmpty()) {
+                    TipoVehiculo tipoCalculado = cargoAnalysisService.convertirTipoVehiculo(cargoAnalysisResponse.getTipoVehiculoRequerido());
                     if (tipoCalculado != null) {
                         porte.setTipoVehiculoRequerido(tipoCalculado);
                     }
                 }
 
                 // Aplicar flags de revisión manual
-                if (mcpResponse.getRevisionManual() != null && mcpResponse.getRevisionManual()) {
+                if (cargoAnalysisResponse.getRevisionManual() != null && cargoAnalysisResponse.getRevisionManual()) {
                     porte.setRevisionManual(true);
-                    porte.setMotivoRevision(mcpResponse.getMotivoRevision());
+                    porte.setMotivoRevision(cargoAnalysisResponse.getMotivoRevision());
                 }
             }
         }
 
         // 1. Distancia
+        if (!hasValidCoordinates(porte)) {
+            throw new RuntimeException("Origen y destino deben incluir coordenadas válidas");
+        }
+
         double km = CalculadoraDistancia. calcularKm(
                 porte.getLatitudOrigen(), porte.getLongitudOrigen(),
                 porte. getLatitudDestino(), porte.getLongitudDestino());
@@ -155,6 +158,10 @@ public class PorteService {
         porte.setPrecio(calculadoraPrecio. calcularPrecioTotal(porte));
         porte.setFechaCreacion(LocalDateTime.now());
         porte.setEstado(EstadoPorte.PENDIENTE);
+
+        if (porte.isRevisionManual()) {
+            return porteRepository.save(porte);
+        }
 
         // 3. LOGICA DE ASIGNACIÓN CON SCORING Y CONDUCTOR MATCHING
         Integer largoMm = (porte.getLargoMaxPaquete() != null) ? (int)(porte.getLargoMaxPaquete() * 1000) : 0;
@@ -194,17 +201,9 @@ public class PorteService {
                     .collect(java.util.stream.Collectors.toList());
 
             if (!conductoresValidos.isEmpty()) {
-                // Score conductors: rating (already sorted by ConductorMatchingService) +
-                // prefer closest vehicle capacity match (don't waste a 20t truck on 500kg)
-                double pesoRequerido = porte.getPesoTotalKg() != null ? porte.getPesoTotalKg() : 0.0;
-
-                Conductor mejorConductor = conductoresValidos.stream()
-                        .max(Comparator.comparingDouble(c -> scoreConductor(c, candidatos, pesoRequerido)))
-                        .orElse(conductoresValidos.get(0));
-
-                porte.setConductor(mejorConductor);
-                porte.setEstado(EstadoPorte.ASIGNADO);
-                log.info("Asignado a conductor: {} (rating: {})", mejorConductor.getNombre(), mejorConductor.getRating());
+                porte.setConductor(null);
+                porte.setEstado(EstadoPorte.PENDIENTE);
+                log.info("Porte {} publicado en ofertas para {} conductores elegibles", porte.getId(), conductoresValidos.size());
             } else {
                 // Hay vehículos pero no conductores disponibles
                 if (!porte.isRevisionManual()) {
@@ -248,6 +247,21 @@ public class PorteService {
         return ratingScore + efficiencyScore;
     }
 
+    private boolean hasValidCoordinates(Porte porte) {
+        return isValidLatitude(porte.getLatitudOrigen())
+                && isValidLongitude(porte.getLongitudOrigen())
+                && isValidLatitude(porte.getLatitudDestino())
+                && isValidLongitude(porte.getLongitudDestino());
+    }
+
+    private boolean isValidLatitude(Double latitude) {
+        return latitude != null && latitude >= -90 && latitude <= 90;
+    }
+
+    private boolean isValidLongitude(Double longitude) {
+        return longitude != null && longitude >= -180 && longitude <= 180;
+    }
+
     // ...  resto de métodos sin cambios ...
 
     // Listado general para panel administrativo
@@ -257,7 +271,7 @@ public class PorteService {
 
     // 2. Ver Ofertas (Para que el conductor vea viajes disponibles)
     public List<Porte> listarOfertasParaConductor(Long conductorId) {
-        return porteRepository.findPendingOffersForConductor(EstadoPorte.PENDIENTE, conductorId);
+        return porteRepository.findDriverOffers(EstadoPorte.PENDIENTE, conductorId);
     }
 
     // 3. Aceptar Porte (El conductor acepta manualmente)

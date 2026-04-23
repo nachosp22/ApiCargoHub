@@ -1,6 +1,6 @@
 package com.cargohub.backend.service;
 
-import com.cargohub.backend.dto.McpWebhookResponse;
+import com.cargohub.backend.dto.CargoAnalysisResponse;
 import com.cargohub.backend.entity.Conductor;
 import com.cargohub.backend.entity.Porte;
 import com.cargohub.backend.entity.Vehiculo;
@@ -47,7 +47,7 @@ class PorteServiceTest {
     private ConductorRepository conductorRepository;
 
     @Mock
-    private McpWebhookService mcpWebhookService;
+    private CargoAnalysisService cargoAnalysisService;
 
     @Mock
     private ConductorMatchingService conductorMatchingService;
@@ -178,12 +178,12 @@ class PorteServiceTest {
 
     @Test
     void testListarOfertasParaConductor_UsesFilteredRepositoryQuery() {
-        when(porteRepository.findPendingOffersForConductor(EstadoPorte.PENDIENTE, 1L)).thenReturn(List.of(porte));
+        when(porteRepository.findDriverOffers(EstadoPorte.PENDIENTE, 1L)).thenReturn(List.of(porte));
 
         List<Porte> result = porteService.listarOfertasParaConductor(1L);
 
         assertEquals(1, result.size());
-        verify(porteRepository).findPendingOffersForConductor(EstadoPorte.PENDIENTE, 1L);
+        verify(porteRepository).findDriverOffers(EstadoPorte.PENDIENTE, 1L);
     }
 
     @Test
@@ -229,25 +229,25 @@ class PorteServiceTest {
     }
 
     @Test
-    void testCrearPorte_ConMcpWebhook() {
+    void testCrearPorte_ConCargoAnalysis_PublicaOfertaSinAutoAsignar() {
         // Given
         porte.setDescripcionCliente("10 cajas de 50kg cada una, medidas 1x1x1 metros");
         
-        McpWebhookResponse mcpResponse = new McpWebhookResponse();
-        mcpResponse.setPesoTotalKg(525.0); // 500kg + 5% margen
-        mcpResponse.setVolumenTotalM3(10.5); // 10m3 + 5% margen
-        mcpResponse.setLargoMaxPaquete(1.05); // 1m + 5% margen
-        mcpResponse.setTipoVehiculoRequerido("FURGONETA");
-        mcpResponse.setRevisionManual(false);
-        mcpResponse.setMotivoRevision(null);
+        CargoAnalysisResponse cargoAnalysisResponse = new CargoAnalysisResponse();
+        cargoAnalysisResponse.setPesoTotalKg(525.0); // 500kg + 5% margen
+        cargoAnalysisResponse.setVolumenTotalM3(10.5); // 10m3 + 5% margen
+        cargoAnalysisResponse.setLargoMaxPaquete(1.05); // 1m + 5% margen
+        cargoAnalysisResponse.setTipoVehiculoRequerido("FURGONETA");
+        cargoAnalysisResponse.setRevisionManual(false);
+        cargoAnalysisResponse.setMotivoRevision(null);
         
         // Mock vehiculo compatible
         Vehiculo vehiculo = new Vehiculo();
         vehiculo.setId(1L);
         vehiculo.setConductor(conductor);
         
-        when(mcpWebhookService.calcularDimensiones(anyString())).thenReturn(mcpResponse);
-        when(mcpWebhookService.convertirTipoVehiculo("FURGONETA")).thenReturn(TipoVehiculo.FURGONETA);
+        when(cargoAnalysisService.calcularDimensiones(anyString())).thenReturn(cargoAnalysisResponse);
+        when(cargoAnalysisService.convertirTipoVehiculo("FURGONETA")).thenReturn(TipoVehiculo.FURGONETA);
         when(calculadoraPrecio.calcularPrecioTotal(any(Porte.class))).thenReturn(150.0);
         when(vehiculoRepository.findCandidatos(any(TipoVehiculo.class), anyDouble(), anyInt(), anyInt(), anyInt(), anyDouble()))
                 .thenReturn(java.util.List.of(vehiculo));
@@ -265,29 +265,27 @@ class PorteServiceTest {
         assertEquals(1.05, resultado.getLargoMaxPaquete());
         assertEquals(TipoVehiculo.FURGONETA, resultado.getTipoVehiculoRequerido());
         assertFalse(resultado.isRevisionManual());
-        assertEquals(EstadoPorte.ASIGNADO, resultado.getEstado());
-        assertEquals(conductor, resultado.getConductor());
-        verify(mcpWebhookService, times(1)).calcularDimensiones(anyString());
+        assertEquals(EstadoPorte.PENDIENTE, resultado.getEstado());
+        assertNull(resultado.getConductor());
+        verify(cargoAnalysisService, times(1)).calcularDimensiones(anyString());
         verify(porteRepository, times(1)).save(any(Porte.class));
     }
 
     @Test
-    void testCrearPorte_ConMcpWebhook_RevisionManual() {
+    void testCrearPorte_ConCargoAnalysis_RevisionManual() {
         // Given
         porte.setDescripcionCliente("Carga con medidas no claras");
         
-        McpWebhookResponse mcpResponse = new McpWebhookResponse();
-        mcpResponse.setPesoTotalKg(0.0);
-        mcpResponse.setVolumenTotalM3(0.0);
-        mcpResponse.setLargoMaxPaquete(0.0);
-        mcpResponse.setTipoVehiculoRequerido(null);
-        mcpResponse.setRevisionManual(true);
-        mcpResponse.setMotivoRevision("Medidas no claras en la descripción");
+        CargoAnalysisResponse cargoAnalysisResponse = new CargoAnalysisResponse();
+        cargoAnalysisResponse.setPesoTotalKg(0.0);
+        cargoAnalysisResponse.setVolumenTotalM3(0.0);
+        cargoAnalysisResponse.setLargoMaxPaquete(0.0);
+        cargoAnalysisResponse.setTipoVehiculoRequerido(null);
+        cargoAnalysisResponse.setRevisionManual(true);
+        cargoAnalysisResponse.setMotivoRevision("Medidas no claras en la descripción");
         
-        when(mcpWebhookService.calcularDimensiones(anyString())).thenReturn(mcpResponse);
+        when(cargoAnalysisService.calcularDimensiones(anyString())).thenReturn(cargoAnalysisResponse);
         when(calculadoraPrecio.calcularPrecioTotal(any(Porte.class))).thenReturn(150.0);
-        when(vehiculoRepository.findCandidatos(any(), anyDouble(), anyInt(), anyInt(), anyInt(), anyDouble()))
-                .thenReturn(java.util.Collections.emptyList());
         when(porteRepository.save(any(Porte.class))).thenAnswer(invocation -> invocation.getArgument(0));
         
         // When
@@ -298,7 +296,34 @@ class PorteServiceTest {
         assertTrue(resultado.isRevisionManual());
         assertEquals("Medidas no claras en la descripción", resultado.getMotivoRevision());
         assertEquals(EstadoPorte.PENDIENTE, resultado.getEstado());
-        verify(mcpWebhookService, times(1)).calcularDimensiones(anyString());
+        verify(cargoAnalysisService, times(1)).calcularDimensiones(anyString());
         verify(porteRepository, times(1)).save(any(Porte.class));
+    }
+
+    @Test
+    void testCrearPorte_ConCargoAnalysis_RevisionManual_NoAutoMatching() {
+        porte.setDescripcionCliente("Carga con volumen ambiguo");
+
+        CargoAnalysisResponse cargoAnalysisResponse = new CargoAnalysisResponse();
+        cargoAnalysisResponse.setPesoTotalKg(800.0);
+        cargoAnalysisResponse.setVolumenTotalM3(0.0);
+        cargoAnalysisResponse.setLargoMaxPaquete(2.0);
+        cargoAnalysisResponse.setTipoVehiculoRequerido("FURGONETA");
+        cargoAnalysisResponse.setRevisionManual(true);
+        cargoAnalysisResponse.setMotivoRevision("Falta volumen total (m3), se requiere revision manual.");
+
+        when(cargoAnalysisService.calcularDimensiones(anyString())).thenReturn(cargoAnalysisResponse);
+        when(cargoAnalysisService.convertirTipoVehiculo("FURGONETA")).thenReturn(TipoVehiculo.FURGONETA);
+        when(calculadoraPrecio.calcularPrecioTotal(any(Porte.class))).thenReturn(150.0);
+        when(porteRepository.save(any(Porte.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Porte resultado = porteService.crearPorte(porte);
+
+        assertNotNull(resultado);
+        assertTrue(resultado.isRevisionManual());
+        assertEquals(EstadoPorte.PENDIENTE, resultado.getEstado());
+        assertNull(resultado.getConductor());
+        verify(vehiculoRepository, never()).findCandidatos(any(), anyDouble(), anyInt(), anyInt(), anyInt(), anyDouble());
+        verify(conductorMatchingService, never()).buscarDisponibles(any(), any(), any());
     }
 }

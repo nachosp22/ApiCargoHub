@@ -1,9 +1,9 @@
 package com.cargohub.backend.service;
 
-import com.cargohub.backend.dto.McpWebhookResponse;
-import com.cargohub.backend.entity.N8nWebhook;
+import com.cargohub.backend.dto.CargoAnalysisResponse;
+import com.cargohub.backend.entity.CargoAnalysisLog;
 import com.cargohub.backend.entity.Porte;
-import com.cargohub.backend.repository.N8nWebhookRepository;
+import com.cargohub.backend.repository.CargoAnalysisLogRepository;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,8 +28,11 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class GeminiCargaServiceTest {
 
+    private static final String USER_FACING_FALLBACK_REASON =
+            "No se pudo analizar la carga automaticamente. Tu solicitud se creo correctamente y quedo pendiente de revision manual.";
+
     @Mock
-    private N8nWebhookRepository n8nWebhookRepository;
+    private CargoAnalysisLogRepository cargoAnalysisLogRepository;
 
     @Mock
     private RestClient restClient;
@@ -47,7 +52,7 @@ class GeminiCargaServiceTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        geminiCargaService = new GeminiCargaService(n8nWebhookRepository, objectMapper);
+        geminiCargaService = new GeminiCargaService(cargoAnalysisLogRepository, objectMapper);
         // Inject the mocked RestClient
         ReflectionTestUtils.setField(geminiCargaService, "restClient", restClient);
     }
@@ -76,17 +81,17 @@ class GeminiCargaServiceTest {
 
     @Test
     void calcularDimensiones_returnsDefault_whenDescripcionNull() {
-        McpWebhookResponse response = geminiCargaService.calcularDimensiones(null, null);
+        CargoAnalysisResponse response = geminiCargaService.calcularDimensiones(null, null);
 
         assertNotNull(response);
         assertTrue(response.getRevisionManual());
         assertEquals(0.0, response.getPesoTotalKg());
-        verify(n8nWebhookRepository).save(any(N8nWebhook.class));
+        verify(cargoAnalysisLogRepository).save(any(CargoAnalysisLog.class));
     }
 
     @Test
     void calcularDimensiones_returnsDefault_whenDescripcionBlank() {
-        McpWebhookResponse response = geminiCargaService.calcularDimensiones("  ", null);
+        CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("  ", null);
 
         assertNotNull(response);
         assertTrue(response.getRevisionManual());
@@ -99,12 +104,12 @@ class GeminiCargaServiceTest {
     void calcularDimensiones_returnsDefault_whenApiKeyNotConfigured() {
         ReflectionTestUtils.setField(geminiCargaService, "apiKey", "");
 
-        McpWebhookResponse response = geminiCargaService.calcularDimensiones("10 cajas de 50kg", null);
+        CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("10 cajas de 50kg", null);
 
         assertNotNull(response);
         assertTrue(response.getRevisionManual());
-        assertEquals("Gemini API key no configurada", response.getMotivoRevision());
-        verify(n8nWebhookRepository).save(any(N8nWebhook.class));
+        assertEquals(USER_FACING_FALLBACK_REASON, response.getMotivoRevision());
+        verify(cargoAnalysisLogRepository).save(any(CargoAnalysisLog.class));
     }
 
     // --- calcularDimensiones: successful Gemini call ---
@@ -133,26 +138,67 @@ class GeminiCargaServiceTest {
         when(requestBodySpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.body(String.class)).thenReturn(geminiResponse);
 
-        McpWebhookResponse response = geminiCargaService.calcularDimensiones("10 cajas de 50kg", new Porte());
+        CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("10 cajas de 50kg", new Porte());
 
         assertNotNull(response);
         assertEquals(500.0, response.getPesoTotalKg());
         assertEquals(2.5, response.getVolumenTotalM3());
         assertEquals(1.2, response.getLargoMaxPaquete());
+        assertEquals(0.0, response.getAnchoMaxPaquete());
+        assertEquals(0.0, response.getAltoMaxPaquete());
         assertEquals("FURGONETA", response.getTipoVehiculoRequerido());
         assertFalse(response.getRevisionManual());
         assertNull(response.getMotivoRevision());
 
         // Verify log was saved
-        ArgumentCaptor<N8nWebhook> captor = ArgumentCaptor.forClass(N8nWebhook.class);
-        verify(n8nWebhookRepository).save(captor.capture());
+        ArgumentCaptor<CargoAnalysisLog> captor = ArgumentCaptor.forClass(CargoAnalysisLog.class);
+        verify(cargoAnalysisLogRepository).save(captor.capture());
         assertTrue(captor.getValue().getSuccess());
     }
 
-    // --- calcularDimensiones: Gemini returns markdown-wrapped JSON ---
+    // --- calcularDimensiones: request enforces JSON output ---
 
     @Test
-    void calcularDimensiones_stripsMarkdownFences() {
+    @SuppressWarnings("unchecked")
+    void calcularDimensiones_setsResponseMimeTypeApplicationJson() {
+        ReflectionTestUtils.setField(geminiCargaService, "apiKey", "test-key");
+        ReflectionTestUtils.setField(geminiCargaService, "modelId", "gemini-2.0-flash");
+
+        String geminiResponse = """
+                {
+                  "candidates": [{
+                    "content": {
+                      "parts": [{
+                        "text": "{\\"pesoTotalKg\\": 200.0, \\"volumenTotalM3\\": 1.0, \\"largoMaxPaquete\\": 2.0, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
+                      }]
+                    }
+                  }]
+                }
+                """;
+
+        when(restClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(anyString(), anyString())).thenReturn(requestBodySpec);
+        doReturn(requestBodySpec).when(requestBodySpec).body(any(Object.class));
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(String.class)).thenReturn(geminiResponse);
+
+        geminiCargaService.calcularDimensiones("5 palets", null);
+
+        ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(requestBodySpec).body(bodyCaptor.capture());
+
+        assertTrue(bodyCaptor.getValue() instanceof Map);
+        Map<String, Object> requestBody = (Map<String, Object>) bodyCaptor.getValue();
+        Map<String, Object> generationConfig = (Map<String, Object>) requestBody.get("generationConfig");
+        assertEquals("application/json", generationConfig.get("responseMimeType"));
+        assertEquals(0, generationConfig.get("temperature"));
+    }
+
+    // --- calcularDimensiones: markdown is rejected in strict JSON mode ---
+
+    @Test
+    void calcularDimensiones_returnsDefault_whenGeminiReturnsMarkdown() {
         ReflectionTestUtils.setField(geminiCargaService, "apiKey", "test-key");
         ReflectionTestUtils.setField(geminiCargaService, "modelId", "gemini-2.0-flash");
 
@@ -175,10 +221,71 @@ class GeminiCargaServiceTest {
         when(requestBodySpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.body(String.class)).thenReturn(geminiResponse);
 
-        McpWebhookResponse response = geminiCargaService.calcularDimensiones("5 palets", null);
+        CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("5 palets", null);
 
-        assertEquals(100.0, response.getPesoTotalKg());
-        assertFalse(response.getRevisionManual());
+        assertEquals(0.0, response.getPesoTotalKg());
+        assertTrue(response.getRevisionManual());
+        assertEquals(USER_FACING_FALLBACK_REASON, response.getMotivoRevision());
+    }
+
+    @Test
+    void calcularDimensiones_forcesManualReview_whenVolumeIsMissing() {
+        ReflectionTestUtils.setField(geminiCargaService, "apiKey", "test-key");
+        ReflectionTestUtils.setField(geminiCargaService, "modelId", "gemini-2.0-flash");
+
+        String geminiResponse = """
+                {
+                  "candidates": [{
+                    "content": {
+                      "parts": [{
+                        "text": "{\\"pesoTotalKg\\": 300.0, \\"volumenTotalM3\\": 0.0, \\"largoMaxPaquete\\": 2.4, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
+                      }]
+                    }
+                  }]
+                }
+                """;
+
+        when(restClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(anyString(), anyString())).thenReturn(requestBodySpec);
+        doReturn(requestBodySpec).when(requestBodySpec).body(any(Object.class));
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(String.class)).thenReturn(geminiResponse);
+
+        CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("carga sin volumen", null);
+
+        assertEquals("FURGONETA", response.getTipoVehiculoRequerido());
+        assertTrue(response.getRevisionManual());
+        assertEquals("Falta volumen total (m3), se requiere revision manual.", response.getMotivoRevision());
+    }
+
+    @Test
+    void calcularDimensiones_resolvesVehicleTypeUsingWeightAndLengthRules() {
+        ReflectionTestUtils.setField(geminiCargaService, "apiKey", "test-key");
+        ReflectionTestUtils.setField(geminiCargaService, "modelId", "gemini-2.0-flash");
+
+        String geminiResponse = """
+                {
+                  "candidates": [{
+                    "content": {
+                      "parts": [{
+                        "text": "{\\"pesoTotalKg\\": 9500.0, \\"volumenTotalM3\\": 12.0, \\"largoMaxPaquete\\": 2.5, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
+                      }]
+                    }
+                  }]
+                }
+                """;
+
+        when(restClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(anyString(), anyString())).thenReturn(requestBodySpec);
+        doReturn(requestBodySpec).when(requestBodySpec).body(any(Object.class));
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(String.class)).thenReturn(geminiResponse);
+
+        CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("carga pesada", null);
+
+        assertEquals("TRAILER", response.getTipoVehiculoRequerido());
     }
 
     // --- calcularDimensiones: Gemini API error ---
@@ -194,16 +301,16 @@ class GeminiCargaServiceTest {
         doReturn(requestBodySpec).when(requestBodySpec).body(any(Object.class));
         when(requestBodySpec.retrieve()).thenThrow(new RuntimeException("Connection refused"));
 
-        McpWebhookResponse response = geminiCargaService.calcularDimensiones("carga test", new Porte());
+        CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("carga test", new Porte());
 
         assertNotNull(response);
         assertTrue(response.getRevisionManual());
         assertEquals(0.0, response.getPesoTotalKg());
-        assertTrue(response.getMotivoRevision().contains("Gemini"));
+        assertEquals(USER_FACING_FALLBACK_REASON, response.getMotivoRevision());
 
         // Verify error log saved
-        ArgumentCaptor<N8nWebhook> captor = ArgumentCaptor.forClass(N8nWebhook.class);
-        verify(n8nWebhookRepository).save(captor.capture());
+        ArgumentCaptor<CargoAnalysisLog> captor = ArgumentCaptor.forClass(CargoAnalysisLog.class);
+        verify(cargoAnalysisLogRepository).save(captor.capture());
         assertFalse(captor.getValue().getSuccess());
     }
 
@@ -217,8 +324,8 @@ class GeminiCargaServiceTest {
 
         geminiCargaService.calcularDimensiones("test", porte);
 
-        ArgumentCaptor<N8nWebhook> captor = ArgumentCaptor.forClass(N8nWebhook.class);
-        verify(n8nWebhookRepository).save(captor.capture());
+        ArgumentCaptor<CargoAnalysisLog> captor = ArgumentCaptor.forClass(CargoAnalysisLog.class);
+        verify(cargoAnalysisLogRepository).save(captor.capture());
         assertEquals(porte, captor.getValue().getPorte());
     }
 }

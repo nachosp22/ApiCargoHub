@@ -40,7 +40,7 @@ class FacturaAutoGenerationTest {
     private ConductorRepository conductorRepository;
 
     @Mock
-    private McpWebhookService mcpWebhookService;
+    private CargoAnalysisService cargoAnalysisService;
 
     @Mock
     private ConductorMatchingService conductorMatchingService;
