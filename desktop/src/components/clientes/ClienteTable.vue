@@ -5,7 +5,6 @@ import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import type { Cliente } from '@/stores/clientes'
-import { useAuthStore } from '@/stores/auth'
 
 interface Props {
   clientes: Cliente[]
@@ -15,16 +14,10 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
+  (e: 'view', cliente: Cliente): void
   (e: 'edit', cliente: Cliente): void
   (e: 'view-portes', cliente: Cliente): void
-  (e: 'delete', cliente: Cliente): void
 }>()
-
-const authStore = useAuthStore()
-const isAdmin = computed(() => {
-  const role = authStore.user?.role?.toUpperCase() ?? ''
-  return role === 'ADMIN' || role === 'SUPERADMIN' || role === 'ROLE_ADMIN' || role === 'ROLE_SUPERADMIN'
-})
 
 // --- Filters ---
 const globalFilter = ref('')
@@ -75,11 +68,11 @@ function getInitials(cliente: Cliente): string {
         <div class="flex items-center gap-3">
           <!-- Global Search -->
           <div class="relative">
-            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <i class="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             <InputText
               v-model="globalFilter"
               placeholder="Buscar clientes..."
-              class="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
+              class="pl-4 pr-9 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
             />
           </div>
         </div>
@@ -148,9 +141,18 @@ function getInitials(cliente: Cliente): string {
       </Column>
 
       <!-- Acciones -->
-      <Column header="Acciones" style="min-width: 140px; text-align: center" :exportable="false">
+      <Column header="Acciones" style="min-width: 170px; text-align: center" :exportable="false">
         <template #body="slotProps">
           <div class="flex items-center justify-center gap-1" @click.stop>
+            <Button
+              icon="pi pi-eye"
+              severity="secondary"
+              text
+              rounded
+              size="small"
+              v-tooltip.top="'Ver detalle'"
+              @click="emit('view', slotProps.data)"
+            />
             <Button
               icon="pi pi-pencil"
               severity="secondary"
@@ -168,16 +170,6 @@ function getInitials(cliente: Cliente): string {
               size="small"
               v-tooltip.top="'Ver portes'"
               @click="emit('view-portes', slotProps.data)"
-            />
-            <Button
-              v-if="isAdmin"
-              icon="pi pi-trash"
-              severity="danger"
-              text
-              rounded
-              size="small"
-              v-tooltip.top="'Eliminar'"
-              @click="emit('delete', slotProps.data)"
             />
           </div>
         </template>

@@ -5,5 +5,6 @@ public enum EstadoPorte {
     ASIGNADO,
     EN_TRANSITO,
     ENTREGADO,
-    FACTURADO
+    FACTURADO,
+    CANCELADO
 }

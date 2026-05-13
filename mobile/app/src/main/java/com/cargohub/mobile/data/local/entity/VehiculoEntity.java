@@ -18,7 +18,6 @@ public class VehiculoEntity {
     public Integer anchoUtilMm;
     public Integer altoUtilMm;
     public Double volumenM3;
-    public boolean trampillaElevadora;
     public long conductorId;
     public long cachedAt;
 }

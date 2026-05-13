@@ -7,7 +7,6 @@ import { api } from '@/services/api'
 export interface TopConductor {
   nombre: string
   portes: number
-  rating: number
 }
 
 export interface TopCliente {

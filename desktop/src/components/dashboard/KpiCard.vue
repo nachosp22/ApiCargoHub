@@ -19,25 +19,28 @@ function formatNumber(val: number | string): string {
 </script>
 
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 transition-all duration-200 hover:shadow-md">
-    <div class="flex items-start justify-between">
+  <div class="h-full min-h-[140px] bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 transition-all duration-200 hover:shadow-md">
+    <div class="flex h-full items-start justify-between">
       <!-- Text Content -->
-      <div class="flex-1 min-w-0">
+      <div class="flex min-h-full flex-1 min-w-0 flex-col">
         <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ title }}</p>
         <p class="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ formatNumber(value) }}</p>
 
         <!-- Trend Indicator -->
-        <div v-if="trend" class="flex items-center gap-1 mt-2">
-          <i
-            class="pi text-xs"
-            :class="trendPositive ? 'pi-arrow-up text-emerald-500' : 'pi-arrow-down text-red-500'"
-          ></i>
-          <span
-            class="text-xs font-medium"
-            :class="trendPositive ? 'text-emerald-600' : 'text-red-600'"
-          >
-            {{ trend }} vs mes anterior
-          </span>
+        <div class="mt-2 min-h-4 flex items-center gap-1">
+          <template v-if="trend">
+            <i
+              class="pi text-xs"
+              :class="trendPositive ? 'pi-arrow-up text-emerald-500' : 'pi-arrow-down text-red-500'"
+            ></i>
+            <span
+              class="text-xs font-medium"
+              :class="trendPositive ? 'text-emerald-600' : 'text-red-600'"
+            >
+              {{ trend }} vs mes anterior
+            </span>
+          </template>
+          <span v-else class="invisible text-xs font-medium">&nbsp;</span>
         </div>
       </div>
 

@@ -17,7 +17,12 @@ import com.cargohub.mobile.data.model.DriverLocationUpdateRequest;
 import com.cargohub.mobile.data.model.FotoCarga;
 import com.cargohub.mobile.data.model.IncidenciaEventoResponse;
 import com.cargohub.mobile.data.model.Porte;
+import com.cargohub.mobile.data.model.PorteTrackingResponse;
 import com.cargohub.mobile.data.model.IncidenciaResponse;
+import com.cargohub.mobile.data.model.RecordTrackingPauseRequest;
+import com.cargohub.mobile.data.model.StartTrackingSessionRequest;
+import com.cargohub.mobile.data.model.TrackingSessionResponse;
+import com.cargohub.mobile.data.model.UpdateTrackingSessionRequest;
 import com.cargohub.mobile.data.model.Vehiculo;
 import com.cargohub.mobile.data.model.VehiculoUpsertRequest;
 
@@ -32,9 +37,13 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.PATCH;
 import retrofit2.http.Query;
 
 public interface ApiService {
+
+    @GET("health")
+    Call<Void> health();
 
     @FormUrlEncoded
     @POST("api/auth/login")
@@ -67,7 +76,14 @@ public interface ApiService {
 
     @PUT("api/conductores/{id}/bloqueos-recurrentes")
     Call<List<BloqueoRecurrente>> setBloqueoRecurrentes(@Path("id") long conductorId,
-                                                        @Body List<Integer> diasBloqueados);
+                                                         @Body List<Integer> diasBloqueados);
+
+    @GET("api/conductores/{id}/dias-laborables")
+    Call<List<Integer>> getDiasLaborables(@Path("id") long conductorId);
+
+    @PUT("api/conductores/{id}/dias-laborables")
+    Call<List<Integer>> setDiasLaborables(@Path("id") long conductorId,
+                                          @Body List<Integer> diasLaborables);
 
     @GET("api/conductores/{conductorId}/vehiculos")
     Call<List<Vehiculo>> getVehiculos(@Path("conductorId") long conductorId);
@@ -84,6 +100,11 @@ public interface ApiService {
     Call<Void> deactivateVehiculo(@Path("conductorId") long conductorId,
                                   @Path("vehiculoId") long vehiculoId);
 
+    @PUT("api/conductores/{conductorId}/vehiculos/{vehiculoId}")
+    Call<Vehiculo> updateVehiculo(@Path("conductorId") long conductorId,
+                                  @Path("vehiculoId") long vehiculoId,
+                                  @Body VehiculoUpsertRequest request);
+
     @GET("api/portes/ofertas/{conductorId}")
     Call<List<Porte>> getPortesOferta(@Path("conductorId") long conductorId);
 
@@ -92,6 +113,9 @@ public interface ApiService {
 
     @GET("api/portes/{porteId}")
     Call<Porte> getPorteDetail(@Path("porteId") long porteId);
+
+    @GET("api/portes/{porteId}/tracking")
+    Call<PorteTrackingResponse> getPorteTracking(@Path("porteId") long porteId);
 
     @POST("api/portes/{porteId}/aceptar")
     Call<Porte> acceptPorteOffer(@Path("porteId") long porteId,
@@ -123,6 +147,17 @@ public interface ApiService {
     @POST("api/v1/tracking/drivers/{driverId}/locations")
     Call<Void> upsertDriverLocation(@Path("driverId") long driverId,
                                     @Body DriverLocationUpdateRequest request);
+
+    @POST("api/v1/tracking/sessions")
+    Call<TrackingSessionResponse> startTrackingSession(@Body StartTrackingSessionRequest request);
+
+    @PATCH("api/v1/tracking/sessions/{sessionId}")
+    Call<TrackingSessionResponse> updateTrackingSession(@Path("sessionId") long sessionId,
+                                                        @Body UpdateTrackingSessionRequest request);
+
+    @POST("api/v1/tracking/sessions/{sessionId}/pausas")
+    Call<Void> recordTrackingPause(@Path("sessionId") long sessionId,
+                                   @Body RecordTrackingPauseRequest request);
 
     @POST("api/conductores/{id}/ubicacion")
     Call<Void> reportLegacyConductorLocation(@Path("id") long conductorId,

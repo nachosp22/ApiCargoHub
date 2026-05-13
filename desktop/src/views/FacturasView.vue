@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useFacturasStore } from '@/stores/facturas'
 import type { Factura } from '@/stores/facturas'
 import FacturaTable from '@/components/facturas/FacturaTable.vue'
 import FacturaDetail from '@/components/facturas/FacturaDetail.vue'
 
 const facturasStore = useFacturasStore()
+const route = useRoute()
+const router = useRouter()
 
 // --- Detail dialog state ---
 const showDetail = ref(false)
@@ -14,6 +17,11 @@ const detailFactura = ref<Factura | null>(null)
 // --- Lifecycle ---
 onMounted(async () => {
   await facturasStore.fetchFacturas()
+  await openFacturaFromQuery()
+})
+
+watch(() => route.query.facturaId, () => {
+  void openFacturaFromQuery()
 })
 
 // --- Handlers ---
@@ -22,15 +30,30 @@ function onViewFactura(factura: Factura): void {
   showDetail.value = true
 }
 
-function formatCurrency(value: number): string {
-  return value.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
+async function openFacturaFromQuery(): Promise<void> {
+  const rawId = route.query.facturaId
+  const facturaId = typeof rawId === 'string' ? Number.parseInt(rawId, 10) : NaN
+  if (Number.isNaN(facturaId)) return
+
+  const factura = await facturasStore.fetchFactura(facturaId)
+  if (factura) {
+    onViewFactura(factura)
+    await clearQueryParam('facturaId')
+  }
 }
+
+async function clearQueryParam(param: string): Promise<void> {
+  const nextQuery = { ...route.query }
+  delete nextQuery[param]
+  await router.replace({ query: nextQuery })
+}
+
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="h-full min-h-0 flex flex-col gap-6 overflow-hidden">
     <!-- Page Header -->
-    <div class="flex items-center gap-4">
+    <div class="shrink-0 flex items-center gap-4">
       <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
         <i class="pi pi-file text-2xl"></i>
       </div>
@@ -43,67 +66,20 @@ function formatCurrency(value: number): string {
     <!-- Mock Data Banner -->
     <div
       v-if="facturasStore.usingMockData"
-      class="flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm"
+      class="shrink-0 flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm"
     >
       <i class="pi pi-info-circle text-amber-500"></i>
       <span>Mostrando datos de demostración — la API no está disponible en este momento.</span>
     </div>
 
-    <!-- KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <!-- Total Facturas -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-            <i class="pi pi-file text-lg"></i>
-          </div>
-          <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Facturas</span>
-        </div>
-        <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ facturasStore.totalFacturas }}</p>
-      </div>
-
-      <!-- Total Facturado -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-            <i class="pi pi-euro text-lg"></i>
-          </div>
-          <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Facturado</span>
-        </div>
-        <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ formatCurrency(facturasStore.totalFacturado) }}</p>
-      </div>
-
-      <!-- Pagado -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <i class="pi pi-check-circle text-lg"></i>
-          </div>
-          <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Pagado</span>
-        </div>
-        <p class="text-2xl font-bold text-emerald-600">{{ formatCurrency(facturasStore.totalPagado) }}</p>
-        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ facturasStore.facturasPagadas }} facturas</p>
-      </div>
-
-      <!-- Pendiente -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-            <i class="pi pi-clock text-lg"></i>
-          </div>
-          <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Pendiente</span>
-        </div>
-        <p class="text-2xl font-bold text-amber-600">{{ formatCurrency(facturasStore.totalPendiente) }}</p>
-        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ facturasStore.facturasPendientes }} facturas</p>
-      </div>
-    </div>
-
     <!-- Data Table -->
-    <FacturaTable
-      :facturas="facturasStore.facturas"
-      :loading="facturasStore.loading"
-      @view="onViewFactura"
-    />
+    <div class="flex-1 min-h-0 overflow-auto">
+      <FacturaTable
+        :facturas="facturasStore.facturas"
+        :loading="facturasStore.loading"
+        @view="onViewFactura"
+      />
+    </div>
 
     <!-- Detail Dialog -->
     <FacturaDetail

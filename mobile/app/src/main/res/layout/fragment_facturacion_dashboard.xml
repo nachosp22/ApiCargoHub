@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/ch_primary">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:alpha="0.24"
+            android:scaleType="centerCrop"
+            android:src="@drawable/login_bg" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/ch_space_sm"
+            android:paddingTop="16dp"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/billing_title"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_section_panel"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/ch_space_sm"
+                android:paddingTop="8dp"
+                android:paddingBottom="@dimen/ch_space_md">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/billing_filter_month_label">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/billingMonthFilterInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        android:focusable="false"
+                        android:textColor="@color/ch_text_primary"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Space
+                    android:layout_width="@dimen/ch_space_sm"
+                    android:layout_height="1dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/billing_filter_year_label">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/billingYearFilterInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        android:focusable="false"
+                        android:textColor="@color/ch_text_primary"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_md"
+                android:orientation="horizontal">
+
+            <com.google.android.material.card.MaterialCardView
+                 android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:cardBackgroundColor="@color/ch_surface_card"
+                app:cardCornerRadius="@dimen/radius_md"
+                app:strokeColor="@color/ch_outline"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/ch_space_md">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/billing_kpi_month_total"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
+                        android:textColor="@color/ch_text_secondary" />
+
+                    <TextView
+                        android:id="@+id/billingGeneratedValueText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_2xs"
+                        android:text="—"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleLarge"
+                        android:textColor="@color/ch_text_primary"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <Space
+                android:layout_width="@dimen/ch_space_sm"
+                android:layout_height="1dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:cardBackgroundColor="@color/ch_surface_card"
+                app:cardCornerRadius="@dimen/radius_md"
+                app:strokeColor="@color/ch_outline"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/ch_space_md">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/billing_kpi_forecast"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
+                        android:textColor="@color/ch_text_secondary" />
+
+                    <TextView
+                        android:id="@+id/billingForecastValueText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_2xs"
+                        android:text="—"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleLarge"
+                        android:textColor="@color/ch_text_primary"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_sm"
+            app:cardBackgroundColor="@color/ch_surface_card"
+            app:cardCornerRadius="@dimen/radius_md"
+            app:strokeColor="@color/ch_outline"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/ch_space_md">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/billing_kpi_generated_year"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
+                    android:textColor="@color/ch_text_secondary" />
+
+                <TextView
+                    android:id="@+id/billingYearGeneratedValueText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_2xs"
+                    android:text="—"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleLarge"
+                    android:textColor="@color/ch_text_primary"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/billingNominasLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_md"
+                android:text="@string/billing_nominas_link"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
+                android:textColor="@color/ch_text_secondary" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

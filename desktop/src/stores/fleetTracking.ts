@@ -63,7 +63,13 @@ export const useFleetTrackingStore = defineStore('fleetTracking', () => {
 
     for (const point of snapshot.drivers) {
       const previous = nextMap.get(point.driverId)
-      if (!previous || previous.recordedAt !== point.recordedAt) {
+      if (!previous
+        || previous.recordedAt !== point.recordedAt
+        || previous.state !== point.state
+        || previous.activePorteId !== point.activePorteId
+        || previous.activePorteDestination !== point.activePorteDestination
+        || previous.activePorteStatus !== point.activePorteStatus
+      ) {
         nextMap.set(point.driverId, point)
       }
     }

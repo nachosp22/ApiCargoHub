@@ -24,15 +24,17 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties({JwtProperties.class, CorsProperties.class})
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CorsProperties corsProperties;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CorsProperties corsProperties) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.corsProperties = corsProperties;
     }
 
     @Bean
@@ -42,10 +44,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/actuator/health", "/health").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/clientes/**").authenticated()
                         .requestMatchers("/api/**").authenticated()
-                        .anyRequest().permitAll()
+                        .anyRequest().denyAll()
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
@@ -70,10 +74,21 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "http://localhost:5174"
-        ));
+        List<String> allowedOrigins = corsProperties.getAllowedOrigins() == null
+                ? List.of()
+                : corsProperties.getAllowedOrigins().stream()
+                .map(String::trim)
+                .filter(origin -> !origin.isBlank())
+                .toList();
+        List<String> allowedOriginPatterns = corsProperties.getAllowedOriginPatterns() == null
+                ? List.of()
+                : corsProperties.getAllowedOriginPatterns().stream()
+                .map(String::trim)
+                .filter(origin -> !origin.isBlank())
+                .toList();
+
+        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedOriginPatterns(allowedOriginPatterns);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

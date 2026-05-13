@@ -8,22 +8,44 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 
 import com.cargohub.mobile.R;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.cargohub.mobile.data.ConductorRepository;
+import com.cargohub.mobile.data.VehiculoRepository;
 import com.cargohub.mobile.data.model.ConductorProfileResponse;
+import com.cargohub.mobile.data.model.EstadoVehiculo;
+import com.cargohub.mobile.data.model.Vehiculo;
+import com.cargohub.mobile.network.ApiClient;
 import com.cargohub.mobile.session.SessionManager;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.snackbar.Snackbar;
+
+import java.util.List;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
     private final ConductorRepository conductorRepository = new ConductorRepository();
+    private final VehiculoRepository vehiculoRepository = new VehiculoRepository();
 
+    private ShapeableImageView profileImage;
     private TextView profileNameText;
-    private TextView profileEmailText;
-    private TextView profileRoleText;
-    private TextView profileConductorIdText;
-    private TextView profileDetailHintText;
+    private TextView profileIdText;
+    private TextView profileDniText;
+    private TextView profileMatriculaText;
+
+    @Nullable
+    private Long conductorId;
 
     @Nullable
     @Override
@@ -36,119 +58,145 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        profileNameText = view.findViewById(R.id.profileNameText);
-        profileEmailText = view.findViewById(R.id.profileEmailText);
-        profileRoleText = view.findViewById(R.id.profileRoleText);
-        profileConductorIdText = view.findViewById(R.id.profileConductorIdText);
-        profileDetailHintText = view.findViewById(R.id.profileDetailHintText);
 
-        View quickCurrentTripCard = view.findViewById(R.id.quickCurrentTripCard);
-        View quickUpcomingTripsCard = view.findViewById(R.id.quickUpcomingTripsCard);
-        View quickNewIncidentCard = view.findViewById(R.id.quickNewIncidentCard);
+        profileImage = view.findViewById(R.id.homeProfileImage);
+        profileNameText = view.findViewById(R.id.homeProfileName);
+        profileIdText = view.findViewById(R.id.homeProfileId);
+        profileDniText = view.findViewById(R.id.homeProfileDni);
+        profileMatriculaText = view.findViewById(R.id.homeProfileMatricula);
 
-        quickCurrentTripCard.setOnClickListener(v -> navigateTo(TripListFragment.newInstance(TripListFragment.MODE_ACTIVE)));
-        quickUpcomingTripsCard.setOnClickListener(v -> navigateTo(TripListFragment.newInstance(TripListFragment.MODE_UPCOMING)));
-        quickNewIncidentCard.setOnClickListener(v -> navigateTo(NuevaIncidenciaFragment.newInstance(null)));
+        MaterialCardView trackingCard = view.findViewById(R.id.pdaTrackingCard);
+        MaterialCardView offersCard = view.findViewById(R.id.pdaOffersCard);
+        MaterialCardView portesCard = view.findViewById(R.id.pdaPortesCard);
+        MaterialCardView incidentsCard = view.findViewById(R.id.pdaIncidentsCard);
+        MaterialCardView agendaCard = view.findViewById(R.id.pdaAgendaCard);
+        MaterialCardView billingCard = view.findViewById(R.id.pdaBillingCard);
+        MaterialButton editProfileButton = view.findViewById(R.id.homeEditProfileButton);
 
-        loadConductorProfile();
+        trackingCard.setOnClickListener(v -> navigateTo(new TrackingStatusFragment()));
+        offersCard.setOnClickListener(v -> navigateTo(new OfferInboxFragment()));
+        portesCard.setOnClickListener(v -> navigateTo(new PortesFragment()));
+        incidentsCard.setOnClickListener(v -> navigateTo(new IncidenciasOptionsFragment()));
+        agendaCard.setOnClickListener(v -> navigateTo(AgendaFragment.newInstance(AgendaFragment.MODE_GENERAL)));
+        billingCard.setOnClickListener(v -> navigateTo(new FacturacionDashboardFragment()));
+        editProfileButton.setOnClickListener(v -> navigateTo(new ProfileFragment()));
+
+        conductorId = SessionManager.resolveConductorId();
+        if (conductorId == null || conductorId <= 0) {
+            showSnackbar(R.string.home_profile_error_missing_id);
+            return;
+        }
+
+        profileIdText.setText(getString(R.string.home_profile_id_value, conductorId));
+        loadProfile();
+        loadActiveVehicle();
+        loadProfilePhoto();
+    }
+
+    private void loadProfile() {
+        if (conductorId == null) return;
+        conductorRepository.getConductorProfile(conductorId, new ConductorRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(@NonNull ConductorProfileResponse profile) {
+                if (!isAdded()) return;
+                bindProfile(profile);
+            }
+
+            @Override
+            public void onError(@NonNull String message) {
+                if (!isAdded()) return;
+                showSnackbar(message);
+            }
+        });
+    }
+
+    private void bindProfile(@NonNull ConductorProfileResponse profile) {
+        String fullName = profile.getNombreCompleto();
+        if (fullName == null || fullName.trim().isEmpty()) {
+            fullName = getString(R.string.home_profile_name_placeholder);
+        }
+        profileNameText.setText(fullName);
+
+        String dni = profile.getDni();
+        if (dni != null && !dni.trim().isEmpty()) {
+            profileDniText.setText("DNI: " + dni);
+            profileDniText.setVisibility(View.VISIBLE);
+        } else {
+            profileDniText.setVisibility(View.GONE);
+        }
+    }
+
+    private void loadActiveVehicle() {
+        if (conductorId == null || conductorId <= 0) return;
+        vehiculoRepository.getVehiculos(conductorId, result -> {
+            if (!isAdded()) return;
+            if (!result.isSuccessful() || result.getData() == null) {
+                profileMatriculaText.setVisibility(View.GONE);
+                return;
+            }
+            List<Vehiculo> vehiculos = result.getData();
+            Vehiculo active = null;
+            for (Vehiculo v : vehiculos) {
+                if (v.getEstado() == EstadoVehiculo.DISPONIBLE) {
+                    active = v;
+                    break;
+                }
+            }
+            if (active != null && active.getMatricula() != null && !active.getMatricula().trim().isEmpty()) {
+                profileMatriculaText.setText("Matrícula: " + active.getMatricula());
+                profileMatriculaText.setVisibility(View.VISIBLE);
+            } else {
+                profileMatriculaText.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void loadProfilePhoto() {
+        ApiClient.getInstance().obtenerFotoPerfil().enqueue(new Callback<Map<String, String>>() {
+            @Override
+            public void onResponse(@NonNull Call<Map<String, String>> call,
+                                   @NonNull Response<Map<String, String>> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    String url = response.body().get("url");
+                    if (url != null && !url.isEmpty()) {
+                        Glide.with(HomeFragment.this)
+                                .load(url)
+                                .transform(new CircleCrop())
+                                .placeholder(R.drawable.ic_nav_profile)
+                                .error(R.drawable.ic_nav_profile)
+                                .into(profileImage);
+                    }
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<Map<String, String>> call, @NonNull Throwable t) {
+                // Silently keep placeholder
+            }
+        });
     }
 
     private void navigateTo(@NonNull Fragment fragment) {
-        getParentFragmentManager()
+        requireActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.contentFragmentContainer, fragment)
                 .addToBackStack(null)
                 .commit();
     }
 
-    private void loadConductorProfile() {
-        profileConductorIdText.setText(getCurrentUserText());
-        profileRoleText.setText(R.string.home_profile_role_default);
-
-        Long conductorId = SessionManager.resolveConductorId();
-        if (conductorId == null || conductorId <= 0) {
-            showProfileFallback(
-                    getString(R.string.home_profile_name_placeholder),
-                    getString(R.string.home_profile_email_placeholder),
-                    getString(R.string.home_profile_error_missing_id)
-            );
-            return;
+    private void showSnackbar(@StringRes int messageRes) {
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, messageRes, Snackbar.LENGTH_LONG).show();
         }
-
-        showProfileLoading();
-        conductorRepository.getConductorProfile(conductorId, new ConductorRepository.ProfileCallback() {
-            @Override
-            public void onSuccess(@NonNull ConductorProfileResponse profile) {
-                if (!isAdded()) {
-                    return;
-                }
-                renderProfileSuccess(profile, conductorId);
-            }
-
-            @Override
-            public void onError(@NonNull String message) {
-                if (!isAdded()) {
-                    return;
-                }
-                showProfileFallback(
-                        getString(R.string.home_profile_name_value, conductorId),
-                        getString(R.string.home_profile_email_placeholder),
-                        message
-                );
-            }
-        });
     }
 
-    private void showProfileLoading() {
-        profileNameText.setText(R.string.home_profile_loading_title);
-        profileEmailText.setText(R.string.home_profile_loading_body);
-        profileDetailHintText.setText(R.string.home_profile_loading_hint);
-    }
-
-    private void renderProfileSuccess(@NonNull ConductorProfileResponse profile, long fallbackConductorId) {
-        String fullName = profile.getNombreCompleto();
-        if (fullName == null || fullName.trim().isEmpty()) {
-            fullName = getString(R.string.home_profile_name_value, fallbackConductorId);
-        }
-
-        String email = profile.getEmail();
-        if (email == null || email.trim().isEmpty()) {
-            email = getString(R.string.home_profile_email_placeholder);
-        }
-
-        Long profileId = profile.getId();
-        long resolvedId = (profileId != null && profileId > 0) ? profileId : fallbackConductorId;
-        profileConductorIdText.setText(getString(R.string.home_profile_id_value, resolvedId));
-        profileNameText.setText(fullName);
-        profileEmailText.setText(email);
-        profileDetailHintText.setText(buildPrimaryData(profile));
-    }
-
-    private void showProfileFallback(String name, String email, String hint) {
-        profileNameText.setText(name);
-        profileEmailText.setText(email);
-        profileDetailHintText.setText(hint);
-    }
-
-    private String buildPrimaryData(@NonNull ConductorProfileResponse profile) {
-        String phone = safeText(profile.getTelefono());
-        String dni = safeText(profile.getDni());
-        String city = safeText(profile.getCiudadBase());
-        return getString(R.string.home_profile_primary_data_value, phone, dni, city);
-    }
-
-    private String safeText(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return getString(R.string.home_profile_primary_data_na);
-        }
-        return value.trim();
-    }
-
-    private String getCurrentUserText() {
-        Long conductorId = SessionManager.resolveConductorId();
-        if (conductorId == null || conductorId <= 0) {
-            return getString(R.string.home_profile_id_unknown);
-        }
-        return getString(R.string.home_profile_id_value, conductorId);
+    private void showSnackbar(@Nullable String message) {
+        View view = getView();
+        if (!isAdded() || view == null) return;
+        String safeMessage = (message == null || message.trim().isEmpty())
+                ? getString(R.string.generic_api_error_short)
+                : message;
+        Snackbar.make(view, safeMessage, Snackbar.LENGTH_LONG).show();
     }
 }

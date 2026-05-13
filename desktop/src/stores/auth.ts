@@ -85,6 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
       nombre: resolvedName,
       email: resolvedEmail,
       role: toRoleString(resolvedRole),
+      fotoUrl: null,
     }
   }
 
@@ -97,6 +98,7 @@ export const useAuthStore = defineStore('auth', () => {
     const nombre = toNullableString(candidate.nombre)
     const email = toNullableString(candidate.email)
     const role = toNullableString(candidate.role) ?? toNullableString(candidate.rol) ?? ''
+    const fotoUrl = toNullableString(candidate.fotoUrl)
     const maybeId = typeof candidate.id === 'number' ? candidate.id : undefined
 
     if (!nombre || !email) {
@@ -108,6 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
       nombre,
       email,
       role: toRoleString(role),
+      fotoUrl,
     }
   }
 

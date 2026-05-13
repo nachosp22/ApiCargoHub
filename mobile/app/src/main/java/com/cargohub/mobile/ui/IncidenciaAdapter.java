@@ -1,6 +1,8 @@
 package com.cargohub.mobile.ui;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -82,22 +84,26 @@ public class IncidenciaAdapter extends RecyclerView.Adapter<IncidenciaAdapter.In
 
         void bind(IncidenciaResponse incidencia) {
             Context ctx = itemView.getContext();
-            tituloText.setText(incidencia.getTitulo());
-            descripcionText.setText(incidencia.getDescripcion());
+            tituloText.setText(incidencia.getTitulo() != null ? incidencia.getTitulo() : "");
+            descripcionText.setText(incidencia.getDescripcion() != null ? incidencia.getDescripcion() : "");
 
             EstadoIncidencia estado = incidencia.getEstado();
             if (estado != null) {
-                estadoText.setText(estado.name().replace("_", " "));
+                estadoText.setText(estado.getDisplayName());
                 int[] colors = getEstadoColors(ctx, estado);
                 estadoText.setTextColor(colors[0]);
-                estadoText.getBackground().setTint(colors[1]);
+                Drawable background = estadoText.getBackground();
+                if (background != null) {
+                    background.setTint(colors[1]);
+                }
             }
 
             SeveridadIncidencia severidad = incidencia.getSeveridad();
             if (severidad != null) {
-                severidadText.setText("Severidad: " + severidad.name());
+                severidadText.setText(ctx.getString(R.string.incidencia_severity_label, severidad.getDisplayName()));
                 int severityColor = getSeverityColor(ctx, severidad);
                 severidadText.setTextColor(severityColor);
+                severidadText.setBackgroundTintList(ColorStateList.valueOf(getSeveritySoftColor(ctx, severidad)));
             }
 
             String fecha = incidencia.getFechaReporte();
@@ -143,6 +149,18 @@ public class IncidenciaAdapter extends RecyclerView.Adapter<IncidenciaAdapter.In
                 case BAJA:
                 default:
                     return ctx.getColor(R.color.ch_success);
+            }
+        }
+
+        private int getSeveritySoftColor(Context ctx, SeveridadIncidencia severidad) {
+            switch (severidad) {
+                case ALTA:
+                    return ctx.getColor(R.color.ch_error_soft);
+                case MEDIA:
+                    return ctx.getColor(R.color.ch_warning_soft);
+                case BAJA:
+                default:
+                    return ctx.getColor(R.color.ch_success_soft);
             }
         }
     }

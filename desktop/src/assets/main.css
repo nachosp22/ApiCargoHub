@@ -3,6 +3,13 @@
 @tailwind utilities;
 
 /* Base styles */
+html,
+body,
+#app {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   @apply bg-canvas dark:bg-gray-900 text-gray-800 dark:text-gray-200;
 }

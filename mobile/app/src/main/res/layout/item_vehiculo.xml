@@ -44,6 +44,16 @@
                 android:textSize="@dimen/ch_text_size_caption"
                 app:backgroundTint="@color/ch_blue_100"
                 app:cornerRadius="@dimen/ch_radius_sm" />
+
+            <ImageButton
+                android:id="@+id/vehiculoItemEditButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="@dimen/ch_space_xs"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/vehicle_edit_action"
+                android:src="@android:drawable/ic_menu_edit"
+                app:tint="@color/ch_text_secondary" />
         </LinearLayout>
 
         <TextView

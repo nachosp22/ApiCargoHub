@@ -8,8 +8,9 @@ const authStore = useAuthStore()
 const visible = defineModel<boolean>('visible', { default: false })
 const uploading = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
+const previewUrl = ref<string | null>(null)
 
-const fotoUrl = computed(() => authStore.user?.fotoUrl ?? null)
+const fotoUrl = computed(() => previewUrl.value ?? authStore.user?.fotoUrl ?? null)
 
 const userInitials = computed(() => {
   const name = authStore.user?.nombre
@@ -47,15 +48,19 @@ async function onFileSelected(event: Event) {
   if (file.size > 2 * 1024 * 1024) return // 2MB raw limit
 
   uploading.value = true
+  const temporaryObjectUrl = URL.createObjectURL(file)
+  previewUrl.value = temporaryObjectUrl
   try {
     const base64 = await fileToBase64(file)
     const response = await uploadProfilePhoto(base64)
     if (response.data?.url) {
       authStore.setFotoUrl(response.data.url)
+      previewUrl.value = null
     }
   } catch {
-    // Error handled silently — could add toast
+    previewUrl.value = null
   } finally {
+    URL.revokeObjectURL(temporaryObjectUrl)
     uploading.value = false
     // Reset input so same file can be re-selected
     if (input) input.value = ''
@@ -67,6 +72,7 @@ async function handleDeletePhoto() {
   try {
     await deleteProfilePhoto()
     authStore.setFotoUrl(null)
+    previewUrl.value = null
   } catch {
     // Error handled silently
   } finally {
@@ -86,6 +92,11 @@ function fileToBase64(file: File): Promise<string> {
     reader.onerror = reject
     reader.readAsDataURL(file)
   })
+}
+
+function handleImageError() {
+  previewUrl.value = null
+  authStore.setFotoUrl(null)
 }
 </script>
 
@@ -124,6 +135,7 @@ function fileToBase64(file: File): Promise<string> {
                 :src="fotoUrl"
                 alt="Avatar"
                 class="w-full h-full object-cover"
+                @error="handleImageError"
               />
               <span v-else class="text-3xl font-bold text-primary">
                 {{ userInitials }}

@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 
 import com.cargohub.mobile.R;
@@ -27,10 +28,13 @@ import java.util.List;
 public class NuevaIncidenciaFragment extends Fragment {
 
     private static final String ARG_PORTE_ID = "porte_id";
+    private static final int PLACEHOLDER_SELECTION_INDEX = 0;
 
     private FragmentNuevaIncidenciaBinding binding;
     private final IncidenciaRepository repository = new IncidenciaRepository();
     private PorteSpinnerAdapter porteAdapter;
+    private SeveridadIncidencia[] severidadOptions = new SeveridadIncidencia[0];
+    private PrioridadIncidencia[] prioridadOptions = new PrioridadIncidencia[0];
     private List<Porte> portesCache;
     private Long preselectedPorteId;
 
@@ -65,11 +69,12 @@ public class NuevaIncidenciaFragment extends Fragment {
     }
 
     private void setupSpinners() {
-        String[] severidades = new String[SeveridadIncidencia.values().length + 1];
-        severidades[0] = "Seleccionar...";
+        severidadOptions = SeveridadIncidencia.values();
+        String[] severidades = new String[severidadOptions.length + 1];
+        severidades[0] = "Severidad";
         int idx = 1;
-        for (SeveridadIncidencia s : SeveridadIncidencia.values()) {
-            severidades[idx++] = s.name();
+        for (SeveridadIncidencia s : severidadOptions) {
+            severidades[idx++] = s.getDisplayName();
         }
         ArrayAdapter<String> severidadAdapter = new ArrayAdapter<>(
                 requireContext(),
@@ -80,11 +85,12 @@ public class NuevaIncidenciaFragment extends Fragment {
         binding.severidadSpinner.setAdapter(severidadAdapter);
         binding.severidadSpinner.setSelection(0);
 
-        String[] prioridades = new String[PrioridadIncidencia.values().length + 1];
-        prioridades[0] = "Seleccionar...";
+        prioridadOptions = PrioridadIncidencia.values();
+        String[] prioridades = new String[prioridadOptions.length + 1];
+        prioridades[0] = "Prioridad";
         idx = 1;
-        for (PrioridadIncidencia p : PrioridadIncidencia.values()) {
-            prioridades[idx++] = p.name();
+        for (PrioridadIncidencia p : prioridadOptions) {
+            prioridades[idx++] = p.getDisplayName();
         }
         ArrayAdapter<String> prioridadAdapter = new ArrayAdapter<>(
                 requireContext(),
@@ -130,7 +136,7 @@ public class NuevaIncidenciaFragment extends Fragment {
                     return;
                 }
                 showNoPortesState();
-                Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_LONG).show();
+                showSnackbar(message, R.string.generic_api_error_short, Snackbar.LENGTH_LONG);
             }
         });
     }
@@ -187,24 +193,30 @@ public class NuevaIncidenciaFragment extends Fragment {
 
         int portePosition = binding.porteSpinner.getSelectedItemPosition();
         if (portePosition < 0 || portesCache == null || portePosition >= portesCache.size()) {
-            Snackbar.make(binding.getRoot(),
-                    R.string.incidencia_error_porte_requerido,
-                    Snackbar.LENGTH_SHORT).show();
+            showSnackbar(R.string.incidencia_error_porte_requerido, Snackbar.LENGTH_SHORT);
             return;
         }
 
         Porte porte = portesCache.get(portePosition);
         if (porte.getId() == null) {
-            Snackbar.make(binding.getRoot(),
-                    R.string.incidencia_error_porte_requerido,
-                    Snackbar.LENGTH_SHORT).show();
+            showSnackbar(R.string.incidencia_error_porte_requerido, Snackbar.LENGTH_SHORT);
             return;
         }
 
-        String severidad = binding.severidadSpinner.getSelectedItem() != null
-                ? binding.severidadSpinner.getSelectedItem().toString() : "MEDIA";
-        String prioridad = binding.prioridadSpinner.getSelectedItem() != null
-                ? binding.prioridadSpinner.getSelectedItem().toString() : "MEDIA";
+        int severidadPosition = binding.severidadSpinner.getSelectedItemPosition();
+        if (severidadPosition <= PLACEHOLDER_SELECTION_INDEX) {
+            showSnackbar(R.string.incidencia_error_severidad_requerida, Snackbar.LENGTH_SHORT);
+            return;
+        }
+
+        int prioridadPosition = binding.prioridadSpinner.getSelectedItemPosition();
+        if (prioridadPosition <= PLACEHOLDER_SELECTION_INDEX) {
+            showSnackbar(R.string.incidencia_error_prioridad_requerida, Snackbar.LENGTH_SHORT);
+            return;
+        }
+
+        String severidad = toBackendSeverity(severidadPosition);
+        String prioridad = toBackendPriority(prioridadPosition);
 
         enviarIncidencia(porte.getId(), titulo, descripcion, severidad, prioridad);
     }
@@ -233,9 +245,28 @@ public class NuevaIncidenciaFragment extends Fragment {
                             return;
                         }
                         setLoading(false);
-                        Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_LONG).show();
+                        showSnackbar(message, R.string.generic_api_error_short, Snackbar.LENGTH_LONG);
                     }
                 });
+    }
+
+    private void showSnackbar(@StringRes int messageRes, int duration) {
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, messageRes, duration).show();
+        }
+    }
+
+    private void showSnackbar(@Nullable String message, @StringRes int fallbackMessageRes, int duration) {
+        String resolvedMessage = message != null ? message.trim() : "";
+        if (resolvedMessage.isEmpty()) {
+            showSnackbar(fallbackMessageRes, duration);
+            return;
+        }
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, resolvedMessage, duration).show();
+        }
     }
 
     private void setLoading(boolean loading) {
@@ -258,6 +289,24 @@ public class NuevaIncidenciaFragment extends Fragment {
         }
         binding.tituloInputLayout.setError(null);
         binding.descripcionInputLayout.setError(null);
+    }
+
+    @NonNull
+    private String toBackendSeverity(int spinnerPosition) {
+        int enumIndex = spinnerPosition - 1;
+        if (enumIndex < 0 || enumIndex >= severidadOptions.length) {
+            return SeveridadIncidencia.MEDIA.name();
+        }
+        return severidadOptions[enumIndex].name();
+    }
+
+    @NonNull
+    private String toBackendPriority(int spinnerPosition) {
+        int enumIndex = spinnerPosition - 1;
+        if (enumIndex < 0 || enumIndex >= prioridadOptions.length) {
+            return PrioridadIncidencia.MEDIA.name();
+        }
+        return prioridadOptions[enumIndex].name();
     }
 
     @Override

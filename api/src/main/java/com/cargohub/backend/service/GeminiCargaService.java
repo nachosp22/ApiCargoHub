@@ -22,13 +22,15 @@ import java.util.Set;
 public class GeminiCargaService {
 
     private static final String USER_FACING_FALLBACK_REASON =
-            "No se pudo analizar la carga automaticamente. Tu solicitud se creo correctamente y quedo pendiente de revision manual.";
+            "No se ha podido analizar la carga. El porte sera revisado manualmente por uno de nuestros agentes.";
 
     private static final Set<String> ALLOWED_VEHICLE_TYPES = Set.of("FURGONETA", "RIGIDO", "TRAILER");
     private static final Set<String> REQUIRED_JSON_FIELDS = Set.of(
             "pesoTotalKg",
             "volumenTotalM3",
             "largoMaxPaquete",
+            "anchoMaxPaquete",
+            "altoMaxPaquete",
             "tipoVehiculoRequerido",
             "revisionManual",
             "motivoRevision"
@@ -43,6 +45,8 @@ public class GeminiCargaService {
               "pesoTotalKg": number o 0.0,
               "volumenTotalM3": number o 0.0,
               "largoMaxPaquete": number en metros o 0.0,
+              "anchoMaxPaquete": number en metros o 0.0,
+              "altoMaxPaquete": number en metros o 0.0,
               "tipoVehiculoRequerido": "FURGONETA" | "RIGIDO" | "TRAILER",
               "revisionManual": boolean,
               "motivoRevision": string o null
@@ -52,11 +56,18 @@ public class GeminiCargaService {
             - FURGONETA: hasta 1200 kg y largo máximo de paquete hasta 3 m.
             - RIGIDO: entre 1200 y 8000 kg, o largo de paquete entre 3 y 7 m.
             - TRAILER: más de 8000 kg o largo de paquete mayor a 7 m.
+            - Si el cliente habla de palets europeos estándar sin medidas, usá 1.2 m x 0.8 m como base de cada palet.
+            - Si el cliente dice "X cajas/bultos/palets de Y kg", pesoTotalKg debe ser X * Y kg.
+            - Si el cliente dice "peso total Y kg", pesoTotalKg debe ser Y kg, no multiplicarlo por la cantidad.
 
             Reglas de revisión manual:
             - revisionManual debe ser true si NO se puede calcular o deducir claramente alguno de estos: peso total, volumen total (m3), largo máximo.
             - Si falta volumen, aunque exista el peso, revisionManual debe ser true y explicar el motivo.
-            - revisionManual puede ser false SOLO si todas las dimensiones están 100% claras.
+            - Si el cliente no especifica ancho o alto, inferí valores estándar según el tipo de vehículo:
+              * FURGONETA: ancho 1.7 m, alto 1.8 m.
+              * RIGIDO: ancho 2.45 m, alto 2.5 m.
+              * TRAILER: ancho 2.45 m, alto 2.7 m.
+            - revisionManual puede ser false si peso, volumen, largo y tipo de vehículo están claros, aunque ancho/alto no estén explícitos.
 
             Si no hay datos suficientes, devolvé 0.0 en los campos numéricos y explicá el motivo en motivoRevision.
             """;
@@ -121,6 +132,7 @@ public class GeminiCargaService {
                     ),
                     "generationConfig", Map.of(
                             "responseMimeType", "application/json",
+                            "responseSchema", responseSchema(),
                             "temperature", 0
                     )
             );
@@ -177,6 +189,35 @@ public class GeminiCargaService {
         return response;
     }
 
+    private Map<String, Object> responseSchema() {
+        return Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "pesoTotalKg", Map.of("type", "number"),
+                        "volumenTotalM3", Map.of("type", "number"),
+                        "largoMaxPaquete", Map.of("type", "number"),
+                        "anchoMaxPaquete", Map.of("type", "number"),
+                        "altoMaxPaquete", Map.of("type", "number"),
+                        "tipoVehiculoRequerido", Map.of(
+                                "type", "string",
+                                "enum", List.of("FURGONETA", "RIGIDO", "TRAILER")
+                        ),
+                        "revisionManual", Map.of("type", "boolean"),
+                        "motivoRevision", Map.of("type", "string", "nullable", true)
+                ),
+                "required", List.of(
+                        "pesoTotalKg",
+                        "volumenTotalM3",
+                        "largoMaxPaquete",
+                        "anchoMaxPaquete",
+                        "altoMaxPaquete",
+                        "tipoVehiculoRequerido",
+                        "revisionManual",
+                        "motivoRevision"
+                )
+        );
+    }
+
     private String extractCandidateText(JsonNode root) {
         JsonNode candidates = root.path("candidates");
         if (!candidates.isArray() || candidates.isEmpty()) {
@@ -198,7 +239,7 @@ public class GeminiCargaService {
     }
 
     private CargoAnalysisResponse parseAndValidateStrictJson(String responseText) throws Exception {
-        JsonNode json = objectMapper.readTree(responseText);
+        JsonNode json = objectMapper.readTree(extractJsonObject(responseText));
         if (!json.isObject()) {
             throw new IllegalArgumentException("Gemini response is not a JSON object");
         }
@@ -208,6 +249,8 @@ public class GeminiCargaService {
         double peso = readRequiredNumber(json, "pesoTotalKg");
         double volumen = readRequiredNumber(json, "volumenTotalM3");
         double largo = readRequiredNumber(json, "largoMaxPaquete");
+        double ancho = readOptionalNumber(json, "anchoMaxPaquete");
+        double alto = readOptionalNumber(json, "altoMaxPaquete");
         String tipoVehiculo = readRequiredText(json, "tipoVehiculoRequerido");
         if (!ALLOWED_VEHICLE_TYPES.contains(tipoVehiculo)) {
             throw new IllegalArgumentException("Unsupported vehicle type: " + tipoVehiculo);
@@ -227,12 +270,31 @@ public class GeminiCargaService {
         response.setPesoTotalKg(peso);
         response.setVolumenTotalM3(volumen);
         response.setLargoMaxPaquete(largo);
-        response.setAnchoMaxPaquete(0.0);
-        response.setAltoMaxPaquete(0.0);
+        response.setAnchoMaxPaquete(ancho);
+        response.setAltoMaxPaquete(alto);
         response.setTipoVehiculoRequerido(tipoVehiculo);
         response.setRevisionManual(revisionManualNode.asBoolean());
         response.setMotivoRevision(motivoNode.isNull() ? null : motivoNode.asText());
         return response;
+    }
+
+    private String extractJsonObject(String responseText) {
+        if (responseText == null || responseText.isBlank()) {
+            throw new IllegalArgumentException("Gemini response text is empty");
+        }
+
+        String trimmed = responseText.trim();
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+            return trimmed;
+        }
+
+        int start = trimmed.indexOf('{');
+        int end = trimmed.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            return trimmed.substring(start, end + 1);
+        }
+
+        throw new IllegalArgumentException("Gemini response does not contain a JSON object");
     }
 
     private void validateRequiredFields(JsonNode json) {
@@ -251,6 +313,14 @@ public class GeminiCargaService {
         return value.asDouble();
     }
 
+    private double readOptionalNumber(JsonNode json, String field) {
+        JsonNode value = json.get(field);
+        if (value == null || !value.isNumber()) {
+            return 0.0;
+        }
+        return value.asDouble();
+    }
+
     private String readRequiredText(JsonNode json, String field) {
         JsonNode value = json.get(field);
         if (value == null || !value.isTextual() || value.asText().isBlank()) {
@@ -263,8 +333,29 @@ public class GeminiCargaService {
         double peso = defaultIfNull(response.getPesoTotalKg());
         double volumen = defaultIfNull(response.getVolumenTotalM3());
         double largo = defaultIfNull(response.getLargoMaxPaquete());
+        double ancho = defaultIfNull(response.getAnchoMaxPaquete());
+        double alto = defaultIfNull(response.getAltoMaxPaquete());
 
-        response.setTipoVehiculoRequerido(resolveVehicleType(peso, largo));
+        // Solo calculamos fallback si Gemini no devolvió un tipo válido.
+        // Gemini puede inferir necesidades por volumen, tipo de carga, fragilidad,
+        // cantidad de palets, etc., que nosotros no vemos solo con peso/largo.
+        String geminiTipo = response.getTipoVehiculoRequerido();
+        if (geminiTipo == null || !ALLOWED_VEHICLE_TYPES.contains(geminiTipo)) {
+            response.setTipoVehiculoRequerido(resolveVehicleType(peso, volumen, largo));
+        }
+        // Si Gemini devolvió un tipo válido, lo respetamos como autoridad.
+        // Ej: muchos palets livianos (alto volumen, bajo peso) → RIGIDO/TRAILER
+
+        // Inferir ancho/alto faltantes desde el tipo de vehículo
+        String tipoVehiculo = response.getTipoVehiculoRequerido();
+        if (ancho <= 0 && tipoVehiculo != null) {
+            ancho = inferAnchoFromVehicleType(tipoVehiculo);
+            response.setAnchoMaxPaquete(ancho);
+        }
+        if (alto <= 0 && tipoVehiculo != null) {
+            alto = inferAltoFromVehicleType(tipoVehiculo);
+            response.setAltoMaxPaquete(alto);
+        }
 
         List<String> missing = new ArrayList<>();
         if (peso <= 0) {
@@ -281,20 +372,26 @@ public class GeminiCargaService {
         response.setRevisionManual(revisionManual);
         if (revisionManual) {
             if (volumen <= 0) {
-                response.setMotivoRevision("Falta volumen total (m3), se requiere revision manual.");
+                response.setMotivoRevision(USER_FACING_FALLBACK_REASON);
             } else {
-                response.setMotivoRevision("Faltan datos claros para: " + String.join(", ", missing) + ".");
+                response.setMotivoRevision(USER_FACING_FALLBACK_REASON);
             }
         } else {
             response.setMotivoRevision(null);
         }
     }
 
-    private String resolveVehicleType(double pesoTotalKg, double largoMaxPaquete) {
-        if (pesoTotalKg > 8000 || largoMaxPaquete > 7) {
+    /**
+     * Fallback heurístico cuando Gemini no devuelve tipo de vehículo.
+     * Considera peso, volumen y largo máximo.
+     */
+    private String resolveVehicleType(double pesoTotalKg, double volumenTotalM3, double largoMaxPaquete) {
+        if (pesoTotalKg > 8000 || largoMaxPaquete > 7 || volumenTotalM3 > 40) {
             return "TRAILER";
         }
-        if ((pesoTotalKg >= 1200 && pesoTotalKg <= 8000) || (largoMaxPaquete >= 3 && largoMaxPaquete <= 7)) {
+        if ((pesoTotalKg >= 1200 && pesoTotalKg <= 8000)
+                || (largoMaxPaquete >= 3 && largoMaxPaquete <= 7)
+                || (volumenTotalM3 >= 10 && volumenTotalM3 <= 40)) {
             return "RIGIDO";
         }
         return "FURGONETA";
@@ -302,6 +399,24 @@ public class GeminiCargaService {
 
     private double defaultIfNull(Double value) {
         return value == null ? 0.0 : value;
+    }
+
+    private double inferAnchoFromVehicleType(String tipo) {
+        return switch (tipo) {
+            case "FURGONETA" -> 1.7;
+            case "RIGIDO" -> 2.45;
+            case "TRAILER" -> 2.45;
+            default -> 1.7;
+        };
+    }
+
+    private double inferAltoFromVehicleType(String tipo) {
+        return switch (tipo) {
+            case "FURGONETA" -> 1.8;
+            case "RIGIDO" -> 2.5;
+            case "TRAILER" -> 2.7;
+            default -> 1.8;
+        };
     }
 
     private void saveAnalysisLog(String requestData, String responseData, boolean success, String errorMessage, Porte porte) {

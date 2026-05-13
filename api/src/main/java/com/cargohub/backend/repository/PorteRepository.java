@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PorteRepository extends JpaRepository<Porte, Long> {
@@ -27,8 +28,12 @@ public interface PorteRepository extends JpaRepository<Porte, Long> {
     List<Porte> findDriverOffers(@Param("estado") EstadoPorte estado,
                                  @Param("conductorId") Long conductorId);
 
+    List<Porte> findByRevisionManualTrue();
+
     // 2. Mis Viajes (Búsqueda directa por Conductor)
     List<Porte> findByConductorId(Long conductorId);
+
+    Optional<Porte> findFirstByConductorIdAndEstadoInOrderByFechaCreacionDesc(Long conductorId, List<EstadoPorte> estados);
 
     List<Porte> findByClienteId(Long clienteId);
 
@@ -65,6 +70,19 @@ public interface PorteRepository extends JpaRepository<Porte, Long> {
                                             @Param("desde") LocalDateTime desde,
                                             @Param("hasta") LocalDateTime hasta);
 
-    // Portes pendientes de revisión manual
-    List<Porte> findByRevisionManualTrueOrderByFechaCreacionDesc();
+    @Query("""
+            SELECT p FROM Porte p
+            WHERE p.revisionManual = true
+               OR (
+                     p.estado = com.cargohub.backend.entity.enums.EstadoPorte.PENDIENTE
+                 AND p.conductor IS NULL
+                 AND p.revisionManual = false
+                 AND p.motivoRevision IS NOT NULL
+                 AND p.motivoRevision <> :mensajeEsperando
+                 AND p.motivoRevision NOT LIKE CONCAT(:rematchingPrefix, '%')
+                )
+            ORDER BY p.fechaCreacion DESC
+            """)
+    List<Porte> findPendientesAdminReview(@Param("mensajeEsperando") String mensajeEsperando,
+                                          @Param("rematchingPrefix") String rematchingPrefix);
 }

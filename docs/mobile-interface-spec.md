@@ -21,7 +21,7 @@ Resultado esperado del MVP: que un usuario operativo pueda iniciar sesion, ver s
 - Desktop Vue/Electron ya implementa login, modulos CRUD, y mapa de flota con polling y estados de conexion.
 - Realtime actual usa `GET /api/v1/fleet/snapshot` + `POST /api/v1/tracking/drivers/{driverId}/locations` + `GET /api/v1/eta/estimate`.
 - Existe feature flag de mapa realtime en desktop (`VITE_FEATURE_FLEET_REALTIME`).
-- Carpeta `mobile/` aun sin implementacion, por lo que este spec define contrato UX/UI inicial para iniciar desarrollo.
+- La carpeta `mobile/` ya contiene implementacion activa; este spec se usa como referencia funcional/UX del MVP y debe mantenerse alineado con el estado real del modulo.
 
 ## 3) Perfiles de usuario y permisos (MVP)
 

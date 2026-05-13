@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/ch_surface"
+    android:orientation="vertical"
+    android:padding="@dimen/ch_space_lg">
+
+    <!-- Drag handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/ch_space_md"
+        android:background="@color/ch_outline"
+        android:alpha="0.6" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/tracking_active_trip_details"
+        android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+        android:textColor="@color/ch_text_primary"
+        android:textStyle="bold" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="@dimen/ch_space_md"
+        android:background="@color/ch_outline" />
+
+    <!-- Origen -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/porte_detail_origen_label"
+        android:textColor="@color/ch_text_secondary"
+        android:textSize="@dimen/ch_text_size_caption" />
+
+    <TextView
+        android:id="@+id/bsPorteOrigen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/ch_space_sm"
+        android:textColor="@color/ch_text_primary"
+        android:textSize="@dimen/ch_text_size_body"
+        android:textStyle="bold" />
+
+    <!-- Destino -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/porte_detail_destino_label"
+        android:textColor="@color/ch_text_secondary"
+        android:textSize="@dimen/ch_text_size_caption" />
+
+    <TextView
+        android:id="@+id/bsPorteDestino"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/ch_space_sm"
+        android:textColor="@color/ch_text_primary"
+        android:textSize="@dimen/ch_text_size_body"
+        android:textStyle="bold" />
+
+    <!-- Mercancía -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/porte_detail_mercancia_label"
+        android:textColor="@color/ch_text_secondary"
+        android:textSize="@dimen/ch_text_size_caption" />
+
+    <TextView
+        android:id="@+id/bsPorteMercancia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/ch_space_sm"
+        android:textColor="@color/ch_text_primary"
+        android:textSize="@dimen/ch_text_size_body" />
+
+    <!-- Cliente -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/porte_detail_cliente_label"
+        android:textColor="@color/ch_text_secondary"
+        android:textSize="@dimen/ch_text_size_caption" />
+
+    <TextView
+        android:id="@+id/bsPorteCliente"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/ch_space_sm"
+        android:textColor="@color/ch_text_primary"
+        android:textSize="@dimen/ch_text_size_body" />
+
+    <!-- Fechas -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/porte_detail_fechas_label"
+        android:textColor="@color/ch_text_secondary"
+        android:textSize="@dimen/ch_text_size_caption" />
+
+    <TextView
+        android:id="@+id/bsPorteFechas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/ch_space_sm"
+        android:textColor="@color/ch_text_primary"
+        android:textSize="@dimen/ch_text_size_body" />
+
+    <!-- Precio -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/porte_detail_precio_label"
+        android:textColor="@color/ch_text_secondary"
+        android:textSize="@dimen/ch_text_size_caption" />
+
+    <TextView
+        android:id="@+id/bsPortePrecio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/ch_space_sm"
+        android:textColor="@color/ch_primary"
+        android:textSize="@dimen/ch_text_size_body_large"
+        android:textStyle="bold" />
+
+    <!-- Estado -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/porte_detail_estado_label"
+        android:textColor="@color/ch_text_secondary"
+        android:textSize="@dimen/ch_text_size_caption" />
+
+    <TextView
+        android:id="@+id/bsPorteEstado"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/ch_text_primary"
+        android:textSize="@dimen/ch_text_size_body" />
+
+</LinearLayout>

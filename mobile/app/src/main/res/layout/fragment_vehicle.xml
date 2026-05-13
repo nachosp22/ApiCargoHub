@@ -189,14 +189,6 @@
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
-                <CheckBox
-                    android:id="@+id/vehicleTrampillaCheckbox"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/ch_space_sm"
-                    android:minHeight="48dp"
-                    android:text="@string/vehicle_trampilla_label" />
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -225,6 +217,16 @@
                         android:text="@string/retry_button"
                         android:textAllCaps="false" />
                 </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/vehicleCancelButton"
+                    style="@style/Widget.ApiCargoHub.Button.Secondary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:text="@string/vehicle_cancel_edit_action"
+                    android:textAllCaps="false"
+                    android:visibility="gone" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

@@ -15,8 +15,10 @@ import {
  * NOTE: We import the auth store lazily inside interceptors to avoid
  * the "no active Pinia" error (store used at module level).
  */
+const resolvedApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:8080/api'
+
 export const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: resolvedApiBaseUrl,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
@@ -29,12 +31,17 @@ export type EtaConfidence = 'LOW' | 'MEDIUM'
 
 export interface DriverLocationPoint {
   driverId: string
+  driverName?: string
+  driverLastName?: string
   lat: number
   lon: number
   recordedAt: string
   speedKph?: number
   headingDeg?: number
   state: DriverState
+  activePorteId?: number
+  activePorteDestination?: string
+  activePorteStatus?: string
 }
 
 export interface FleetSnapshotResponse {

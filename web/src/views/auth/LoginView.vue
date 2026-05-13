@@ -1,10 +1,20 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-canvas dark:bg-gray-900 px-4">
-    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/50 p-8">
+  <div class="relative min-h-screen flex items-center justify-center px-4 py-8 overflow-hidden">
+    <img
+      src="/assets/brand/login-bg.png"
+      alt=""
+      aria-hidden="true"
+      class="absolute inset-0 h-full w-full object-cover"
+    />
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-950/70 via-slate-900/60 to-primary-950/70"></div>
+
+    <div class="relative w-full max-w-md bg-white/95 dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl shadow-xl dark:shadow-black/40 p-8 border border-white/20 dark:border-gray-700/50">
       <div class="text-center mb-8">
-        <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center mx-auto mb-4">
-          <svg viewBox="0 0 512 512" fill="none" class="w-6 h-6"><path d="M256 296L88 199v148l168 97V296z" fill="#1E40AF"/><path d="M256 296l168-97v148l-168 97V296z" fill="#2563EB"/><path d="M256 102L88 199l168 97 168-97L256 102z" fill="#3B82F6"/><path d="M216 199l40-28 40 28-16 11v34h-48v-34L216 199z" fill="white" opacity=".92"/></svg>
-        </div>
+        <img
+          src="/assets/brand/logo.png"
+          alt="CargoHub"
+          class="w-12 h-12 object-contain mx-auto mb-4"
+        />
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('auth.login.title') }}</h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('auth.login.subtitle') }}</p>
       </div>
@@ -54,6 +64,9 @@
         <router-link to="/register" class="text-sm text-primary hover:underline">
           {{ t('auth.login.noAccount') }}
         </router-link>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+          {{ t('auth.login.passwordRecoveryUnavailable') }}
+        </p>
       </div>
     </div>
   </div>

@@ -26,7 +26,6 @@ import java.time.Instant;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
 
     @Autowired private UsuarioService usuarioService;

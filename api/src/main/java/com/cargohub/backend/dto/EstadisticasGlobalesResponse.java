@@ -47,7 +47,6 @@ public class EstadisticasGlobalesResponse {
     public static class TopConductor {
         private String nombre;
         private long portes;
-        private double rating;
     }
 
     @Data

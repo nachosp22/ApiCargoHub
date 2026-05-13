@@ -81,20 +81,20 @@ public class FirmaEntregaFragment extends Fragment {
                 : "";
 
         if (firmadoPor.isEmpty()) {
-            firmadoPorInput.setError("Introduce el nombre del firmante");
+            firmadoPorInput.setError(getString(R.string.signature_error_signer_required));
             firmadoPorInput.requestFocus();
             return;
         }
 
         if (!signatureView.hasSignature()) {
-            Snackbar.make(requireView(), "Dibuja la firma antes de confirmar", Snackbar.LENGTH_SHORT).show();
+            showSnackbar(getString(R.string.signature_error_draw_before_confirm), Snackbar.LENGTH_SHORT);
             return;
         }
 
         // Convert bitmap to base64 PNG
         Bitmap bmp = signatureView.getSignatureBitmap();
         if (bmp == null) {
-            Snackbar.make(requireView(), "Error al capturar la firma", Snackbar.LENGTH_SHORT).show();
+            showSnackbar(getString(R.string.signature_error_capture_failed), Snackbar.LENGTH_SHORT);
             return;
         }
 
@@ -116,17 +116,32 @@ public class FirmaEntregaFragment extends Fragment {
 
             if (result.isSuccessful()) {
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Entrega confirmada")
-                        .setMessage("La firma se ha registrado correctamente. El porte ha sido marcado como entregado.")
+                        .setTitle(R.string.signature_success_delivery_confirmed_title)
+                        .setMessage(R.string.signature_success_delivery_confirmed_message)
                         .setPositiveButton(android.R.string.ok, (d, w) -> navigateBack())
                         .setCancelable(false)
                         .show();
             } else {
-                Snackbar.make(requireView(),
-                        result.getMessage() != null ? result.getMessage() : "Error al registrar la firma",
-                        Snackbar.LENGTH_LONG).show();
+                showApiError(result.getMessage(), Snackbar.LENGTH_LONG);
             }
         });
+    }
+
+    private void showSnackbar(@NonNull String message, int duration) {
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, message, duration).show();
+        }
+    }
+
+    private void showApiError(@Nullable String message, int duration) {
+        String safeMessage = (message == null || message.trim().isEmpty())
+                ? getString(R.string.generic_api_error_short)
+                : message;
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, safeMessage, duration).show();
+        }
     }
 
     private void setLoading(boolean loading) {

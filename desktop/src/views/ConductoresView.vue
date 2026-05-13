@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useConductoresStore } from '@/stores/conductores'
 import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
@@ -16,6 +17,8 @@ import type { Conductor, CreateConductorRequest } from '@/stores/conductores'
 
 const conductoresStore = useConductoresStore()
 const toast = useToast()
+const route = useRoute()
+const router = useRouter()
 
 // --- Dialog state ---
 const showDialog = ref(false)
@@ -25,6 +28,20 @@ const editingConductor = ref<Conductor | null>(null)
 const showDetail = ref(false)
 const detailConductor = ref<Conductor | null>(null)
 const activeTab = ref(0)
+const dateSpecificBlocks = computed(() =>
+  conductoresStore.detailAgenda
+    .filter((bloqueo) => bloqueo.diaSemana == null)
+    .map((bloqueo) => {
+      const isSingleDay = isSameCalendarDay(bloqueo.fechaInicio, bloqueo.fechaFin)
+      return {
+        ...bloqueo,
+        blockKindLabel: isSingleDay ? 'Día puntual' : 'Intervalo',
+        blockDateLabel: isSingleDay
+          ? formatDisplayDate(bloqueo.fechaInicio)
+          : `${formatDisplayDate(bloqueo.fechaInicio)} — ${formatDisplayDate(bloqueo.fechaFin)}`,
+      }
+    })
+)
 
 // --- Load tab data when detail opens or tab changes ---
 watch([showDetail, activeTab], ([visible, tab]) => {
@@ -45,6 +62,11 @@ const togglingConductor = ref<Conductor | null>(null)
 // --- Lifecycle ---
 onMounted(async () => {
   await conductoresStore.fetchConductores()
+  await openConductorFromQuery()
+})
+
+watch(() => route.query.conductorId, () => {
+  void openConductorFromQuery()
 })
 
 // --- Handlers ---
@@ -64,6 +86,24 @@ function onViewConductor(conductor: Conductor): void {
   activeTab.value = 0
   conductoresStore.clearDetail()
   showDetail.value = true
+}
+
+async function openConductorFromQuery(): Promise<void> {
+  const rawId = route.query.conductorId
+  const conductorId = typeof rawId === 'string' ? Number.parseInt(rawId, 10) : NaN
+  if (Number.isNaN(conductorId)) return
+
+  const conductor = await conductoresStore.fetchConductorById(conductorId)
+  if (conductor) {
+    onViewConductor(conductor)
+    await clearQueryParam('conductorId')
+  }
+}
+
+async function clearQueryParam(param: string): Promise<void> {
+  const nextQuery = { ...route.query }
+  delete nextQuery[param]
+  await router.replace({ query: nextQuery })
 }
 
 function onConfirmToggle(conductor: Conductor): void {
@@ -148,13 +188,6 @@ function getInitials(conductor: Conductor): string {
     .join('')
 }
 
-function getRatingStars(rating: number): string {
-  const rounded = Math.round(rating * 2) / 2
-  const full = Math.floor(rounded)
-  const half = rounded % 1 >= 0.5 ? 1 : 0
-  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - half)
-}
-
 type StyleConfig = {
   bg: string
   text: string
@@ -190,12 +223,62 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
   }
   return map[estado]
 }
+
+type DataTableRowClickEvent<T> = {
+  data: T
+}
+
+async function onOpenVehiculoDetailFromConductor(event: DataTableRowClickEvent<{ id: number }>): Promise<void> {
+  const vehiculoId = event.data?.id
+  if (!Number.isFinite(vehiculoId)) return
+
+  showDetail.value = false
+  await router.push({ path: '/vehiculos', query: { vehiculoId: String(vehiculoId) } })
+}
+
+async function onOpenPorteDetailFromConductor(event: DataTableRowClickEvent<{ id: number }>): Promise<void> {
+  const porteId = event.data?.id
+  if (!Number.isFinite(porteId)) return
+
+  showDetail.value = false
+  await router.push({ path: '/portes', query: { porteId: String(porteId) } })
+}
+
+function formatDisplayDate(value: string): string {
+  if (!value || value === '—') return '—'
+  const parsed = parseCalendarDate(value)
+  if (Number.isNaN(parsed.getTime())) return value
+
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(parsed)
+}
+
+function parseCalendarDate(value: string): Date {
+  const raw = value.trim()
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return new Date(`${raw}T00:00:00`)
+  const parsed = new Date(raw)
+  if (Number.isNaN(parsed.getTime())) return parsed
+  return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate())
+}
+
+function isSameCalendarDay(start: string, end: string): boolean {
+  const startDate = parseCalendarDate(start)
+  const endDate = parseCalendarDate(end)
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return start === end
+  }
+
+  return startDate.getTime() === endDate.getTime()
+}
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="h-full min-h-0 flex flex-col gap-6 overflow-hidden">
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
+    <div class="shrink-0 flex items-center justify-between">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
           <i class="pi pi-users text-2xl"></i>
@@ -215,14 +298,14 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
     <!-- Mock Data Banner -->
     <div
       v-if="conductoresStore.usingMockData"
-      class="flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm"
+      class="shrink-0 flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm"
     >
       <i class="pi pi-info-circle text-amber-500"></i>
       <span>Mostrando datos de demostración — la API no está disponible en este momento.</span>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-4 gap-4">
+    <div class="shrink-0 grid grid-cols-4 gap-4">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
@@ -270,13 +353,15 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
     </div>
 
     <!-- Data Table -->
-    <ConductorTable
-      :conductores="conductoresStore.conductores"
-      :loading="conductoresStore.loading"
-      @view="onViewConductor"
-      @edit="onEditConductor"
-      @toggle-estado="onConfirmToggle"
-    />
+    <div class="flex-1 min-h-0 overflow-auto">
+      <ConductorTable
+        :conductores="conductoresStore.conductores"
+        :loading="conductoresStore.loading"
+        @view="onViewConductor"
+        @edit="onEditConductor"
+        @toggle-estado="onConfirmToggle"
+      />
+    </div>
 
     <!-- Create/Edit Dialog -->
     <ConductorDialog
@@ -378,17 +463,10 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
               </div>
 
               <!-- Stats -->
-              <div class="grid grid-cols-3 gap-4">
+              <div class="grid grid-cols-2 gap-4">
                 <div class="bg-blue-50 rounded-xl p-4 text-center">
                   <p class="text-2xl font-bold text-blue-700">{{ detailConductor.portesAsignados }}</p>
                   <p class="text-xs text-blue-600 mt-0.5">Portes Asignados</p>
-                </div>
-                <div class="bg-amber-50 rounded-xl p-4 text-center">
-                  <p class="text-2xl font-bold text-amber-700">{{ detailConductor.rating.toFixed(1) }}</p>
-                  <p class="text-xs text-amber-600 mt-0.5">
-                    {{ getRatingStars(detailConductor.rating) }}
-                    <span class="text-gray-400 ml-1">({{ detailConductor.numeroValoraciones }})</span>
-                  </p>
                 </div>
                 <div class="bg-green-50 rounded-xl p-4 text-center">
                   <p class="text-2xl font-bold text-green-700">{{ detailConductor.radioAccionKm }} km</p>
@@ -442,35 +520,40 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
               <div v-if="conductoresStore.detailLoading" class="flex items-center justify-center py-8">
                 <i class="pi pi-spin pi-spinner text-2xl text-gray-400"></i>
               </div>
-              <div v-else-if="conductoresStore.detailAgenda.length === 0" class="text-center py-8 text-gray-400">
+              <div v-else-if="dateSpecificBlocks.length === 0" class="text-center py-8 text-gray-400">
                 <i class="pi pi-calendar-times text-3xl mb-2"></i>
-                <p class="text-sm">Sin bloqueos en la agenda</p>
+                <p class="text-sm">No hay vacaciones, descansos ni bloqueos por fecha programados</p>
               </div>
-              <div v-else class="space-y-3">
-                <div
-                  v-for="bloqueo in conductoresStore.detailAgenda"
-                  :key="bloqueo.id"
-                  class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 flex items-start justify-between"
-                >
-                  <div>
-                    <div class="flex items-center gap-2 mb-1">
-                      <Tag :value="bloqueo.tipo" severity="warn" class="text-xs" />
-                      <span class="text-sm font-medium text-gray-800 dark:text-gray-100">{{ bloqueo.descripcion }}</span>
-                    </div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ bloqueo.fechaInicio }} — {{ bloqueo.fechaFin }}</p>
-                    <!-- Recurring day chips -->
-                    <div v-if="bloqueo.diaSemana != null" class="flex gap-1 mt-2">
-                      <span
-                        v-for="(day, idx) in ['L', 'M', 'X', 'J', 'V', 'S', 'D']"
-                        :key="day"
-                        class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium"
-                        :class="bloqueo.diaSemana === idx + 1 ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-400'"
-                      >
-                        {{ day }}
-                      </span>
-                    </div>
+              <div v-else class="space-y-4">
+                <section class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Vacaciones, descansos y ausencias</h4>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ dateSpecificBlocks.length }} registro(s)</span>
                   </div>
-                </div>
+
+                  <div v-if="dateSpecificBlocks.length === 0" class="rounded-lg border border-dashed border-gray-300 dark:border-gray-700 py-4 px-3 text-center text-sm text-gray-500 dark:text-gray-400">
+                    No hay vacaciones, descansos ni bloqueos por fecha programados
+                  </div>
+
+                  <div v-else class="space-y-2">
+                    <article
+                      v-for="bloqueo in dateSpecificBlocks"
+                      :key="`date-${bloqueo.id}`"
+                      class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 px-4 py-3"
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <Tag :value="bloqueo.blockKindLabel" severity="secondary" class="text-[11px]" />
+                            <Tag :value="bloqueo.tipo" severity="warn" class="text-[11px]" />
+                          </div>
+                          <p class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">{{ bloqueo.blockDateLabel }}</p>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ bloqueo.descripcion }}</p>
+                        </div>
+                      </div>
+                    </article>
+                  </div>
+                </section>
               </div>
             </div>
           </TabPanel>
@@ -485,8 +568,23 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
                 <i class="pi pi-car text-3xl mb-2"></i>
                 <p class="text-sm">Sin vehículos asignados</p>
               </div>
-              <DataTable v-else :value="conductoresStore.detailVehiculos" size="small" stripedRows class="text-sm">
-                <Column field="matricula" header="Matrícula" />
+              <DataTable
+                v-else
+                :value="conductoresStore.detailVehiculos"
+                size="small"
+                stripedRows
+                class="text-sm"
+                :rowHover="true"
+                @row-click="onOpenVehiculoDetailFromConductor"
+                :pt="{ bodyRow: { style: 'cursor: pointer' } }"
+              >
+                <Column field="matricula" header="Matrícula">
+                  <template #body="{ data }">
+                    <span class="font-medium text-primary hover:underline" title="Abrir detalle del vehículo">
+                      {{ data.matricula }}
+                    </span>
+                  </template>
+                </Column>
                 <Column field="marca" header="Marca" />
                 <Column field="modelo" header="Modelo" />
                 <Column field="tipoVehiculo" header="Tipo" />
@@ -546,8 +644,25 @@ function getPortesSeverity(estado: string): 'success' | 'info' | 'warn' | 'dange
                 <i class="pi pi-truck text-3xl mb-2"></i>
                 <p class="text-sm">Sin portes registrados</p>
               </div>
-              <DataTable v-else :value="conductoresStore.detailPortes" size="small" stripedRows class="text-sm" :paginator="conductoresStore.detailPortes.length > 10" :rows="10">
-                <Column field="id" header="ID" style="width: 60px" />
+              <DataTable
+                v-else
+                :value="conductoresStore.detailPortes"
+                size="small"
+                stripedRows
+                class="text-sm"
+                :paginator="conductoresStore.detailPortes.length > 10"
+                :rows="10"
+                :rowHover="true"
+                @row-click="onOpenPorteDetailFromConductor"
+                :pt="{ bodyRow: { style: 'cursor: pointer' } }"
+              >
+                <Column field="id" header="ID" style="width: 60px">
+                  <template #body="{ data }">
+                    <span class="font-medium text-primary hover:underline" title="Abrir detalle del porte">
+                      #{{ data.id }}
+                    </span>
+                  </template>
+                </Column>
                 <Column header="Estado" style="width: 120px">
                   <template #body="{ data }">
                     <Tag :value="data.estado" :severity="getPortesSeverity(data.estado)" class="text-xs" />

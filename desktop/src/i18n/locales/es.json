@@ -260,7 +260,6 @@
         "count": "{n} encontrados",
         "columns": {
           "conductor": "Conductor",
-          "rating": "Rating",
           "vehiculo": "Vehículo",
           "score": "Score"
         },
@@ -515,8 +514,7 @@
       "largo": "Largo útil",
       "ancho": "Ancho útil",
       "alto": "Alto útil",
-      "volumen": "Volumen",
-      "trampilla": "Trampilla elevadora"
+      "volumen": "Volumen"
     },
     "siNo": {
       "si": "Sí",
@@ -571,14 +569,12 @@
         "capacidadCarga": "Capacidad de carga (kg)",
         "largo": "Largo (mm)",
         "ancho": "Ancho (mm)",
-        "alto": "Alto (mm)",
-        "trampilla": "Trampilla elevadora"
+        "alto": "Alto (mm)"
       },
       "tipoOptions": {
         "furgoneta": "Furgoneta",
         "rigido": "Rígido",
         "trailer": "Tráiler",
-        "frigorifico": "Frigorífico",
         "lona": "Lona",
         "plataforma": "Plataforma",
         "cisterna": "Cisterna",
@@ -904,8 +900,7 @@
       "columns": {
         "numero": "#",
         "nombre": "Nombre",
-        "portes": "Portes",
-        "rating": "Rating"
+        "portes": "Portes"
       }
     },
     "topClientes": {

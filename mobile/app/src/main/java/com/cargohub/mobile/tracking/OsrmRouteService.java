@@ -34,8 +34,9 @@ public class OsrmRouteService {
     }
 
     private static final String OSRM_BASE = "https://router.project-osrm.org/route/v1/driving/";
-    private static final long MIN_REQUEST_INTERVAL_MS = 60_000L;
-    private static final float MIN_POSITION_CHANGE_METERS = 500f;
+    private static final long MIN_REQUEST_INTERVAL_MS = 30_000L;
+    private static final long MOVEMENT_COOLDOWN_MS = 10_000L;
+    private static final float MIN_POSITION_CHANGE_METERS = 100f;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -58,16 +59,20 @@ public class OsrmRouteService {
         long now = System.currentTimeMillis();
         boolean intervalOk = (now - lastRequestTimeMs) >= MIN_REQUEST_INTERVAL_MS;
         boolean positionChanged = distanceBetween(fromLat, fromLon, lastRequestLat, lastRequestLon) >= MIN_POSITION_CHANGE_METERS;
+        boolean movementCooldownOk = (now - lastRequestTimeMs) >= MOVEMENT_COOLDOWN_MS;
 
-        if (!forceRefresh && cachedRoute != null && (!intervalOk || !positionChanged)) {
+        if (!forceRefresh && !positionChanged && cachedRoute != null) {
             callback.onRouteReady(cachedRoute);
             return;
         }
 
-        if (!intervalOk && !forceRefresh) {
-            if (cachedRoute != null) {
-                callback.onRouteReady(cachedRoute);
-            }
+        if (!forceRefresh && positionChanged && !movementCooldownOk && cachedRoute != null) {
+            callback.onRouteReady(cachedRoute);
+            return;
+        }
+
+        if (!forceRefresh && !intervalOk && !positionChanged && cachedRoute != null) {
+            callback.onRouteReady(cachedRoute);
             return;
         }
 

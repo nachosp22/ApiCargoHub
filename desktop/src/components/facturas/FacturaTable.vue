@@ -22,12 +22,13 @@ const emit = defineEmits<{
 
 // --- Filters ---
 const globalFilter = ref('')
-const estadoFilter = ref<string>('')
+const ALL_ESTADOS_VALUE = '__ALL_ESTADOS__'
+const estadoFilter = ref<'pagada' | 'pendiente' | typeof ALL_ESTADOS_VALUE>(ALL_ESTADOS_VALUE)
 const fechaDesde = ref<Date | null>(null)
 const fechaHasta = ref<Date | null>(null)
 
 const estadoFilterOptions = [
-  { label: 'Todas', value: '' },
+  { label: 'Todas', value: ALL_ESTADOS_VALUE },
   { label: 'Pagadas', value: 'pagada' },
   { label: 'Pendientes', value: 'pendiente' },
 ]
@@ -72,13 +73,13 @@ const filteredFacturas = computed(() => {
 
 function clearFilters(): void {
   globalFilter.value = ''
-  estadoFilter.value = ''
+  estadoFilter.value = ALL_ESTADOS_VALUE
   fechaDesde.value = null
   fechaHasta.value = null
 }
 
 const hasActiveFilters = computed(() =>
-  globalFilter.value || estadoFilter.value || fechaDesde.value || fechaHasta.value,
+  globalFilter.value || estadoFilter.value !== ALL_ESTADOS_VALUE || fechaDesde.value || fechaHasta.value,
 )
 
 // --- Row click ---
@@ -163,11 +164,11 @@ function getClienteName(factura: Factura): string {
 
           <!-- Global Search -->
           <div class="relative">
-            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <i class="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             <InputText
               v-model="globalFilter"
               placeholder="Buscar facturas..."
-              class="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
+              class="pl-4 pr-9 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
             />
           </div>
         </div>

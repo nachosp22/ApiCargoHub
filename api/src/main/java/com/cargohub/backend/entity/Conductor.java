@@ -55,14 +55,5 @@ public class Conductor {
     private String diasLaborables = "1,2,3,4,5";
     private boolean disponible = true;
 
-    // --- RATINGS ---
-    private Double rating = 4.0;          // Display default for new conductors
-    private Integer numeroValoraciones = 0;
-    private Double sumaPuntuaciones = 0.0;
 
-    public void recibirValoracion(int estrellas) {
-        this.sumaPuntuaciones += estrellas;
-        this.numeroValoraciones++;
-        this.rating = Math.round((this.sumaPuntuaciones / this.numeroValoraciones) * 100.0) / 100.0;
-    }
 }

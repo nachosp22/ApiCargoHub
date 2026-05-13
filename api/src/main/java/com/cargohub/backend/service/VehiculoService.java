@@ -81,4 +81,25 @@ public class VehiculoService {
     public List<Vehiculo> listarPorConductor(Long conductorId) {
         return vehiculoRepository.findByConductorId(conductorId);
     }
+
+    @Transactional
+    public Vehiculo actualizarVehiculo(Long vehiculoId, Long conductorId, Vehiculo updates) {
+        Vehiculo vehiculo = vehiculoRepository.findById(vehiculoId)
+                .orElseThrow(() -> new RuntimeException("Vehículo no encontrado"));
+
+        if (vehiculo.getConductor() == null || !vehiculo.getConductor().getId().equals(conductorId)) {
+            throw new RuntimeException("El vehículo no pertenece a este conductor");
+        }
+
+        if (updates.getMatricula() != null) vehiculo.setMatricula(updates.getMatricula());
+        if (updates.getMarca() != null) vehiculo.setMarca(updates.getMarca());
+        if (updates.getModelo() != null) vehiculo.setModelo(updates.getModelo());
+        if (updates.getTipo() != null) vehiculo.setTipo(updates.getTipo());
+        if (updates.getCapacidadCargaKg() != null) vehiculo.setCapacidadCargaKg(updates.getCapacidadCargaKg());
+        if (updates.getLargoUtilMm() != null) vehiculo.setLargoUtilMm(updates.getLargoUtilMm());
+        if (updates.getAnchoUtilMm() != null) vehiculo.setAnchoUtilMm(updates.getAnchoUtilMm());
+        if (updates.getAltoUtilMm() != null) vehiculo.setAltoUtilMm(updates.getAltoUtilMm());
+
+        return vehiculoRepository.save(vehiculo);
+    }
 }

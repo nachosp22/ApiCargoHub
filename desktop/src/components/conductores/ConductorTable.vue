@@ -22,10 +22,11 @@ const emit = defineEmits<{
 
 // --- Filters ---
 const globalFilter = ref('')
-const estadoFilter = ref<EstadoConductor | ''>('')
+const ALL_ESTADOS_VALUE = '__ALL_ESTADOS__'
+const estadoFilter = ref<EstadoConductor | typeof ALL_ESTADOS_VALUE>(ALL_ESTADOS_VALUE)
 
 const estadoFilterOptions = [
-  { label: 'Todos los estados', value: '' },
+  { label: 'Todos los estados', value: ALL_ESTADOS_VALUE },
   { label: 'Activo', value: 'ACTIVO' },
   { label: 'Inactivo', value: 'INACTIVO' },
   { label: 'Suspendido', value: 'SUSPENDIDO' },
@@ -35,7 +36,7 @@ const filteredConductores = computed(() => {
   let result = props.conductores
 
   // Status filter
-  if (estadoFilter.value) {
+  if (estadoFilter.value !== ALL_ESTADOS_VALUE) {
     result = result.filter((c) => c.estado === estadoFilter.value)
   }
 
@@ -125,11 +126,11 @@ function getEstadoConfig(estado: string): StyleConfig {
 
           <!-- Global Search -->
           <div class="relative">
-            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <i class="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             <InputText
               v-model="globalFilter"
               placeholder="Buscar conductores..."
-              class="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
+              class="pl-4 pr-9 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
             />
           </div>
         </div>

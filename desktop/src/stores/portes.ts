@@ -60,7 +60,6 @@ export interface Porte {
   anchoMaxPaquete?: number
   altoMaxPaquete?: number
   tipoVehiculoRequerido?: string
-  requiereFrio?: boolean
   revisionManual?: boolean
   motivoRevision?: string
   estado: EstadoPorte
@@ -77,8 +76,6 @@ export interface ConductorCandidato {
   apellidos?: string
   telefono?: string
   ciudadBase?: string
-  rating?: number
-  numeroValoraciones?: number
   vehiculoInfo?: string
   score: number
 }
@@ -93,7 +90,7 @@ export interface DimensionesRequest {
 }
 
 export interface CreatePorteRequest {
-  clienteId: number | null
+  clienteId: number
   origen: string
   destino: string
   ciudadOrigen?: string
@@ -186,7 +183,7 @@ const MOCK_PORTES: Porte[] = [
   {
     id: 1008, origen: 'Santander', destino: 'Oviedo', estado: 'ENTREGADO',
     fechaCreacion: '2026-03-06T08:30:00', fechaRecogida: '2026-03-09T08:00:00', fechaEntrega: '2026-03-09T14:00:00',
-    precio: 350, distanciaKm: 203, descripcionCliente: 'Productos lácteos refrigerados',
+    precio: 350, distanciaKm: 203, descripcionCliente: 'Productos lácteos',
     conductor: MOCK_CONDUCTORES[1], cliente: MOCK_CLIENTES[1],
   },
   {
@@ -218,6 +215,7 @@ const MOCK_PORTES: Porte[] = [
 // --- Store ---
 
 export const usePortesStore = defineStore('portes', () => {
+  type DataSource = 'api' | 'mock'
   // --- State ---
   const portes = ref<Porte[]>([])
   const selectedPorte = ref<Porte | null>(null)
@@ -227,6 +225,9 @@ export const usePortesStore = defineStore('portes', () => {
   const loading = ref(false)
   const saving = ref(false)
   const usingMockData = ref(false)
+  const dataSource = ref<DataSource>('api')
+  const warning = ref<string | null>(null)
+  const error = ref<string | null>(null)
   const pendientesRevision = ref<Porte[]>([])
   const conductorCandidatos = ref<ConductorCandidato[]>([])
   const loadingCandidatos = ref(false)
@@ -249,6 +250,9 @@ export const usePortesStore = defineStore('portes', () => {
   async function fetchPortes(): Promise<void> {
     loading.value = true
     usingMockData.value = false
+    dataSource.value = 'api'
+    warning.value = null
+    error.value = null
 
     try {
       const response = await api.get('/portes')
@@ -257,6 +261,9 @@ export const usePortesStore = defineStore('portes', () => {
     } catch {
       // API unavailable — use mock data
       usingMockData.value = true
+      dataSource.value = 'mock'
+      warning.value = 'Mostrando portes mock porque la API no respondió'
+      error.value = 'No se pudo obtener portes desde la API'
       portes.value = [...MOCK_PORTES]
     } finally {
       loading.value = false
@@ -271,6 +278,12 @@ export const usePortesStore = defineStore('portes', () => {
     try {
       const response = await api.get(`/portes/${id}`)
       const porte = mapPorteFromApi(response.data)
+      const idx = portes.value.findIndex((p) => p.id === id)
+      if (idx !== -1) {
+        portes.value[idx] = porte
+      } else {
+        portes.value.unshift(porte)
+      }
       selectedPorte.value = porte
       return porte
     } catch {
@@ -398,7 +411,26 @@ export const usePortesStore = defineStore('portes', () => {
   async function ajustarPrecio(id: number, data: { precioAjustado: number; motivo: string }): Promise<Porte> {
     saving.value = true
     try {
-      const response = await api.post(`/portes/${id}/ajuste`, data)
+      const motivo = data.motivo.trim()
+      if (!motivo) {
+        throw new Error('Debes indicar un motivo para el ajuste.')
+      }
+
+      const current = portes.value.find((p) => p.id === id)
+      const precioBase = current?.precio ?? 0
+      const precioAjustado = Number(data.precioAjustado)
+      const ajuste = Number((precioAjustado - Number(precioBase)).toFixed(2))
+
+      if (!Number.isFinite(precioAjustado) || !Number.isFinite(ajuste)) {
+        throw new Error('El precio ingresado no es válido.')
+      }
+
+      const response = await api.post(`/portes/${id}/ajuste`, null, {
+        params: {
+          cantidad: ajuste.toString(),
+          concepto: motivo,
+        },
+      })
       const updated = mapPorteFromApi(response.data)
       const idx = portes.value.findIndex((p) => p.id === id)
       if (idx !== -1) portes.value[idx] = updated
@@ -408,10 +440,13 @@ export const usePortesStore = defineStore('portes', () => {
       if (usingMockData.value) {
         const idx = portes.value.findIndex((p) => p.id === id)
         if (idx !== -1) {
+          const precioBase = Number(portes.value[idx].precio ?? 0)
+          const ajuste = Number(data.precioAjustado) - precioBase
+          const motivo = data.motivo.trim()
           portes.value[idx] = {
             ...portes.value[idx],
-            ajustePrecio: data.precioAjustado,
-            motivoAjuste: data.motivo,
+            ajustePrecio: ajuste,
+            motivoAjuste: motivo,
           }
           if (selectedPorte.value?.id === id) selectedPorte.value = portes.value[idx]
           return portes.value[idx]
@@ -426,22 +461,21 @@ export const usePortesStore = defineStore('portes', () => {
   /**
    * Mark a porte as invoiced (facturado).
    */
-  async function facturarPorte(id: number): Promise<Porte> {
+  async function facturarPorte(id: number): Promise<void> {
     saving.value = true
     try {
-      const response = await api.post(`/portes/${id}/facturar`)
-      const updated = mapPorteFromApi(response.data)
-      const idx = portes.value.findIndex((p) => p.id === id)
-      if (idx !== -1) portes.value[idx] = updated
-      if (selectedPorte.value?.id === id) selectedPorte.value = updated
-      return updated
+      await api.post(`/portes/${id}/facturar`)
+      const refreshed = await fetchPorteById(id)
+      if (!refreshed) {
+        await fetchPortes()
+      }
     } catch (error) {
       if (usingMockData.value) {
         const idx = portes.value.findIndex((p) => p.id === id)
         if (idx !== -1) {
           portes.value[idx] = { ...portes.value[idx], estado: 'FACTURADO' }
           if (selectedPorte.value?.id === id) selectedPorte.value = portes.value[idx]
-          return portes.value[idx]
+          return
         }
       }
       throw error
@@ -547,9 +581,16 @@ export const usePortesStore = defineStore('portes', () => {
       const data = extractArray(response.data)
       pendientesRevision.value = data.map(mapPorteFromApi)
     } catch {
+      error.value = 'No se pudo cargar el porte solicitado'
       // Filter from local portes as fallback
       pendientesRevision.value = portes.value.filter(
-        (p) => p.revisionManual || (p.estado === 'PENDIENTE' && !p.conductor),
+        (p) => p.revisionManual
+          || (
+            p.estado === 'PENDIENTE'
+            && !p.conductor
+            && !!p.motivoRevision
+            && p.motivoRevision !== 'La carga se ha analizado correctamente. Le asignaremos un conductor lo antes posible.'
+          ),
       )
     } finally {
       loading.value = false
@@ -590,8 +631,6 @@ export const usePortesStore = defineStore('portes', () => {
         apellidos: c.apellidos ? String(c.apellidos) : undefined,
         telefono: c.telefono ? String(c.telefono) : undefined,
         ciudadBase: c.ciudadBase ? String(c.ciudadBase) : undefined,
-        rating: c.rating != null ? Number(c.rating) : undefined,
-        numeroValoraciones: c.numeroValoraciones != null ? Number(c.numeroValoraciones) : undefined,
         vehiculoInfo: c.vehiculoInfo ? String(c.vehiculoInfo) : undefined,
         score: Number(c.score ?? 0),
       }))
@@ -620,6 +659,31 @@ export const usePortesStore = defineStore('portes', () => {
       // Remove from pendientes
       pendientesRevision.value = pendientesRevision.value.filter((p) => p.id !== porteId)
       conductorCandidatos.value = []
+      return updated
+    } finally {
+      saving.value = false
+    }
+  }
+
+  /**
+   * Retry strict automatic matching after admin corrections.
+   */
+  async function retryMatching(porteId: number): Promise<Porte> {
+    saving.value = true
+    try {
+      const response = await api.post(`/portes/${porteId}/retry-matching`)
+      const updated = mapPorteFromApi(response.data)
+      const idx = portes.value.findIndex((p) => p.id === porteId)
+      if (idx !== -1) portes.value[idx] = updated
+
+      const revIdx = pendientesRevision.value.findIndex((p) => p.id === porteId)
+      if (revIdx !== -1) {
+        if (updated.revisionManual || (updated.estado === 'PENDIENTE' && !updated.conductor && !!updated.motivoRevision && updated.motivoRevision !== 'La carga se ha analizado correctamente. Le asignaremos un conductor lo antes posible.')) {
+          pendientesRevision.value[revIdx] = updated
+        } else {
+          pendientesRevision.value = pendientesRevision.value.filter((p) => p.id !== porteId)
+        }
+      }
       return updated
     } finally {
       saving.value = false
@@ -661,7 +725,6 @@ export const usePortesStore = defineStore('portes', () => {
       anchoMaxPaquete: p.anchoMaxPaquete != null ? Number(p.anchoMaxPaquete) : undefined,
       altoMaxPaquete: p.altoMaxPaquete != null ? Number(p.altoMaxPaquete) : undefined,
       tipoVehiculoRequerido: p.tipoVehiculoRequerido ? String(p.tipoVehiculoRequerido) : undefined,
-      requiereFrio: p.requiereFrio === true,
       revisionManual: p.revisionManual === true,
       motivoRevision: p.motivoRevision ? String(p.motivoRevision) : undefined,
       estado: (String(p.estado ?? 'PENDIENTE')) as EstadoPorte,
@@ -709,6 +772,9 @@ export const usePortesStore = defineStore('portes', () => {
     loading,
     saving,
     usingMockData,
+    dataSource,
+    warning,
+    error,
     pendientesRevision,
     conductorCandidatos,
     loadingCandidatos,
@@ -732,5 +798,6 @@ export const usePortesStore = defineStore('portes', () => {
     updateDimensiones,
     buscarConductores,
     asignarConductor,
+    retryMatching,
   }
 })

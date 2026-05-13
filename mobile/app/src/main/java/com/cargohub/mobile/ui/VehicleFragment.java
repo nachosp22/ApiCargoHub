@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -34,6 +33,7 @@ import java.util.List;
 public class VehicleFragment extends Fragment {
 
     private final VehiculoRepository vehiculoRepository = new VehiculoRepository();
+    private TipoVehiculo[] tipoVehiculoOptions = new TipoVehiculo[0];
 
     private ProgressBar loadingProgress;
     private TextView emptyText;
@@ -47,10 +47,14 @@ public class VehicleFragment extends Fragment {
     private EditText anchoInput;
     private EditText altoInput;
     private Spinner tipoSpinner;
-    private CheckBox trampillaCheckbox;
     private TextInputLayout matriculaLayout;
     private TextInputLayout marcaLayout;
     private TextInputLayout modeloLayout;
+    private MaterialButton saveButton;
+    private MaterialButton cancelButton;
+
+    @Nullable
+    private Vehiculo editingVehiculo;
 
     @Nullable
     @Override
@@ -74,14 +78,21 @@ public class VehicleFragment extends Fragment {
         anchoInput = view.findViewById(R.id.vehicleAnchoInput);
         altoInput = view.findViewById(R.id.vehicleAltoInput);
         tipoSpinner = view.findViewById(R.id.vehicleTipoSpinner);
-        trampillaCheckbox = view.findViewById(R.id.vehicleTrampillaCheckbox);
         matriculaLayout = view.findViewById(R.id.vehicleMatriculaLayout);
         marcaLayout = view.findViewById(R.id.vehicleMarcaLayout);
         modeloLayout = view.findViewById(R.id.vehicleModeloLayout);
-        MaterialButton saveButton = view.findViewById(R.id.vehicleSaveButton);
-        MaterialButton refreshButton = view.findViewById(R.id.vehicleRefreshButton);
 
-        adapter = new VehiculoAdapter(this::toggleVehiculoState);
+        adapter = new VehiculoAdapter(new VehiculoAdapter.VehiculoActionListener() {
+            @Override
+            public void onToggleState(@NonNull Vehiculo vehiculo) {
+                VehicleFragment.this.toggleVehiculoState(vehiculo);
+            }
+
+            @Override
+            public void onEdit(@NonNull Vehiculo vehiculo) {
+                VehicleFragment.this.startEditing(vehiculo);
+            }
+        });
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(adapter);
 
@@ -89,16 +100,21 @@ public class VehicleFragment extends Fragment {
         spinnerAdapter.setDropDownViewResource(R.layout.item_porte_spinner_dropdown);
         tipoSpinner.setAdapter(spinnerAdapter);
 
-        saveButton.setOnClickListener(v -> saveVehiculo());
+        saveButton = view.findViewById(R.id.vehicleSaveButton);
+        cancelButton = view.findViewById(R.id.vehicleCancelButton);
+        MaterialButton refreshButton = view.findViewById(R.id.vehicleRefreshButton);
+
+        saveButton.setOnClickListener(v -> saveOrUpdateVehiculo());
         refreshButton.setOnClickListener(v -> loadVehiculos());
+        cancelButton.setOnClickListener(v -> cancelEditing());
         loadVehiculos();
     }
 
     private String[] buildTypeLabels() {
-        TipoVehiculo[] values = TipoVehiculo.values();
-        String[] labels = new String[values.length];
-        for (int i = 0; i < values.length; i++) {
-            labels[i] = values[i].name();
+        tipoVehiculoOptions = TipoVehiculo.values();
+        String[] labels = new String[tipoVehiculoOptions.length];
+        for (int i = 0; i < tipoVehiculoOptions.length; i++) {
+            labels[i] = tipoVehiculoOptions[i].getDisplayName();
         }
         return labels;
     }
@@ -106,7 +122,7 @@ public class VehicleFragment extends Fragment {
     private void loadVehiculos() {
         Long conductorId = SessionManager.resolveConductorId();
         if (conductorId == null || conductorId <= 0) {
-            Snackbar.make(requireView(), R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG).show();
+            showSnackbar(R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG);
             return;
         }
         loadingProgress.setVisibility(View.VISIBLE);
@@ -119,7 +135,7 @@ public class VehicleFragment extends Fragment {
         }
         loadingProgress.setVisibility(View.GONE);
         if (!result.isSuccessful() || result.getData() == null) {
-            Snackbar.make(requireView(), result.getMessage(), Snackbar.LENGTH_LONG).show();
+            showApiError(result.getMessage(), Snackbar.LENGTH_LONG);
             return;
         }
         List<Vehiculo> vehiculos = result.getData();
@@ -128,7 +144,7 @@ public class VehicleFragment extends Fragment {
         recyclerView.setVisibility(vehiculos.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
-    private void saveVehiculo() {
+    private void saveOrUpdateVehiculo() {
         clearErrors();
         String matricula = textValue(matriculaInput);
         String marca = textValue(marcaInput);
@@ -147,40 +163,93 @@ public class VehicleFragment extends Fragment {
         }
         Long conductorId = SessionManager.resolveConductorId();
         if (conductorId == null || conductorId <= 0) {
-            Snackbar.make(requireView(), R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG).show();
+            showSnackbar(R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG);
             return;
         }
+        int selectedIndex = tipoSpinner.getSelectedItemPosition();
+        TipoVehiculo selectedTipo = (selectedIndex >= 0 && selectedIndex < tipoVehiculoOptions.length)
+                ? tipoVehiculoOptions[selectedIndex]
+                : TipoVehiculo.FURGONETA;
+
         VehiculoUpsertRequest request = new VehiculoUpsertRequest(
                 matricula,
                 marca,
                 modelo,
-                TipoVehiculo.valueOf(tipoSpinner.getSelectedItem().toString()),
+                selectedTipo,
                 parseInteger(capacidadInput),
                 parseInteger(largoInput),
                 parseInteger(anchoInput),
-                parseInteger(altoInput),
-                trampillaCheckbox.isChecked()
+                parseInteger(altoInput)
         );
         loadingProgress.setVisibility(View.VISIBLE);
-        vehiculoRepository.createVehiculo(conductorId, request, result -> {
-            if (!isAdded()) {
-                return;
+
+        if (editingVehiculo != null && editingVehiculo.getId() != null) {
+            // Update mode
+            vehiculoRepository.updateVehiculo(conductorId, editingVehiculo.getId(), request, result -> {
+                if (!isAdded()) return;
+                if (!result.isSuccessful()) {
+                    loadingProgress.setVisibility(View.GONE);
+                    showApiError(result.getMessage(), Snackbar.LENGTH_LONG);
+                    return;
+                }
+                cancelEditing();
+                showSnackbar(R.string.vehicle_update_success, Snackbar.LENGTH_LONG);
+                loadVehiculos();
+            });
+        } else {
+            // Create mode
+            vehiculoRepository.createVehiculo(conductorId, request, result -> {
+                if (!isAdded()) return;
+                if (!result.isSuccessful()) {
+                    loadingProgress.setVisibility(View.GONE);
+                    showApiError(result.getMessage(), Snackbar.LENGTH_LONG);
+                    return;
+                }
+                clearForm();
+                showSnackbar(R.string.vehicle_create_success, Snackbar.LENGTH_LONG);
+                loadVehiculos();
+            });
+        }
+    }
+
+    private void startEditing(@NonNull Vehiculo vehiculo) {
+        editingVehiculo = vehiculo;
+        matriculaInput.setText(valueOrEmpty(vehiculo.getMatricula()));
+        marcaInput.setText(valueOrEmpty(vehiculo.getMarca()));
+        modeloInput.setText(valueOrEmpty(vehiculo.getModelo()));
+        capacidadInput.setText(vehiculo.getCapacidadCargaKg() != null ? String.valueOf(vehiculo.getCapacidadCargaKg()) : "");
+        largoInput.setText(vehiculo.getLargoUtilMm() != null ? String.valueOf(vehiculo.getLargoUtilMm()) : "");
+        anchoInput.setText(vehiculo.getAnchoUtilMm() != null ? String.valueOf(vehiculo.getAnchoUtilMm()) : "");
+        altoInput.setText(vehiculo.getAltoUtilMm() != null ? String.valueOf(vehiculo.getAltoUtilMm()) : "");
+
+        // Select the correct type in spinner
+        if (vehiculo.getTipo() != null) {
+            for (int i = 0; i < tipoVehiculoOptions.length; i++) {
+                if (tipoVehiculoOptions[i] == vehiculo.getTipo()) {
+                    tipoSpinner.setSelection(i);
+                    break;
+                }
             }
-            if (!result.isSuccessful()) {
-                loadingProgress.setVisibility(View.GONE);
-                Snackbar.make(requireView(), result.getMessage(), Snackbar.LENGTH_LONG).show();
-                return;
-            }
-            clearForm();
-            Snackbar.make(requireView(), R.string.vehicle_create_success, Snackbar.LENGTH_LONG).show();
-            loadVehiculos();
-        });
+        }
+
+        saveButton.setText(R.string.vehicle_update_action);
+        cancelButton.setVisibility(View.VISIBLE);
+
+        // Scroll to top to show form
+        recyclerView.smoothScrollToPosition(0);
+    }
+
+    private void cancelEditing() {
+        editingVehiculo = null;
+        clearForm();
+        saveButton.setText(R.string.vehicle_save_action);
+        cancelButton.setVisibility(View.GONE);
     }
 
     private void toggleVehiculoState(@NonNull Vehiculo vehiculo) {
         Long conductorId = SessionManager.resolveConductorId();
         if (conductorId == null || conductorId <= 0 || vehiculo.getId() == null) {
-            Snackbar.make(requireView(), R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG).show();
+            showSnackbar(R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG);
             return;
         }
         loadingProgress.setVisibility(View.VISIBLE);
@@ -197,11 +266,28 @@ public class VehicleFragment extends Fragment {
         }
         if (!result.isSuccessful()) {
             loadingProgress.setVisibility(View.GONE);
-            Snackbar.make(requireView(), result.getMessage(), Snackbar.LENGTH_LONG).show();
+            showApiError(result.getMessage(), Snackbar.LENGTH_LONG);
             return;
         }
-        Snackbar.make(requireView(), successMessageRes, Snackbar.LENGTH_LONG).show();
+        showSnackbar(successMessageRes, Snackbar.LENGTH_LONG);
         loadVehiculos();
+    }
+
+    private void showSnackbar(int messageResId, int duration) {
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, messageResId, duration).show();
+        }
+    }
+
+    private void showApiError(@Nullable String message, int duration) {
+        String safeMessage = (message == null || message.trim().isEmpty())
+                ? getString(R.string.generic_api_error_short)
+                : message;
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, safeMessage, duration).show();
+        }
     }
 
     @Nullable
@@ -236,6 +322,10 @@ public class VehicleFragment extends Fragment {
         largoInput.setText("");
         anchoInput.setText("");
         altoInput.setText("");
-        trampillaCheckbox.setChecked(false);
+    }
+
+    @NonNull
+    private String valueOrEmpty(@Nullable String value) {
+        return value == null ? "" : value;
     }
 }

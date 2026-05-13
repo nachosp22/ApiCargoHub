@@ -2,6 +2,8 @@ package com.cargohub.mobile;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Patterns;
 import android.view.inputmethod.EditorInfo;
 
@@ -12,6 +14,7 @@ import com.cargohub.mobile.data.AuthRepository;
 import com.cargohub.mobile.data.model.LoginResponse;
 import com.cargohub.mobile.databinding.ActivityLoginBinding;
 import com.cargohub.mobile.session.SessionManager;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -33,6 +36,9 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         binding.loginButton.setOnClickListener(v -> submitLogin());
+        TextWatcher clearErrorsWatcher = createClearErrorsWatcher();
+        binding.emailInput.addTextChangedListener(clearErrorsWatcher);
+        binding.passwordInput.addTextChangedListener(clearErrorsWatcher);
         binding.passwordInput.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 submitLogin();
@@ -78,7 +84,11 @@ public class LoginActivity extends AppCompatActivity {
             public void onError(@NonNull String message) {
                 runOnUiThread(() -> {
                     setLoading(false);
-                    showFormError(message);
+                    if ("Usuario inactivo".equals(message)) {
+                        showPendingApprovalDialog();
+                    } else {
+                        showFormError(message);
+                    }
                 });
             }
         });
@@ -93,11 +103,15 @@ public class LoginActivity extends AppCompatActivity {
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             binding.emailInputLayout.setError(getString(R.string.login_error_invalid_email));
             valid = false;
+        } else {
+            binding.emailInputLayout.setError(null);
         }
 
         if (password.isEmpty()) {
             binding.passwordInputLayout.setError(getString(R.string.login_error_required_password));
             valid = false;
+        } else {
+            binding.passwordInputLayout.setError(null);
         }
 
         return valid;
@@ -106,6 +120,10 @@ public class LoginActivity extends AppCompatActivity {
     private void clearErrors() {
         binding.emailInputLayout.setError(null);
         binding.passwordInputLayout.setError(null);
+        hideFormError();
+    }
+
+    private void hideFormError() {
         binding.loginErrorText.setVisibility(android.view.View.GONE);
     }
 
@@ -114,13 +132,42 @@ public class LoginActivity extends AppCompatActivity {
         binding.loginErrorText.setVisibility(android.view.View.VISIBLE);
     }
 
+    private void showPendingApprovalDialog() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.login_error_account_inactive_title)
+                .setMessage(R.string.login_error_account_inactive_body)
+                .setPositiveButton(R.string.login_error_account_inactive_cta, null)
+                .setCancelable(false)
+                .show();
+    }
+
     private void setLoading(boolean loading) {
         binding.loginButton.setEnabled(!loading);
         binding.loginButton.setText(loading ? R.string.login_cta_loading : R.string.login_cta);
+        binding.emailInputLayout.setEnabled(!loading);
+        binding.passwordInputLayout.setEnabled(!loading);
         binding.emailInput.setEnabled(!loading);
         binding.passwordInput.setEnabled(!loading);
         binding.loginProgress.setVisibility(loading ? android.view.View.VISIBLE : android.view.View.GONE);
         binding.loginLoadingText.setVisibility(loading ? android.view.View.VISIBLE : android.view.View.GONE);
+    }
+
+    @NonNull
+    private TextWatcher createClearErrorsWatcher() {
+        return new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                clearErrors();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        };
     }
 
     @NonNull

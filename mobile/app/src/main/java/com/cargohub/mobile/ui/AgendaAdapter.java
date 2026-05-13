@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cargohub.mobile.R;
 import com.cargohub.mobile.data.model.AgendaBloqueo;
+import com.cargohub.mobile.data.model.TipoBloqueoAgenda;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -69,7 +70,8 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AgendaView
 
         private void bind(@NonNull AgendaBloqueo bloqueo) {
             titleText.setText(UiFormatters.valueOrFallback(bloqueo.getTitulo(), "Bloqueo operativo"));
-            typeText.setText(bloqueo.getTipo() != null ? bloqueo.getTipo().name() : "TIPO PENDIENTE");
+            TipoBloqueoAgenda tipo = bloqueo.getTipo();
+            typeText.setText(tipo != null ? tipo.getDisplayName() : TipoBloqueoAgenda.OTROS.getDisplayName());
             rangeText.setText(UiFormatters.formatAgendaRange(bloqueo));
 
             // Progressive disclosure: delete button hidden by default.

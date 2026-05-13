@@ -1,160 +1,511 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/ch_background"
-    android:fillViewport="true">
+    android:background="@color/ch_primary"
+    android:orientation="vertical">
 
+    <!-- Header azul -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.42">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.24"
+            android:scaleType="centerCrop"
+            android:src="@drawable/login_bg" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/homeProfileImage"
+                android:layout_width="92dp"
+                android:layout_height="92dp"
+                android:background="@color/white"
+                android:contentDescription="@string/home_profile_photo_content_description"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_nav_profile"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.ApiCargoHub.Circle"
+                app:strokeColor="@color/white"
+                app:strokeWidth="2dp" />
+
+            <TextView
+                android:id="@+id/homeProfileName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="@string/home_profile_name_placeholder"
+                android:textColor="@color/white"
+                android:textSize="23sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/homeProfileId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:background="@drawable/bg_state_chip"
+                android:backgroundTint="#1A237E"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="1dp"
+                android:text="@string/home_profile_id_unknown"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/homeProfileDni"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="#B3FFFFFF"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/homeProfileMatricula"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="#B3FFFFFF"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/homeEditProfileButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:minWidth="128dp"
+                android:minHeight="40dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="6dp"
+                android:text="Editar perfil"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:insetBottom="0dp"
+                android:insetTop="0dp"
+                app:cornerRadius="18dp"
+                app:strokeColor="@color/white" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Panel blanco -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="0.58"
+        android:background="@drawable/bg_home_panel"
         android:orientation="vertical"
-        android:paddingHorizontal="@dimen/ch_space_md"
-        android:paddingTop="@dimen/ch_space_lg"
-        android:paddingBottom="@dimen/ch_space_md">
+        android:paddingHorizontal="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
 
-        <!-- Profile summary card -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/profileSectionCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/ch_surface_card"
-            app:cardCornerRadius="@dimen/radius_md"
-            app:cardElevation="2dp"
-            app:strokeColor="@android:color/transparent"
-            app:strokeWidth="0dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/ch_space_md">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/home_profile_title"
-                    android:textAppearance="@style/TextAppearance.ApiCargoHub.SectionLabel"
-                    android:textColor="@color/ch_text_secondary" />
-
-                <TextView
-                    android:id="@+id/profileNameText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/ch_space_xs"
-                    android:text="@string/home_profile_name_placeholder"
-                    android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleLarge"
-                    android:textColor="@color/ch_text_primary"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/profileEmailText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/ch_space_xs"
-                    android:text="@string/home_profile_email_placeholder"
-                    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyLarge"
-                    android:textColor="@color/ch_text_secondary" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/ch_space_md"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/profileRoleText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_login_logo_placeholder"
-                        android:gravity="center"
-                        android:padding="@dimen/ch_space_sm"
-                        android:text="@string/home_profile_role_default"
-                        android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
-                        android:textColor="@color/white"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/profileConductorIdText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/ch_space_sm"
-                        android:layout_weight="1"
-                        android:background="@color/ch_blue_50"
-                        android:gravity="center"
-                        android:padding="@dimen/ch_space_sm"
-                        android:text="@string/home_profile_id_unknown"
-                        android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
-                        android:textColor="@color/ch_blue_700"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/profileDetailHintText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/ch_space_md"
-                    android:text="@string/home_profile_hint"
-                    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
-                    android:textColor="@color/ch_text_secondary" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Quick actions -->
+        <!-- Título Panel de usuario -->
         <LinearLayout
-            android:id="@+id/quickActionsSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/ch_space_md"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="4dp"
+                android:layout_height="20dp"
+                android:background="@color/ch_primary" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/home_quick_access_title"
-                android:textAppearance="@style/TextAppearance.ApiCargoHub.SectionLabel"
-                android:textColor="@color/ch_text_secondary" />
+                android:layout_marginStart="8dp"
+                android:text="Panel de usuario"
+                android:textColor="@color/ch_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/quickCurrentTripCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/ch_space_sm"
-                android:paddingVertical="@dimen/ch_space_md"
-                android:text="@string/home_quick_current_trip"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textStyle="bold"
-                app:backgroundTint="@color/ch_success"
-                app:cornerRadius="@dimen/ch_radius_md" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/quickUpcomingTripsCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/ch_space_xs"
-                android:paddingVertical="@dimen/ch_space_md"
-                android:text="@string/home_quick_upcoming_trips"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textStyle="bold"
-                app:backgroundTint="@color/ch_warning"
-                app:cornerRadius="@dimen/ch_radius_md" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/quickNewIncidentCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/ch_space_xs"
-                android:paddingVertical="@dimen/ch_space_md"
-                android:text="@string/home_quick_new_incident"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textStyle="bold"
-                app:backgroundTint="@color/ch_error"
-                app:cornerRadius="@dimen/ch_radius_md" />
         </LinearLayout>
+
+        <!-- Grid de acciones -->
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="12dp"
+            android:layout_weight="1"
+            android:alignmentMode="alignMargins"
+            android:columnCount="2"
+            android:rowCount="3"
+            android:useDefaultMargins="true">
+
+            <!-- Tracking (destacado azul) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pdaTrackingCard"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_rowWeight="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/ch_primary"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_driving_mode"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/home_pda_tracking"
+                        android:textColor="@color/white"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginTop="8dp"
+                        app:cardBackgroundColor="#1A237E"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="›"
+                            android:textColor="@color/white"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Ofertas -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pdaOffersCard"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_rowWeight="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/ch_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeColor="#E8EAF6"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_nav_ports"
+                        app:tint="@color/ch_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/home_pda_offers"
+                        android:textColor="@color/ch_text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginTop="8dp"
+                        app:cardBackgroundColor="#E8EAF6"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="›"
+                            android:textColor="@color/ch_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Portes -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pdaPortesCard"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_rowWeight="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/ch_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeColor="#E8EAF6"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_nav_portes"
+                        app:tint="@color/ch_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/home_pda_portes"
+                        android:textColor="@color/ch_text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginTop="8dp"
+                        app:cardBackgroundColor="#E8EAF6"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="›"
+                            android:textColor="@color/ch_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Incidencias -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pdaIncidentsCard"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_rowWeight="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/ch_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeColor="#E8EAF6"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_nav_incidents"
+                        app:tint="@color/ch_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/home_pda_incidents"
+                        android:textColor="@color/ch_text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginTop="8dp"
+                        app:cardBackgroundColor="#E8EAF6"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="›"
+                            android:textColor="@color/ch_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Agenda -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pdaAgendaCard"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_rowWeight="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/ch_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeColor="#E8EAF6"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_nav_agenda"
+                        app:tint="@color/ch_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/home_pda_agenda"
+                        android:textColor="@color/ch_text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginTop="8dp"
+                        app:cardBackgroundColor="#E8EAF6"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="›"
+                            android:textColor="@color/ch_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Facturación -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pdaBillingCard"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_rowWeight="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/ch_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeColor="#E8EAF6"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_nav_billing"
+                        app:tint="@color/ch_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/home_pda_billing"
+                        android:textColor="@color/ch_text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginTop="8dp"
+                        app:cardBackgroundColor="#E8EAF6"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="›"
+                            android:textColor="@color/ch_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </GridLayout>
     </LinearLayout>
-</ScrollView>
+</LinearLayout>

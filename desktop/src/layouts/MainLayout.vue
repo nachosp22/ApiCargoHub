@@ -4,7 +4,7 @@ import AppTopBar from '@/components/AppTopBar.vue'
 </script>
 
 <template>
-  <div class="min-h-screen bg-canvas dark:bg-gray-900">
+  <div class="h-dvh overflow-hidden bg-canvas dark:bg-gray-900">
     <!-- Sidebar -->
     <AppSidebar />
 
@@ -12,8 +12,10 @@ import AppTopBar from '@/components/AppTopBar.vue'
     <AppTopBar />
 
     <!-- Canvas (main content area) -->
-    <main class="ml-60 mt-16 p-6 min-h-[calc(100vh-4rem)]">
-      <RouterView />
+    <main class="ml-60 mt-16 h-[calc(100dvh-4rem)] min-h-0 overflow-hidden p-6">
+      <RouterView v-slot="{ Component }">
+        <component :is="Component" class="h-full min-h-0" />
+      </RouterView>
     </main>
   </div>
 </template>

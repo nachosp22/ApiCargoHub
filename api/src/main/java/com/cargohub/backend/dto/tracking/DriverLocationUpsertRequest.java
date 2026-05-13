@@ -4,16 +4,19 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 public class DriverLocationUpsertRequest {
 
     @DecimalMin(value = "-90.0", inclusive = true)
     @DecimalMax(value = "90.0", inclusive = true)
+    @NotNull
     private Double lat;
 
     @DecimalMin(value = "-180.0", inclusive = true)
     @DecimalMax(value = "180.0", inclusive = true)
+    @NotNull
     private Double lon;
 
     private OffsetDateTime recordedAt;
@@ -24,6 +27,8 @@ public class DriverLocationUpsertRequest {
     @Min(0)
     @Max(359)
     private Integer headingDeg;
+
+    private Long sessionId;
 
     public Double getLat() {
         return lat;
@@ -63,5 +68,13 @@ public class DriverLocationUpsertRequest {
 
     public void setHeadingDeg(Integer headingDeg) {
         this.headingDeg = headingDeg;
+    }
+
+    public Long getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(Long sessionId) {
+        this.sessionId = sessionId;
     }
 }

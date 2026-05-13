@@ -25,7 +25,6 @@ export interface Vehiculo {
   anchoUtilMm: number | null
   altoUtilMm: number | null
   volumenM3: number | null
-  trampillaElevadora: boolean
   conductor: ConductorResumen | null
 }
 
@@ -38,7 +37,6 @@ export interface CreateVehiculoRequest {
   largoUtilMm?: number | null
   anchoUtilMm?: number | null
   altoUtilMm?: number | null
-  trampillaElevadora?: boolean
   conductor?: { id: number } | null
 }
 
@@ -51,7 +49,6 @@ export interface UpdateVehiculoRequest {
   largoUtilMm?: number | null
   anchoUtilMm?: number | null
   altoUtilMm?: number | null
-  trampillaElevadora?: boolean
   conductor?: { id: number } | null
 }
 
@@ -62,70 +59,60 @@ const MOCK_VEHICULOS: Vehiculo[] = [
     id: 1, matricula: '1234ABC', marca: 'Iveco', modelo: 'Daily 35S14',
     tipo: 'FURGONETA', estado: 'DISPONIBLE', capacidadCargaKg: 1500,
     largoUtilMm: 4200, anchoUtilMm: 1800, altoUtilMm: 1900, volumenM3: 14.36,
-    trampillaElevadora: false,
     conductor: { id: 1, nombre: 'Juan', apellidos: 'Pérez García' },
   },
   {
     id: 2, matricula: '5678DEF', marca: 'Mercedes-Benz', modelo: 'Atego 1224',
     tipo: 'RIGIDO', estado: 'DISPONIBLE', capacidadCargaKg: 6000,
     largoUtilMm: 7200, anchoUtilMm: 2400, altoUtilMm: 2500, volumenM3: 43.2,
-    trampillaElevadora: true,
     conductor: { id: 2, nombre: 'María', apellidos: 'López Fernández' },
   },
   {
     id: 3, matricula: '9012GHI', marca: 'Volvo', modelo: 'FH 500',
     tipo: 'TRAILER', estado: 'DISPONIBLE', capacidadCargaKg: 24000,
     largoUtilMm: 13600, anchoUtilMm: 2480, altoUtilMm: 2700, volumenM3: 91.07,
-    trampillaElevadora: true,
     conductor: { id: 3, nombre: 'Carlos', apellidos: 'Ruiz Martínez' },
   },
   {
     id: 4, matricula: '3456JKL', marca: 'Renault', modelo: 'Master L3H2',
     tipo: 'FURGONETA', estado: 'EN_MANTENIMIENTO', capacidadCargaKg: 1200,
     largoUtilMm: 3700, anchoUtilMm: 1765, altoUtilMm: 1880, volumenM3: 12.28,
-    trampillaElevadora: false,
     conductor: { id: 6, nombre: 'Laura', apellidos: 'Hernández Romero' },
   },
   {
     id: 5, matricula: '7890MNO', marca: 'MAN', modelo: 'TGX 18.510',
     tipo: 'TRAILER', estado: 'DISPONIBLE', capacidadCargaKg: 25000,
     largoUtilMm: 13600, anchoUtilMm: 2480, altoUtilMm: 2700, volumenM3: 91.07,
-    trampillaElevadora: true,
     conductor: { id: 7, nombre: 'Diego', apellidos: 'Navarro Torres' },
   },
   {
     id: 6, matricula: '2345PQR', marca: 'DAF', modelo: 'XF 480',
     tipo: 'TRAILER', estado: 'BAJA', capacidadCargaKg: 24000,
     largoUtilMm: 13600, anchoUtilMm: 2480, altoUtilMm: 2700, volumenM3: 91.07,
-    trampillaElevadora: false,
     conductor: null,
   },
   {
     id: 7, matricula: '6789STU', marca: 'Iveco', modelo: 'Eurocargo 120E25',
     tipo: 'RIGIDO', estado: 'DISPONIBLE', capacidadCargaKg: 7500,
     largoUtilMm: 8000, anchoUtilMm: 2400, altoUtilMm: 2500, volumenM3: 48.0,
-    trampillaElevadora: true,
     conductor: { id: 8, nombre: 'Sofía', apellidos: 'Jiménez Moreno' },
   },
   {
     id: 8, matricula: '0123VWX', marca: 'Peugeot', modelo: 'Boxer L4H3',
     tipo: 'FURGONETA', estado: 'DISPONIBLE', capacidadCargaKg: 1400,
     largoUtilMm: 4070, anchoUtilMm: 1870, altoUtilMm: 2172, volumenM3: 16.53,
-    trampillaElevadora: false,
     conductor: { id: 10, nombre: 'Elena', apellidos: 'Morales Vega' },
   },
   {
     id: 9, matricula: '4567YZA', marca: 'Scania', modelo: 'R 450',
     tipo: 'ESPECIAL', estado: 'EN_MANTENIMIENTO', capacidadCargaKg: 20000,
     largoUtilMm: 12000, anchoUtilMm: 2500, altoUtilMm: 2800, volumenM3: 84.0,
-    trampillaElevadora: true,
     conductor: { id: 11, nombre: 'Raúl', apellidos: 'Castillo Prieto' },
   },
   {
     id: 10, matricula: '8901BCD', marca: 'Ford', modelo: 'Transit L3H2',
     tipo: 'FURGONETA', estado: 'DISPONIBLE', capacidadCargaKg: 1100,
     largoUtilMm: 3494, anchoUtilMm: 1784, altoUtilMm: 1886, volumenM3: 11.76,
-    trampillaElevadora: false,
     conductor: null,
   },
 ]
@@ -133,12 +120,16 @@ const MOCK_VEHICULOS: Vehiculo[] = [
 // --- Store ---
 
 export const useVehiculosStore = defineStore('vehiculos', () => {
+  type DataSource = 'api' | 'mock'
   // --- State ---
   const vehiculos = ref<Vehiculo[]>([])
   const selectedVehiculo = ref<Vehiculo | null>(null)
   const loading = ref(false)
   const saving = ref(false)
   const usingMockData = ref(false)
+  const dataSource = ref<DataSource>('api')
+  const warning = ref<string | null>(null)
+  const error = ref<string | null>(null)
 
   // --- Getters ---
   const totalVehiculos = computed(() => vehiculos.value.length)
@@ -179,6 +170,9 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
   async function fetchVehiculos(): Promise<void> {
     loading.value = true
     usingMockData.value = false
+    dataSource.value = 'api'
+    warning.value = null
+    error.value = null
 
     try {
       const response = await api.get('/vehiculos')
@@ -187,6 +181,9 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
     } catch {
       // API unavailable — use mock data
       usingMockData.value = true
+      dataSource.value = 'mock'
+      warning.value = 'Mostrando vehículos mock porque la API no respondió'
+      error.value = 'No se pudo obtener vehículos desde la API'
       vehiculos.value = [...MOCK_VEHICULOS]
     } finally {
       loading.value = false
@@ -195,31 +192,35 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
 
   /**
    * Fetch a single vehiculo by ID.
+   * Backend does not expose GET /vehiculos/{id}, so we resolve locally.
    */
   async function fetchVehiculoById(id: number): Promise<Vehiculo | null> {
-    loading.value = true
-    try {
-      const response = await api.get(`/vehiculos/${id}`)
-      const vehiculo = mapVehiculoFromApi(response.data)
-      selectedVehiculo.value = vehiculo
-      return vehiculo
-    } catch {
-      // Try from local list
-      const found = vehiculos.value.find((v) => v.id === id)
-      if (found) {
-        selectedVehiculo.value = found
-        return found
-      }
-      // Try mock
-      const mock = MOCK_VEHICULOS.find((v) => v.id === id)
-      if (mock) {
-        selectedVehiculo.value = mock
-        return mock
-      }
-      return null
-    } finally {
-      loading.value = false
+    // Resolve from local cache first
+    const local = vehiculos.value.find((v) => v.id === id)
+    if (local) {
+      selectedVehiculo.value = local
+      return local
     }
+
+    // If list is empty, load it once and retry locally
+    if (vehiculos.value.length === 0) {
+      await fetchVehiculos()
+      const fromFetchedList = vehiculos.value.find((v) => v.id === id)
+      if (fromFetchedList) {
+        selectedVehiculo.value = fromFetchedList
+        return fromFetchedList
+      }
+    }
+
+    // Fallback to mock data
+    const mock = MOCK_VEHICULOS.find((v) => v.id === id)
+    if (mock) {
+      selectedVehiculo.value = mock
+      return mock
+    }
+
+    selectedVehiculo.value = null
+    return null
   }
 
   /**
@@ -247,7 +248,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
           anchoUtilMm: request.anchoUtilMm ?? null,
           altoUtilMm: request.altoUtilMm ?? null,
           volumenM3: null,
-          trampillaElevadora: request.trampillaElevadora ?? false,
           conductor: null,
         }
         vehiculos.value.unshift(mockVehiculo)
@@ -289,7 +289,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
             largoUtilMm: request.largoUtilMm !== undefined ? request.largoUtilMm : current.largoUtilMm,
             anchoUtilMm: request.anchoUtilMm !== undefined ? request.anchoUtilMm : current.anchoUtilMm,
             altoUtilMm: request.altoUtilMm !== undefined ? request.altoUtilMm : current.altoUtilMm,
-            trampillaElevadora: request.trampillaElevadora !== undefined ? request.trampillaElevadora : current.trampillaElevadora,
           }
           vehiculos.value[idx] = updated
           if (selectedVehiculo.value?.id === id) selectedVehiculo.value = updated
@@ -412,7 +411,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
       anchoUtilMm: v.anchoUtilMm != null ? Number(v.anchoUtilMm) : null,
       altoUtilMm: v.altoUtilMm != null ? Number(v.altoUtilMm) : null,
       volumenM3: v.volumenM3 != null ? Number(v.volumenM3) : null,
-      trampillaElevadora: v.trampillaElevadora === true,
       conductor,
     }
   }
@@ -425,6 +423,9 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
     loading,
     saving,
     usingMockData,
+    dataSource,
+    warning,
+    error,
     // Getters
     totalVehiculos,
     vehiculosByEstado,

@@ -10,9 +10,9 @@
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/ch_surface_card"
     app:cardCornerRadius="@dimen/radius_md"
-    app:cardElevation="2dp"
-    app:strokeColor="@android:color/transparent"
-    app:strokeWidth="0dp">
+    app:cardElevation="0dp"
+    app:strokeColor="@color/ch_outline"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -72,7 +72,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
-                android:textColor="@color/ch_primary"
+                android:textColor="@color/ch_primary_dark"
                 android:textStyle="bold"
                 tools:text="242,00 €" />
         </LinearLayout>

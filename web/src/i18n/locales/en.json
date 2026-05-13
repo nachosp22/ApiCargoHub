@@ -125,6 +125,7 @@
       "passwordPlaceholder": "••••••••",
       "submit": "Log In",
       "noAccount": "Don't have an account? Sign up",
+      "passwordRecoveryUnavailable": "Password recovery is currently unavailable on web. Please contact support.",
       "unexpectedError": "Unexpected error during login."
     },
     "register": {
@@ -206,6 +207,8 @@
       "requestPorte": "Request Shipment",
       "myPortes": "My Shipments",
       "myInvoices": "My Invoices",
+      "profile": "My Profile",
+      "openMenu": "Open menu",
       "logout": "Log Out",
       "clientPortal": "Client Portal",
       "portal": "Portal"
@@ -244,8 +247,12 @@
       "unassigned": "Unassigned",
       "weight": "Weight",
       "requiredVehicle": "Required Vehicle",
-      "manualReview": "Manual review required: {reason}",
-      "manualReviewNoReason": "No reason specified"
+      "pendingReview": "Pending review",
+      "pendingDriver": "Pending driver",
+      "pendingDriverAwaitingAcceptance": "The cargo request has been created successfully. We will assign you a driver as soon as possible.",
+      "manualReview": "We could not analyze the cargo. The shipment will be manually reviewed by one of our agents.",
+      "manualReviewNoReason": "No reason specified",
+      "assignmentPending": "The cargo request has been created successfully. We will assign you a driver as soon as possible."
     },
     "facturas": {
       "filterStatus": "Status:",
@@ -287,9 +294,13 @@
       "cargoPlaceholder": "E.g.: 10 pallets of electronic products, each 1.2m x 0.8m x 1.5m, approx 200kg each. Requires closed van.",
       "aiNote": "Our AI will analyze the description to calculate dimensions, weight, and required vehicle type.",
       "pickupDate": "Desired Pickup Date",
-      "pickupDatePlaceholder": "Select a date",
+      "pickupDatePlaceholder": "Select date and time",
+      "pickupDateRequired": "Pickup date and time are required.",
+      "originSelectionRequired": "Select a real origin from the suggestion list.",
+      "destinationSelectionRequired": "Select a real destination from the suggestion list.",
+      "invalidLocationsError": "Origin and destination must be selected from real suggestions.",
       "submit": "Submit Request",
-      "successMessage": "Request submitted successfully! We are processing your cargo.",
+      "successMessage": "The cargo request has been created successfully. We will assign you a driver as soon as possible.",
       "viewMyPortes": "View my shipments →"
     },
     "tracking": {
@@ -308,6 +319,15 @@
       "retry": "Retry",
       "mapOrigin": "Origin",
       "mapDestination": "Destination"
+    },
+    "accessUnavailable": {
+      "title": "Portal unavailable for this account",
+      "description": "Your session is active, but this portal is enabled only for customer accounts with a complete profile.",
+      "reasonRole": "If your account is a carrier (driver), please use the driver mobile app.",
+      "reasonMissingClient": "If you are a customer and still don't have a clienteId assigned, your account may still be pending activation.",
+      "goHome": "Back to home",
+      "mobileAppHint": "If you are a driver, use the mobile app.",
+      "downloadMobileApp": "Download mobile app"
     }
   },
   "common": {

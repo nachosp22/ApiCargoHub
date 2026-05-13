@@ -33,6 +33,141 @@ export interface Factura {
   porte: FacturaPorte | null
 }
 
+type DataSource = 'api' | 'mock'
+
+const MOCK_FACTURAS: Factura[] = [
+  {
+    id: 9001,
+    numeroSerie: 'MOCK-2026-0001',
+    baseImponible: 1000,
+    iva: 210,
+    ivaPercent: 21,
+    importeTotal: 1210,
+    fechaEmision: '2026-01-15T10:00:00.000Z',
+    pagada: false,
+    fechaPago: null,
+    formaPago: 'TRANSFERENCIA',
+    condicionesPago: '30 días',
+    observaciones: 'Factura mock para fallback UI',
+    porte: {
+      id: 1,
+      origen: 'Madrid',
+      destino: 'Barcelona',
+      fechaRecogida: null,
+      fechaEntrega: null,
+      descripcionCliente: null,
+      pesoTotalKg: null,
+      volumenTotalM3: null,
+      conductor: null,
+      cliente: null,
+    },
+  },
+  {
+    id: 9002,
+    numeroSerie: 'MOCK-2026-0002',
+    baseImponible: 480,
+    iva: 100.8,
+    ivaPercent: 21,
+    importeTotal: 580.8,
+    fechaEmision: '2026-01-28T09:30:00.000Z',
+    pagada: true,
+    fechaPago: '2026-02-14T12:00:00.000Z',
+    formaPago: 'TRANSFERENCIA',
+    condicionesPago: '15 días',
+    observaciones: 'Demo QA: factura pagada con pago anticipado',
+    porte: {
+      id: 2,
+      origen: 'Valencia',
+      destino: 'Sevilla',
+      fechaRecogida: '2026-01-25T08:00:00.000Z',
+      fechaEntrega: '2026-01-26T17:45:00.000Z',
+      descripcionCliente: 'Transporte paletizado',
+      pesoTotalKg: 1320,
+      volumenTotalM3: 9.4,
+      conductor: { id: 201, nombre: 'Conductor Mock 1', apellidos: 'Demo' },
+      cliente: { id: 301, nombreEmpresa: 'Cliente Demo Levante S.L.', cif: 'MOCK-VAL-0001' },
+    },
+  },
+  {
+    id: 9003,
+    numeroSerie: 'MOCK-2026-0003',
+    baseImponible: 2200,
+    iva: 462,
+    ivaPercent: 21,
+    importeTotal: 2662,
+    fechaEmision: '2026-02-10T14:15:00.000Z',
+    pagada: false,
+    fechaPago: null,
+    formaPago: 'TRANSFERENCIA',
+    condicionesPago: '30 días',
+    observaciones: 'Demo QA: factura pendiente de alto importe',
+    porte: {
+      id: 7,
+      origen: 'Bilbao',
+      destino: 'Málaga',
+      fechaRecogida: '2026-02-08T06:30:00.000Z',
+      fechaEntrega: '2026-02-09T21:10:00.000Z',
+      descripcionCliente: 'Mercancía industrial con manipulación especial',
+      pesoTotalKg: 6200,
+      volumenTotalM3: 27.8,
+      conductor: { id: 202, nombre: 'Conductor Mock 2', apellidos: 'QA' },
+      cliente: { id: 302, nombreEmpresa: 'Cliente Demo Norte Logistics', cif: 'MOCK-BIL-0002' },
+    },
+  },
+  {
+    id: 9004,
+    numeroSerie: 'MOCK-2026-0004',
+    baseImponible: 760,
+    iva: 159.6,
+    ivaPercent: 21,
+    importeTotal: 919.6,
+    fechaEmision: '2026-03-02T11:20:00.000Z',
+    pagada: true,
+    fechaPago: '2026-03-05T10:10:00.000Z',
+    formaPago: 'TRANSFERENCIA',
+    condicionesPago: '7 días',
+    observaciones: 'Demo QA: mismo porte con segunda factura (ajuste)',
+    porte: {
+      id: 7,
+      origen: 'Bilbao',
+      destino: 'Málaga',
+      fechaRecogida: '2026-02-08T06:30:00.000Z',
+      fechaEntrega: '2026-02-09T21:10:00.000Z',
+      descripcionCliente: 'Ajuste por servicios adicionales de descarga',
+      pesoTotalKg: 6200,
+      volumenTotalM3: 27.8,
+      conductor: { id: 202, nombre: 'Conductor Mock 2', apellidos: 'QA' },
+      cliente: { id: 302, nombreEmpresa: 'Cliente Demo Norte Logistics', cif: 'MOCK-BIL-0002' },
+    },
+  },
+  {
+    id: 9005,
+    numeroSerie: 'MOCK-2026-0005',
+    baseImponible: 150,
+    iva: 31.5,
+    ivaPercent: 21,
+    importeTotal: 181.5,
+    fechaEmision: '2026-03-18T16:50:00.000Z',
+    pagada: false,
+    fechaPago: null,
+    formaPago: 'TRANSFERENCIA',
+    condicionesPago: 'Contado',
+    observaciones: 'Demo QA: importe bajo para contraste visual',
+    porte: {
+      id: 15,
+      origen: 'Zaragoza',
+      destino: 'Pamplona',
+      fechaRecogida: '2026-03-18T05:45:00.000Z',
+      fechaEntrega: '2026-03-18T13:30:00.000Z',
+      descripcionCliente: 'Paquetería ligera consolidada',
+      pesoTotalKg: 210,
+      volumenTotalM3: 1.2,
+      conductor: { id: 203, nombre: 'Conductor Mock 3', apellidos: 'Demo' },
+      cliente: { id: 303, nombreEmpresa: 'Cliente Demo Aragón Distribución', cif: 'MOCK-ZAZ-0003' },
+    },
+  },
+]
+
 // --- Store ---
 
 export const useFacturasStore = defineStore('facturas', () => {
@@ -42,6 +177,8 @@ export const useFacturasStore = defineStore('facturas', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const usingMockData = ref(false)
+  const dataSource = ref<DataSource>('api')
+  const warning = ref<string | null>(null)
 
   // --- Getters ---
   const totalFacturado = computed(() =>
@@ -67,14 +204,20 @@ export const useFacturasStore = defineStore('facturas', () => {
   async function fetchFacturas(): Promise<void> {
     loading.value = true
     error.value = null
+    warning.value = null
+    usingMockData.value = false
+    dataSource.value = 'api'
 
     try {
       const response = await api.get('/facturas')
       const data = extractArray(response.data)
       facturas.value = data.map(mapFacturaFromApi)
     } catch (err) {
+      usingMockData.value = true
+      dataSource.value = 'mock'
+      warning.value = 'Mostrando facturas mock porque la API no respondió'
       error.value = 'Error al cargar las facturas'
-      facturas.value = []
+      facturas.value = [...MOCK_FACTURAS]
     } finally {
       loading.value = false
     }
@@ -90,6 +233,7 @@ export const useFacturasStore = defineStore('facturas', () => {
       selectedFactura.value = factura
       return factura
     } catch {
+      error.value = 'No se pudo cargar la factura solicitada'
       const found = facturas.value.find((f) => f.id === id)
       if (found) {
         selectedFactura.value = found
@@ -104,12 +248,30 @@ export const useFacturasStore = defineStore('facturas', () => {
   async function fetchFacturasByPorte(porteId: number): Promise<Factura[]> {
     loading.value = true
     error.value = null
+    warning.value = null
+    usingMockData.value = false
+    dataSource.value = 'api'
 
     try {
       const response = await api.get(`/facturas/porte/${porteId}`)
-      const data = extractArray(response.data)
-      return data.map(mapFacturaFromApi)
+      return extractFacturasByPorte(response.data)
     } catch {
+      const fallback = facturas.value.filter((f) => f.porte?.id === porteId)
+      const mockFallback = MOCK_FACTURAS.filter((f) => f.porte?.id === porteId)
+      const degraded = fallback.length > 0 ? fallback : mockFallback
+
+      if (degraded.length > 0) {
+        usingMockData.value = true
+        dataSource.value = 'mock'
+        warning.value = 'Mostrando facturas mock por indisponibilidad de API'
+        error.value = 'No se pudieron cargar las facturas del porte desde la API'
+        return degraded
+      }
+
+      usingMockData.value = false
+      dataSource.value = 'api'
+      warning.value = null
+      error.value = 'No se pudieron cargar las facturas del porte'
       return []
     } finally {
       loading.value = false
@@ -154,6 +316,17 @@ export const useFacturasStore = defineStore('facturas', () => {
       const obj = data as Record<string, unknown>
       if (Array.isArray(obj.content)) return obj.content as Record<string, unknown>[]
       if (Array.isArray(obj.data)) return obj.data as Record<string, unknown>[]
+    }
+    return []
+  }
+
+  function extractFacturasByPorte(data: unknown): Factura[] {
+    if (Array.isArray(data)) return data.map(mapFacturaFromApi)
+    if (data && typeof data === 'object') {
+      const obj = data as Record<string, unknown>
+      if (Array.isArray(obj.content)) return (obj.content as unknown[]).map(mapFacturaFromApi)
+      if (Array.isArray(obj.data)) return (obj.data as unknown[]).map(mapFacturaFromApi)
+      if (obj.id != null) return [mapFacturaFromApi(obj)]
     }
     return []
   }
@@ -223,6 +396,8 @@ export const useFacturasStore = defineStore('facturas', () => {
     loading,
     error,
     usingMockData,
+    dataSource,
+    warning,
     // Getters
     totalFacturado,
     totalPagado,

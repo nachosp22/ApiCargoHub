@@ -170,4 +170,29 @@ class CargoAnalysisServiceTest {
         assertEquals(0.0, response.getVolumenTotalM3());
         assertEquals(0.0, response.getLargoMaxPaquete());
     }
+
+    @Test
+    void calcularDimensiones_appliesDevFallback_whenDescriptionUsesMillimetersAndPalletCount() {
+        cargoAnalysisService = buildService(true);
+
+        CargoAnalysisResponse geminiFailure = new CargoAnalysisResponse();
+        geminiFailure.setPesoTotalKg(0.0);
+        geminiFailure.setVolumenTotalM3(0.0);
+        geminiFailure.setLargoMaxPaquete(0.0);
+        geminiFailure.setRevisionManual(true);
+        geminiFailure.setMotivoRevision("No se pudo analizar la carga automaticamente.");
+        when(geminiCargaService.calcularDimensiones("2 palets de comida variada de 600kg con medidas 1200mm x 800mm x 800mm", null))
+                .thenReturn(geminiFailure);
+
+        CargoAnalysisResponse response = cargoAnalysisService.calcularDimensiones(
+                "2 palets de comida variada de 600kg con medidas 1200mm x 800mm x 800mm"
+        );
+
+        assertFalse(response.getRevisionManual());
+        assertEquals(600.0, response.getPesoTotalKg());
+        assertEquals(1.54, response.getVolumenTotalM3());
+        assertEquals(1.2, response.getLargoMaxPaquete());
+        assertEquals("FURGONETA", response.getTipoVehiculoRequerido());
+        assertNull(response.getMotivoRevision());
+    }
 }

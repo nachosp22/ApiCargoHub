@@ -143,112 +143,68 @@ Nota conocida:
 - Solo `401` invalida sesion automaticamente desde `AuthInterceptor` cuando hay token invalido/expirado.
 - `403` mantiene la sesion y se muestra como falta de permisos para evitar logout incorrecto.
 
-## QA manual E2E conductor (opcion 1)
+## QA manual E2E conductor y alcance de demo recomendado
 
-### Preparacion
+### Alcance recomendado de demo mobile
+
+Flujo objetivo para demo funcional de conductor (punta a punta):
+
+`login -> ofertas -> detalle -> aceptar/rechazar -> viaje -> incidencias -> tracking -> logout`
+
+Incluye validacion de estados de carga/error vacio, persistencia de sesion, transiciones de viaje y operacion minima de incidencias/tracking en entorno real (emulador o dispositivo).
+
+### Precondiciones
 
 1. Configurar `mobile/local.properties` con `sdk.dir` y `api.base.url`.
-2. Levantar backend local (ejemplo: `http://10.0.2.2:8080/` para emulador).
-3. Ejecutar app en emulador/dispositivo Android con permisos de red y ubicacion.
+2. Levantar backend accesible desde Android (`10.0.2.2` en emulador o IP LAN en dispositivo).
+3. Contar con usuario conductor valido con ofertas y al menos un porte operable.
+4. Tener un viaje en estado que permita accion de avance (`ASIGNADO` o equivalente habilitado por backend).
+5. Ejecutar app en emulador/dispositivo con red estable y permiso de ubicacion habilitable.
+6. Preparar evidencia de ejecucion (capturas/video + timestamp + ID de porte/incidencia cuando aplique).
 
-### Casos E2E con pasos y resultado esperado
+### Checklist QA E2E conductor (criterio OK/FAIL)
 
-#### Caso 1 - Login conductor
-
-- Pasos:
-  1. Abrir app en frio.
-  2. Validar errores de formulario (`email` vacio/invalido, `password` vacia).
-  3. Ingresar credenciales validas y tocar `Iniciar sesion`.
-- Resultado esperado: se ven validaciones en contexto, aparece loading y se navega a `MainActivity` con sesion activa.
-
-#### Caso 2 - Ofertas
-
-- Pasos:
-  1. Abrir menu `Ofertas`.
-  2. Validar estados `loading`, `empty` o `error` segun datos.
-  3. Abrir una oferta desde tarjeta o CTA.
-- Resultado esperado: lista usable, estados consistentes y navegacion correcta a detalle de oferta.
-
-#### Caso 3 - Viajes
-
-- Pasos:
-  1. Abrir `Mis viajes`.
-  2. Revisar modos activo/proximo/historico.
-  3. Abrir un viaje y volver a lista.
-- Resultado esperado: listas responden sin bloqueo, preservan navegacion y muestran datos del backend.
-
-#### Caso 4 - Detalle de viaje
-
-- Pasos:
-  1. Desde `Mis viajes`, abrir detalle de viaje en estado operable.
-  2. Ejecutar accion de estado (`ASIGNADO -> EN_TRANSITO -> ENTREGADO`) si aplica.
-  3. Confirmar refresco del detalle luego de cada accion.
-- Resultado esperado: la accion valida cambia estado remoto/local y refleja el nuevo estado en pantalla.
-
-#### Caso 5 - Incidencias
-
-- Pasos:
-  1. Abrir opciones de incidencias (activas/historial/nueva).
-  2. Crear incidencia vinculada a un porte activo.
-  3. Verificar detalle e historial de la incidencia.
-- Resultado esperado: alta exitosa, visibilidad en contexto del viaje y datos consistentes en historial.
-
-#### Caso 6 - Perfil conductor
-
-- Pasos:
-  1. Abrir `Perfil`.
-  2. Verificar carga de datos del conductor.
-  3. Editar un dato permitido y guardar (si el entorno lo permite).
-- Resultado esperado: se muestran datos principales y cambios persistidos sin romper sesion.
-
-#### Caso 7 - Agenda
-
-- Pasos:
-  1. Desde `Perfil`, abrir `Agenda`.
-  2. Crear bloqueo/disponibilidad.
-  3. Eliminar el bloqueo creado.
-- Resultado esperado: alta y baja impactan en la lista de agenda del conductor.
-
-#### Caso 8 - Vehiculo
-
-- Pasos:
-  1. Desde `Perfil`, abrir `Vehiculos`.
-  2. Alta de vehiculo de prueba.
-  3. Activar/desactivar vehiculo.
-- Resultado esperado: operaciones reflejan estado real del vehiculo para el conductor.
-
-#### Caso 9 - Tracking
-
-- Pasos:
-  1. Abrir `Tracking` con viaje activo.
-  2. Conceder permiso de ubicacion si se solicita.
-  3. Iniciar/pausar tracking y observar estado.
-- Resultado esperado: estado de tracking cambia correctamente y envia ubicacion o muestra error accionable.
-
-#### Caso 10 - Logout
-
-- Pasos:
-  1. Ir a `Perfil`.
-  2. Tocar `Cerrar sesion`.
-  3. Intentar volver a pantalla autenticada sin relogin.
-- Resultado esperado: sesion invalidada, retorno a `Login` y bloqueo de acceso autenticado.
-
-### Matriz de ejecucion manual
-
-| Caso | Estado (OK/FAIL/PENDIENTE) | Evidencia | Notas |
+| Paso | Verificacion | OK | FAIL |
 |---|---|---|---|
-| Login conductor | PENDIENTE | - | - |
-| Ofertas | PENDIENTE | - | - |
-| Viajes | PENDIENTE | - | - |
-| Detalle de viaje | PENDIENTE | - | - |
-| Incidencias | PENDIENTE | - | - |
-| Perfil conductor | PENDIENTE | - | - |
-| Agenda | PENDIENTE | - | - |
-| Vehiculo | PENDIENTE | - | - |
-| Tracking | PENDIENTE | - | - |
-| Logout | PENDIENTE | - | - |
+| 1. Login | Ingreso con credenciales validas desde app en frio | Navega a `MainActivity`, sesion queda activa y no hay crash | No autentica con credenciales validas, queda bloqueado o hay cierre inesperado |
+| 2. Ofertas | Bandeja de ofertas desde menu `Ofertas` | Lista responde, permite abrir detalle y maneja `loading/empty/error` sin romper flujo | Lista congelada, navegacion rota o estados inconsistentes |
+| 3. Detalle de oferta | Visualizacion de detalle y CTAs operativos | Se ve informacion clave y botones de accion en estado coherente | No carga detalle, CTAs mal habilitados o datos clave ausentes |
+| 4. Aceptar/rechazar | Ejecutar una accion sobre oferta operable | Backend confirma accion y UI refleja resultado (estado o mensaje) | Accion no impacta en backend/UI o deja pantalla en estado inconsistente |
+| 5. Viaje | Abrir viaje asociado y avanzar estado si aplica | Detalle refleja estado actualizado y permite continuar operacion | Estado no cambia o se pierde consistencia entre lista/detalle |
+| 6. Incidencias | Crear incidencia y consultar activas/historial | Alta exitosa, incidencia visible y recuperable por contexto de porte | No crea incidencia, no aparece en listas o falla lectura de historial |
+| 7. Tracking | Iniciar/pausar tracking con permiso de ubicacion | Estado cambia correctamente y se envia ubicacion o error accionable | No solicita permiso cuando corresponde, no cambia estado o falla sin feedback |
+| 8. Logout | Cerrar sesion desde `Perfil` | Limpia sesion, vuelve a login y bloquea acceso autenticado sin relogin | Permite volver a pantallas autenticadas o mantiene token invalido |
+
+### Matriz de ejecucion para QA
+
+| Paso | Estado (OK/FAIL/PENDIENTE) | Evidencia | Notas |
+|---|---|---|---|
+| 1. Login | PENDIENTE | - | - |
+| 2. Ofertas | PENDIENTE | - | - |
+| 3. Detalle de oferta | PENDIENTE | - | - |
+| 4. Aceptar/rechazar oferta | PENDIENTE | - | - |
+| 5. Viaje | PENDIENTE | - | - |
+| 6. Incidencias | PENDIENTE | - | - |
+| 7. Tracking | PENDIENTE | - | - |
+| 8. Logout | PENDIENTE | - | - |
 
 Nota: esta matriz queda preparada para cierre manual en emulador/dispositivo real. No se marca OK/FAIL desde CLI.
+
+### Riesgos y puntos fragiles del flujo
+
+- Dependencia alta de datos semilla: sin ofertas/portes operables no se puede validar el flujo completo.
+- Diferencias de entorno (`10.0.2.2` vs IP LAN) pueden simular fallas de API que no son bugs de app.
+- Permisos y politicas de ubicacion (foreground/background) afectan tracking y pueden variar por version Android.
+- Latencia del backend puede exponer estados intermedios (carga duplicada, feedback tardio en aceptar/rechazar).
+- Reglas de negocio del backend (estados permitidos) pueden bloquear avance de viaje aun con UI correcta.
+
+### Siguiente tanda de fixes sugeridos
+
+1. Normalizar mensajes de error por etapa del flujo E2E (login, acciones de oferta, viaje, tracking) para diagnostico mas rapido.
+2. Agregar IDs funcionales visibles en UI de QA (porte/incidencia) para trazabilidad entre app y backend.
+3. Endurecer manejo de reintento y estados de carga en ofertas/detalles para evitar doble accion por taps repetidos.
+4. Registrar eventos minimos de auditoria en mobile (accion + timestamp + resultado) para soporte de demo y triage.
+5. Definir dataset de demo estable (usuario, oferta, viaje, incidencia) versionado para reproducibilidad entre equipos.
 
 ## Limitaciones conocidas
 

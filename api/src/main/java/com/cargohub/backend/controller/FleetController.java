@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1")
-@CrossOrigin(origins = "*")
 public class FleetController {
 
     private static final Logger log = LoggerFactory.getLogger(FleetController.class);

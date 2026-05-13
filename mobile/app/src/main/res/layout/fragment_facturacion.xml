@@ -5,11 +5,12 @@
     android:id="@+id/swipeRefresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/ch_background">
+    android:background="@color/ch_primary">
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/ch_primary">
 
         <LinearLayout
             android:id="@+id/contentContainer"
@@ -30,16 +31,8 @@
                     android:layout_height="wrap_content"
                     android:text="@string/billing_title"
                     android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
-                    android:textColor="@color/ch_text_primary"
+                    android:textColor="@color/white"
                     android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_xs"
-                    android:text="@string/billing_subtitle"
-                    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
-                    android:textColor="@color/ch_text_secondary" />
 
                 <!-- Resumen cards row -->
                 <LinearLayout
@@ -55,10 +48,11 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="@dimen/spacing_xs"
-                        app:cardBackgroundColor="@color/ch_primary_container"
+                        app:cardBackgroundColor="@color/ch_blue_700"
                         app:cardCornerRadius="@dimen/radius_md"
                         app:cardElevation="0dp"
-                        app:strokeWidth="0dp">
+                        app:strokeColor="@color/ch_blue_500"
+                        app:strokeWidth="1dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -72,7 +66,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/billing_card_invoiced"
                                 android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelSmall"
-                                android:textColor="@color/ch_on_primary_container" />
+                                android:textColor="@color/white" />
 
                             <TextView
                                 android:id="@+id/resumenFacturado"
@@ -80,7 +74,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="@dimen/spacing_2xs"
                                 android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
-                                android:textColor="@color/ch_on_primary_container"
+                                android:textColor="@color/white"
                                 android:textStyle="bold"
                                 tools:text="1.250,00 €" />
                         </LinearLayout>
@@ -92,10 +86,11 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginHorizontal="@dimen/spacing_2xs"
-                        app:cardBackgroundColor="@color/ch_success_soft"
+                        app:cardBackgroundColor="@color/ch_blue_700"
                         app:cardCornerRadius="@dimen/radius_md"
                         app:cardElevation="0dp"
-                        app:strokeWidth="0dp">
+                        app:strokeColor="@color/ch_blue_500"
+                        app:strokeWidth="1dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -109,7 +104,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/billing_card_paid"
                                 android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelSmall"
-                                android:textColor="@color/ch_success_text" />
+                                android:textColor="@color/white" />
 
                             <TextView
                                 android:id="@+id/resumenPagado"
@@ -117,7 +112,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="@dimen/spacing_2xs"
                                 android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
-                                android:textColor="@color/ch_success_text"
+                                android:textColor="@color/white"
                                 android:textStyle="bold"
                                 tools:text="980,00 €" />
                         </LinearLayout>
@@ -129,10 +124,11 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="@dimen/spacing_xs"
-                        app:cardBackgroundColor="@color/ch_warning_soft"
+                        app:cardBackgroundColor="@color/ch_blue_700"
                         app:cardCornerRadius="@dimen/radius_md"
                         app:cardElevation="0dp"
-                        app:strokeWidth="0dp">
+                        app:strokeColor="@color/ch_blue_500"
+                        app:strokeWidth="1dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -146,7 +142,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/billing_card_pending"
                                 android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelSmall"
-                                android:textColor="@color/ch_warning_text" />
+                                android:textColor="@color/white" />
 
                             <TextView
                                 android:id="@+id/resumenPendiente"
@@ -154,7 +150,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="@dimen/spacing_2xs"
                                 android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
-                                android:textColor="@color/ch_warning_text"
+                                android:textColor="@color/white"
                                 android:textStyle="bold"
                                 tools:text="270,00 €" />
                         </LinearLayout>
@@ -175,35 +171,61 @@
                         style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/billing_filter_week" />
+                        android:text="@string/billing_filter_week"
+                        app:chipBackgroundColor="@color/billing_filter_chip_background"
+                        app:chipStrokeColor="@color/billing_filter_chip_stroke"
+                        app:chipStrokeWidth="1dp"
+                        app:checkedIconVisible="false"
+                        app:rippleColor="@color/ch_primary_container"
+                        android:textColor="@color/billing_filter_chip_text" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipMes"
                         style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/billing_filter_month" />
+                        android:text="@string/billing_filter_month"
+                        app:chipBackgroundColor="@color/billing_filter_chip_background"
+                        app:chipStrokeColor="@color/billing_filter_chip_stroke"
+                        app:chipStrokeWidth="1dp"
+                        app:checkedIconVisible="false"
+                        app:rippleColor="@color/ch_primary_container"
+                        android:textColor="@color/billing_filter_chip_text" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipAnio"
                         style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/billing_filter_year" />
+                        android:text="@string/billing_filter_year"
+                        app:chipBackgroundColor="@color/billing_filter_chip_background"
+                        app:chipStrokeColor="@color/billing_filter_chip_stroke"
+                        app:chipStrokeWidth="1dp"
+                        app:checkedIconVisible="false"
+                        app:rippleColor="@color/ch_primary_container"
+                        android:textColor="@color/billing_filter_chip_text" />
                 </com.google.android.material.chip.ChipGroup>
             </LinearLayout>
 
-            <!-- Lista de facturas -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/facturasRecyclerView"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:layout_marginTop="@dimen/spacing_xs"
-                android:clipToPadding="false"
-                android:paddingHorizontal="@dimen/spacing_md"
-                android:paddingBottom="@dimen/spacing_md"
-                tools:listitem="@layout/item_factura" />
+                android:layout_marginTop="@dimen/spacing_md"
+                android:background="@drawable/bg_home_panel"
+                android:orientation="vertical"
+                android:paddingTop="@dimen/spacing_sm">
+
+                <!-- Lista de facturas -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/facturasRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="@dimen/spacing_md"
+                    android:paddingBottom="@dimen/spacing_md"
+                    tools:listitem="@layout/item_factura" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Loading -->

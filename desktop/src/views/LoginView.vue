@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { AuthLoginError, useAuthStore } from '@/stores/auth'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
+const loginBackgroundImage = '/assets/brand/login-bg.png'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -13,6 +14,28 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
+const isMaximized = ref(false)
+
+function getElectronBridge() {
+  return window.electronAPI ?? window.electron
+}
+
+const isDesktopElectron = !!getElectronBridge()
+
+async function minimizeWindow(): Promise<void> {
+  await getElectronBridge()?.minimizeWindow()
+}
+
+async function toggleMaximizeWindow(): Promise<void> {
+  const maxState = await getElectronBridge()?.toggleMaximizeWindow()
+  if (typeof maxState === 'boolean') {
+    isMaximized.value = maxState
+  }
+}
+
+async function closeWindow(): Promise<void> {
+  await getElectronBridge()?.closeWindow()
+}
 
 async function handleLogin(): Promise<void> {
   if (!email.value || !password.value) {
@@ -55,24 +78,82 @@ async function handleLogin(): Promise<void> {
     loading.value = false
   }
 }
+
+onMounted(async () => {
+  const electronBridge = getElectronBridge()
+  if (electronBridge) {
+    isMaximized.value = await electronBridge.isMaximized()
+  }
+})
 </script>
 
 <template>
-  <div class="min-h-screen bg-canvas dark:bg-gray-900 flex items-center justify-center px-4">
-    <div class="w-full max-w-md">
+  <div class="relative min-h-screen flex items-center justify-center px-4 py-8 overflow-hidden">
+    <img
+      :src="loginBackgroundImage"
+      alt=""
+      aria-hidden="true"
+      class="absolute inset-0 h-full w-full object-cover"
+    />
+
+    <div
+      class="absolute inset-0"
+      style="background: linear-gradient(120deg, rgba(15, 23, 42, 0.74) 0%, rgba(30, 64, 175, 0.62) 45%, rgba(15, 23, 42, 0.8) 100%)"
+    ></div>
+
+    <div
+      v-if="isDesktopElectron"
+      class="absolute top-0 left-0 right-0 h-12 px-3 flex items-center justify-end z-20 select-none"
+      style="-webkit-app-region: drag"
+    >
+      <div class="flex items-center gap-1" style="-webkit-app-region: no-drag">
+        <button
+          type="button"
+          class="w-8 h-8 inline-flex items-center justify-center rounded-md text-white/90 hover:bg-white/20 hover:text-white transition-colors"
+          aria-label="Minimizar ventana"
+          @click="minimizeWindow"
+        >
+          <i class="pi pi-minus text-sm"></i>
+        </button>
+        <button
+          type="button"
+          class="w-8 h-8 inline-flex items-center justify-center rounded-md text-white/90 hover:bg-white/20 hover:text-white transition-colors"
+          :aria-label="isMaximized ? 'Restaurar ventana' : 'Maximizar ventana'"
+          @click="toggleMaximizeWindow"
+        >
+          <i :class="isMaximized ? 'pi pi-window-minimize' : 'pi pi-window-maximize'" class="text-sm"></i>
+        </button>
+        <button
+          type="button"
+          class="w-8 h-8 inline-flex items-center justify-center rounded-md text-white/90 hover:bg-red-500 hover:text-white transition-colors"
+          aria-label="Cerrar ventana"
+          @click="closeWindow"
+        >
+          <i class="pi pi-times text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="absolute inset-0 bg-slate-950/20 backdrop-blur-[1.5px]"></div>
+
+    <div class="relative z-10 w-full max-w-md">
       <!-- Logo / Brand -->
       <div class="text-center mb-8">
         <div
-          class="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4"
+          class="inline-flex items-center justify-center w-16 h-16 bg-white/95 dark:bg-gray-800/95 shadow-lg rounded-2xl mb-4"
         >
-          <svg viewBox="0 0 512 512" fill="none" class="w-8 h-8"><path d="M256 296L88 199v148l168 97V296z" fill="#1E40AF"/><path d="M256 296l168-97v148l-168 97V296z" fill="#2563EB"/><path d="M256 102L88 199l168 97 168-97L256 102z" fill="#3B82F6"/><path d="M216 199l40-28 40 28-16 11v34h-48v-34L216 199z" fill="white" opacity=".92"/></svg>
+          <img
+            src="/assets/brand/logo.png"
+            alt="CargoHub"
+            class="w-10 h-10 object-contain"
+          />
         </div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">CargoHub</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Plataforma de Gestión Logística</p>
+        <h1 class="text-2xl font-bold text-white drop-shadow">CargoHub</h1>
+        <p class="text-blue-100/95 mt-1">Plataforma de Gestión Logística</p>
       </div>
 
       <!-- Login Card -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/50 p-8">
+      <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-2xl shadow-2xl ring-1 ring-white/30 dark:ring-slate-600/60 p-8">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-6">Iniciar Sesión</h2>
 
         <form @submit.prevent="handleLogin" class="space-y-5">
@@ -129,7 +210,7 @@ async function handleLogin(): Promise<void> {
       </div>
 
       <!-- Footer -->
-      <p class="text-center text-gray-400 text-xs mt-6">
+      <p class="text-center text-blue-100/85 text-xs mt-6">
         CargoHub Desktop &copy; {{ new Date().getFullYear() }}
       </p>
     </div>

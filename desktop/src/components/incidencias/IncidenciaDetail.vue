@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import Dialog from 'primevue/dialog'
-import ProgressBar from 'primevue/progressbar'
 import IncidenciaStatusBadge from './IncidenciaStatusBadge.vue'
 import SeveridadBadge from './SeveridadBadge.vue'
 import type { Incidencia, IncidenciaEvento, EstadoIncidencia } from '@/stores/incidencias'
@@ -27,65 +26,6 @@ const isTerminal = computed(() => {
   if (!props.incidencia) return true
   return props.incidencia.estado === 'RESUELTA' || props.incidencia.estado === 'DESESTIMADA'
 })
-
-// --- SLA Computation ---
-const slaData = computed(() => {
-  const inc = props.incidencia
-  if (!inc || !inc.fechaLimiteSla) {
-    return { percentage: 0, label: '—', color: 'text-gray-400', barColor: '', show: false }
-  }
-
-  if (isTerminal.value) {
-    return { percentage: 100, label: 'Finalizada', color: 'text-gray-400', barColor: '', show: false }
-  }
-
-  const now = new Date()
-  const start = new Date(inc.fechaReporte)
-  const limit = new Date(inc.fechaLimiteSla)
-  const totalDuration = limit.getTime() - start.getTime()
-  const elapsed = now.getTime() - start.getTime()
-
-  if (totalDuration <= 0) {
-    return { percentage: 100, label: 'VENCIDA', color: 'text-red-600', barColor: 'bg-red-500', show: true }
-  }
-
-  const consumed = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100)
-  const remaining = limit.getTime() - now.getTime()
-
-  if (remaining <= 0) {
-    const overMs = Math.abs(remaining)
-    return {
-      percentage: 100,
-      label: `VENCIDA · hace ${formatDuration(overMs)}`,
-      color: 'text-red-600 font-bold',
-      barColor: 'bg-red-500',
-      show: true,
-    }
-  }
-
-  const remainLabel = `${formatDuration(remaining)} restantes`
-
-  if (consumed > 75) {
-    return { percentage: Math.round(consumed), label: remainLabel, color: 'text-red-600', barColor: 'bg-red-500', show: true }
-  }
-  if (consumed > 50) {
-    return { percentage: Math.round(consumed), label: remainLabel, color: 'text-amber-600', barColor: 'bg-amber-500', show: true }
-  }
-
-  return { percentage: Math.round(consumed), label: remainLabel, color: 'text-emerald-600', barColor: 'bg-emerald-500', show: true }
-})
-
-function formatDuration(ms: number): string {
-  const totalMinutes = Math.floor(ms / (1000 * 60))
-  const totalHours = Math.floor(totalMinutes / 60)
-  const days = Math.floor(totalHours / 24)
-  const hours = totalHours % 24
-  const minutes = totalMinutes % 60
-
-  if (days > 0) return `${days}d ${hours}h`
-  if (hours > 0) return `${hours}h ${minutes}m`
-  return `${minutes}m`
-}
 
 function formatDateTime(dateStr: string | null | undefined): string {
   if (!dateStr) return '—'
@@ -158,11 +98,11 @@ function onClose(): void {
         </div>
         <div v-if="!isTerminal" class="flex items-center gap-2">
           <button
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
             @click="emit('resolve', incidencia!)"
           >
-            <i class="pi pi-check text-xs"></i>
-            Resolver
+            <i class="pi pi-pencil text-xs"></i>
+            Editar
           </button>
         </div>
       </div>
@@ -172,27 +112,6 @@ function onClose(): void {
         <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Descripción</h4>
         <p class="text-gray-800 font-medium mb-2">{{ incidencia.titulo }}</p>
         <p class="text-gray-600 text-sm leading-relaxed">{{ incidencia.descripcion }}</p>
-      </div>
-
-      <!-- SLA Indicator Panel -->
-      <div v-if="slaData.show" class="bg-gray-50 rounded-xl p-5">
-        <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Estado SLA</h4>
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm" :class="slaData.color">{{ slaData.label }}</span>
-          <span class="text-xs text-gray-400">{{ slaData.percentage }}% consumido</span>
-        </div>
-        <ProgressBar
-          :value="slaData.percentage"
-          :showValue="false"
-          style="height: 8px"
-          :pt="{
-            value: { class: slaData.percentage > 75 ? 'bg-red-500' : slaData.percentage > 50 ? 'bg-amber-500' : 'bg-emerald-500' },
-          }"
-        />
-        <div class="flex items-center justify-between mt-2 text-xs text-gray-400">
-          <span>Reporte: {{ formatDateTime(incidencia.fechaReporte) }}</span>
-          <span>Límite: {{ formatDateTime(incidencia.fechaLimiteSla) }}</span>
-        </div>
       </div>
 
       <!-- Details Grid -->

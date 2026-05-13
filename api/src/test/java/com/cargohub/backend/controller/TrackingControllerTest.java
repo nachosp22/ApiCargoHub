@@ -10,9 +10,10 @@ import com.cargohub.backend.repository.ClienteRepository;
 import com.cargohub.backend.repository.ConductorRepository;
 import com.cargohub.backend.repository.IncidenciaRepository;
 import com.cargohub.backend.repository.PorteRepository;
+import com.cargohub.backend.repository.TrackingSessionRepository;
 import com.cargohub.backend.repository.UsuarioRepository;
 import com.cargohub.backend.security.OwnershipSecurityService;
-import com.cargohub.backend.service.ConductorService;
+import com.cargohub.backend.service.TrackingLocationIngestionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -55,7 +55,7 @@ class TrackingControllerTest {
     private UserDetailsService userDetailsService;
 
     @MockitoBean
-    private ConductorService conductorService;
+    private TrackingLocationIngestionService trackingLocationIngestionService;
 
     @MockitoBean
     private FleetRealtimeMetrics metrics;
@@ -77,6 +77,9 @@ class TrackingControllerTest {
 
     @MockitoBean
     private IncidenciaRepository incidenciaRepository;
+
+    @MockitoBean
+    private TrackingSessionRepository trackingSessionRepository;
 
     @BeforeEach
     void setup() throws Exception {
@@ -107,14 +110,7 @@ class TrackingControllerTest {
                         .with(user("admin@test.com").roles("ADMIN")))
                 .andExpect(status().isOk());
 
-        verify(conductorService).actualizarUbicacion(
-                eq(7L),
-                eq(40.416),
-                eq(-3.703),
-                eq(LocalDateTime.of(2026, 3, 16, 10, 0, 0)),
-                eq(63.5),
-                eq(180)
-        );
+        verify(trackingLocationIngestionService).ingest(eq(7L), any());
     }
 
     @Test

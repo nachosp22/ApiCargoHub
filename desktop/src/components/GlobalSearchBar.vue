@@ -25,6 +25,7 @@ function onInput(e: Event) {
 
 // --- Computed: grouped results ---
 const CATEGORY_LABELS: Record<EntityType, string> = {
+  accion: 'Accesos rápidos',
   conductor: 'Conductores',
   porte: 'Portes',
   cliente: 'Clientes',
@@ -33,7 +34,7 @@ const CATEGORY_LABELS: Record<EntityType, string> = {
   factura: 'Facturas',
 }
 
-const CATEGORY_ORDER: EntityType[] = ['conductor', 'porte', 'cliente', 'vehiculo', 'incidencia', 'factura']
+const CATEGORY_ORDER: EntityType[] = ['accion', 'incidencia', 'porte', 'conductor', 'vehiculo', 'cliente', 'factura']
 
 interface GroupedResult {
   type: EntityType
@@ -59,6 +60,11 @@ function onKeyDown(e: KeyboardEvent) {
   if (!store.isOpen) return
 
   const total = flatResults.value.length
+  if (total === 0 && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    e.preventDefault()
+    activeIndex.value = -1
+    return
+  }
 
   if (e.key === 'ArrowDown') {
     e.preventDefault()
@@ -68,8 +74,11 @@ function onKeyDown(e: KeyboardEvent) {
     activeIndex.value = (activeIndex.value - 1 + total) % total
   } else if (e.key === 'Enter') {
     e.preventDefault()
+    if (total === 0) return
     if (activeIndex.value >= 0 && activeIndex.value < total) {
       store.navigateTo(flatResults.value[activeIndex.value])
+    } else {
+      store.navigateTo(flatResults.value[0])
     }
   } else if (e.key === 'Escape') {
     store.clearSearch()

@@ -1,12 +1,14 @@
-package com.cargohub. backend.controller;
+package com.cargohub.backend.controller;
 
-import com. cargohub.backend.dto.CrearPorteRequest;
+import com.cargohub.backend.dto.CrearPorteRequest;
 import com.cargohub.backend.dto.SolicitudPorteRequest;
 import com.cargohub.backend.dto.ActualizarDimensionesRequest;
+import com.cargohub.backend.dto.ActualizarPorteRequest;
 import com.cargohub.backend.dto.ConductorCandidatoResponse;
-import com.cargohub. backend.entity.Factura;
-import com.cargohub.backend.entity. Porte;
-import com.cargohub.backend.entity. enums.EstadoPorte;
+import com.cargohub.backend.dto.FirmaEntregaRequest;
+import com.cargohub.backend.entity.Factura;
+import com.cargohub.backend.entity.Porte;
+import com.cargohub.backend.entity.enums.EstadoPorte;
 import com.cargohub.backend.security.OwnershipSecurityService;
 import com.cargohub.backend.service.PorteService;
 import com.cargohub.backend.service.PorteTrackingService;
@@ -16,14 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework. web.bind.annotation.*;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/portes")
-@CrossOrigin(origins = "*")
 public class PorteController {
 
     @Autowired
@@ -53,7 +54,7 @@ public class PorteController {
     // 1. Crear Porte (Admin/IA) - MODIFICADO PARA USAR DTO
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
-    public ResponseEntity<Porte> crearPorte(@RequestBody CrearPorteRequest request) {
+    public ResponseEntity<Porte> crearPorte(@Valid @RequestBody CrearPorteRequest request) {
         return ResponseEntity.ok(porteService.crearPorteDesdeRequest(request));
     }
 
@@ -61,13 +62,13 @@ public class PorteController {
     @GetMapping("/ofertas/{conductorId}")
     @PreAuthorize("hasAnyRole('CONDUCTOR','ADMIN','SUPERADMIN') and @ownership.canAccessConductor(authentication, #conductorId)")
     public ResponseEntity<List<Porte>> verOfertas(@PathVariable Long conductorId) {
-        return ResponseEntity.ok(porteService. listarOfertasParaConductor(conductorId));
+        return ResponseEntity.ok(porteService.listarOfertasParaConductor(conductorId));
     }
 
     // 3. Aceptar Porte (Conductor)
     @PostMapping("/{porteId}/aceptar")
     @PreAuthorize("hasAnyRole('CONDUCTOR','ADMIN','SUPERADMIN') and @ownership.canAccessConductor(authentication, #conductorId)")
-    public ResponseEntity<? > aceptarPorte(@PathVariable Long porteId,
+    public ResponseEntity<?> aceptarPorte(@PathVariable Long porteId,
                                            @RequestParam Long conductorId) {
         try {
             return ResponseEntity.ok(porteService.aceptarPorte(porteId, conductorId));
@@ -93,7 +94,7 @@ public class PorteController {
     @PreAuthorize("hasAnyRole('CONDUCTOR','ADMIN','SUPERADMIN') and @ownership.canAccessPorte(authentication, #porteId)")
     public ResponseEntity<Porte> cambiarEstado(@PathVariable Long porteId,
                                                @RequestParam EstadoPorte nuevo) {
-        return ResponseEntity. ok(porteService.cambiarEstado(porteId, nuevo));
+        return ResponseEntity.ok(porteService.cambiarEstado(porteId, nuevo));
     }
 
     // 5. Ajuste Manual de Precio (Admin)
@@ -165,8 +166,25 @@ public class PorteController {
     @PutMapping("/{porteId}/dimensiones")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<Porte> actualizarDimensiones(@PathVariable Long porteId,
-                                                        @RequestBody ActualizarDimensionesRequest request) {
+                                                          @Valid @RequestBody ActualizarDimensionesRequest request) {
         return ResponseEntity.ok(porteService.actualizarDimensiones(porteId, request));
+    }
+
+    @PutMapping("/{porteId}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<Porte> actualizarPorte(@PathVariable Long porteId,
+                                                 @RequestBody ActualizarPorteRequest request) {
+        return ResponseEntity.ok(porteService.actualizarPorte(porteId, request));
+    }
+
+    @DeleteMapping("/{porteId}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<?> eliminarPorte(@PathVariable Long porteId) {
+        boolean eliminado = porteService.eliminarOCancelarPorte(porteId);
+        if (eliminado) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok("Porte cancelado para conservar historial");
     }
 
     // 13. Buscar conductores candidatos para un porte (ADMIN)
@@ -185,9 +203,28 @@ public class PorteController {
     }
 
     // 15. Tracking en tiempo real para clientes
+    @PostMapping("/{porteId}/retry-matching")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<Porte> retryMatching(@PathVariable Long porteId) {
+        return ResponseEntity.ok(porteService.retryMatching(porteId));
+    }
+
+    // 16. Tracking en tiempo real para clientes
     @GetMapping("/{porteId}/tracking")
     @PreAuthorize("@ownership.canAccessPorte(authentication, #porteId)")
     public ResponseEntity<PorteTrackingResponse> getTracking(@PathVariable Long porteId) {
         return ResponseEntity.ok(porteTrackingService.getTracking(porteId));
+    }
+
+    // 17. Registrar firma de entrega (Conductor/Cliente/Admin con ownership)
+    @PostMapping("/{porteId}/firma")
+    @PreAuthorize("@ownership.canAccessPorte(authentication, #porteId)")
+    public ResponseEntity<?> registrarFirmaEntrega(@PathVariable Long porteId,
+                                                   @Valid @RequestBody FirmaEntregaRequest request) {
+        try {
+            return ResponseEntity.ok(porteService.registrarFirmaEntrega(porteId, request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

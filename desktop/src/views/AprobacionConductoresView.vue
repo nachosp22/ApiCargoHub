@@ -50,14 +50,19 @@ async function executeConfirm() {
 </script>
 
 <template>
-  <div class="p-6">
+  <div class="h-full min-h-0 flex flex-col gap-6 overflow-hidden">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Aprobaci&oacute;n de Conductores</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Conductores registrados pendientes de aprobaci&oacute;n
-        </p>
+    <div class="shrink-0 flex items-center justify-between mb-6">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+          <i class="pi pi-user-plus text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Aprobaci&oacute;n de Conductores</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            Conductores registrados pendientes de aprobaci&oacute;n
+          </p>
+        </div>
       </div>
       <Tag
         v-if="store.pendientesAprobacion.length > 0"

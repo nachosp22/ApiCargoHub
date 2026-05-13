@@ -71,7 +71,7 @@ public class IncidenciasActivasFragment extends Fragment {
     }
 
     private void setupSwipeRefresh() {
-        swipeRefresh.setColorSchemeResources(R.color.ch_error, R.color.ch_warning);
+        swipeRefresh.setColorSchemeResources(R.color.ch_primary, R.color.ch_blue_500);
         swipeRefresh.setOnRefreshListener(this::loadIncidencias);
     }
 
@@ -147,7 +147,7 @@ public class IncidenciasActivasFragment extends Fragment {
         if (incidencia.getId() == null) {
             return;
         }
-        getParentFragmentManager()
+        requireActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.contentFragmentContainer, IncidenciaDetailFragment.newInstance(incidencia.getId()))
                 .addToBackStack(null)

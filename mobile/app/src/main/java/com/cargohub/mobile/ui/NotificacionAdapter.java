@@ -97,7 +97,7 @@ public class NotificacionAdapter extends RecyclerView.Adapter<NotificacionAdapte
             // Type badge
             String tipo = notificacion.getTipo();
             if (tipo != null) {
-                String displayType = tipo.replace("_", " ");
+                String displayType = UiFormatters.formatIncidenciaRawLabel(tipo);
                 tipoText.setText(displayType);
                 int[] colors = getTipoColors(ctx, tipo);
                 tipoText.setTextColor(colors[0]);

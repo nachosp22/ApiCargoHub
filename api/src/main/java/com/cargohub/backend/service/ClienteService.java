@@ -1,6 +1,7 @@
 package com.cargohub.backend.service;
 
 import com.cargohub.backend.entity.Cliente;
+import com.cargohub.backend.entity.Usuario;
 import com.cargohub.backend.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,5 +52,15 @@ public class ClienteService {
         // Normalize email to lowercase for search
         String normalizedEmail = email != null ? email.toLowerCase() : null;
         return clienteRepository.findByUsuarioEmail(normalizedEmail).isPresent();
+    }
+
+    @Transactional
+    public void deshabilitarCliente(Long clienteId) {
+        Cliente cliente = obtenerPorId(clienteId);
+        Usuario usuario = cliente.getUsuario();
+        if (usuario != null) {
+            usuario.setActivo(false);
+        }
+        clienteRepository.save(cliente);
     }
 }

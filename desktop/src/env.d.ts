@@ -13,14 +13,20 @@ interface ElectronAPI {
     chrome: string
     electron: string
   }
+  minimizeWindow: () => Promise<void>
+  toggleMaximizeWindow: () => Promise<boolean>
+  closeWindow: () => Promise<void>
+  isMaximized: () => Promise<boolean>
 }
 
 interface Window {
   electronAPI?: ElectronAPI
+  electron?: ElectronAPI
 }
 
 interface ImportMetaEnv {
   readonly VITE_FEATURE_FLEET_REALTIME?: string
+  readonly VITE_API_BASE_URL?: string
 }
 
 interface ImportMeta {

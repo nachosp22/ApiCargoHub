@@ -173,7 +173,7 @@ public class FacturacionFragment extends Fragment {
         Long conductorId = SessionManager.resolveConductorId();
         if (conductorId == null) {
             showState(State.ERROR);
-            errorMessage.setText("No se pudo identificar al conductor.");
+            errorMessage.setText(R.string.billing_error_missing_driver_id);
             return;
         }
 

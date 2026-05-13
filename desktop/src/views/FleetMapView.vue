@@ -3,48 +3,122 @@ import maplibregl, { type Map as MapLibreMap, type Marker, type StyleSpecificati
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useFleetTrackingStore } from '@/stores/fleetTracking'
+import { useConductoresStore } from '@/stores/conductores'
 import type { DriverLocationPoint, DriverState } from '@/services/api'
-import { computeMarkerDiff } from './fleetMapMarkerDiff'
+import { computeMarkerDiff, getDriverRenderSignature } from './fleetMapMarkerDiff'
 
 const fleetStore = useFleetTrackingStore()
+const conductoresStore = useConductoresStore()
 
 const mapContainer = ref<HTMLElement | null>(null)
 const selectedDriverId = ref<string | null>(null)
-const stateFilter = ref<'ALL' | DriverState>('ALL')
+type ReportingState = 'REPORTING' | 'NOT_REPORTING'
+
+const stateFilter = ref<'ALL' | ReportingState>('ALL')
 const driverSearch = ref('')
-const autoFitEnabled = ref(true)
 const userInteracting = ref(false)
 const countdown = ref(10)
+const hasAppliedInitialViewport = ref(false)
 
 let map: MapLibreMap | null = null
 const markersByDriverId = new Map<string, Marker>()
 const lastRenderedRecordedAtByDriverId = new Map<string, string>()
 
-const selectedDriver = computed<DriverLocationPoint | null>(() => {
-  if (!selectedDriverId.value) return null
-  return fleetStore.drivers.find((driver) => driver.driverId === selectedDriverId.value) ?? null
+const conductoresById = computed(() => {
+  const map = new Map<string, { nombre: string; apellidos: string }>()
+  for (const conductor of conductoresStore.conductores) {
+    map.set(String(conductor.id), {
+      nombre: conductor.nombre,
+      apellidos: conductor.apellidos,
+    })
+  }
+  return map
 })
+
+type DriverWithProfile = DriverLocationPoint & {
+  driverName?: string
+  driverLastName?: string
+  nombre?: string
+  apellidos?: string
+}
+
+function normalizeOptionalText(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : null
+}
+
+function getDriverIdentity(driver: DriverLocationPoint): { primary: string; secondary: string | null } {
+  const typedDriver = driver as DriverWithProfile
+  const fallbackFromStore = conductoresById.value.get(driver.driverId)
+
+  const firstName =
+    normalizeOptionalText(typedDriver.driverName) ??
+    normalizeOptionalText(typedDriver.nombre) ??
+    normalizeOptionalText(fallbackFromStore?.nombre)
+
+  const lastName =
+    normalizeOptionalText(typedDriver.driverLastName) ??
+    normalizeOptionalText(typedDriver.apellidos) ??
+    normalizeOptionalText(fallbackFromStore?.apellidos)
+
+  const fullName = [firstName, lastName].filter((part): part is string => !!part).join(' ').trim()
+  const hasName = fullName.length > 0
+  const primary = hasName ? fullName : `Conductor #${driver.driverId}`
+  return { primary, secondary: hasName ? `#${driver.driverId}` : null }
+}
+
+function getDriverLabel(driver: DriverLocationPoint): string {
+  const identity = getDriverIdentity(driver)
+  return identity.secondary ? `${identity.primary} · ${identity.secondary}` : identity.primary
+}
 
 const filteredDrivers = computed(() => {
   const search = driverSearch.value.trim().toLowerCase()
   return fleetStore.drivers.filter((driver) => {
-    const matchesState = stateFilter.value === 'ALL' || driver.state === stateFilter.value
-    const matchesSearch = search.length === 0 || driver.driverId.toLowerCase().includes(search)
+    const reportingState = mapDriverStateToReportingState(driver.state)
+    const matchesState = stateFilter.value === 'ALL' || reportingState === stateFilter.value
+    const identity = getDriverIdentity(driver)
+    const searchBlob = [driver.driverId, identity.primary, identity.secondary ?? ''].join(' ').toLowerCase()
+    const matchesSearch = search.length === 0 || searchBlob.includes(search)
     return matchesState && matchesSearch
   })
 })
 
-const connectionLabel = computed(() => {
-  if (fleetStore.connectionState === 'ONLINE') return 'En línea'
-  if (fleetStore.connectionState === 'DEGRADED') return 'Degradado'
-  return 'Sin conexión'
-})
+const totalDriversCount = computed(() => fleetStore.drivers.length)
+const reportingDriversCount = computed(
+  () => fleetStore.drivers.filter((driver) => mapDriverStateToReportingState(driver.state) === 'REPORTING').length,
+)
+const notReportingDriversCount = computed(() => totalDriversCount.value - reportingDriversCount.value)
 
-const connectionBadgeClass = computed(() => {
-  if (fleetStore.connectionState === 'ONLINE') return 'bg-emerald-100 text-emerald-700'
-  if (fleetStore.connectionState === 'DEGRADED') return 'bg-amber-100 text-amber-700'
-  return 'bg-red-100 text-red-700'
-})
+function stateLabel(state: DriverState): string {
+  return mapDriverStateToReportingState(state) === 'REPORTING'
+    ? 'Reporta ubicación'
+    : 'No reporta ubicación'
+}
+
+function stateChipClass(state: DriverState): string {
+  if (mapDriverStateToReportingState(state) === 'REPORTING') return 'bg-blue-100 text-blue-800 ring-blue-200'
+  return 'bg-rose-100 text-rose-800 ring-rose-200'
+}
+
+function mapDriverStateToReportingState(state: DriverState): ReportingState {
+  return state === 'ONLINE' ? 'REPORTING' : 'NOT_REPORTING'
+}
+
+function formatRecordedAt(value: string): string {
+  const parsed = Date.parse(value)
+  if (!Number.isNaN(parsed)) {
+    return new Intl.DateTimeFormat('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+    }).format(new Date(parsed))
+  }
+  return value
+}
 
 watch(
   () => fleetStore.drivers,
@@ -62,6 +136,9 @@ let countdownInterval: number | null = null
 
 onMounted(() => {
   initializeMap()
+  if (conductoresStore.conductores.length === 0 && !conductoresStore.loading) {
+    void conductoresStore.fetchConductores()
+  }
   fleetStore.startPolling()
   countdown.value = Math.ceil(fleetStore.pollingMs / 1000)
   countdownInterval = window.setInterval(() => {
@@ -84,8 +161,11 @@ onUnmounted(() => {
   }
 })
 
-watch(selectedDriver, (driver) => {
+watch(selectedDriverId, (driverId) => {
+  if (!driverId) return
+  const driver = fleetStore.drivers.find((item) => item.driverId === driverId)
   if (!map || !driver) return
+
   const marker = markersByDriverId.get(driver.driverId)
   map.easeTo({ center: [driver.lon, driver.lat], duration: 450, zoom: Math.max(map.getZoom(), 11) })
   marker?.togglePopup()
@@ -137,7 +217,10 @@ function updateMarkersIncrementally(drivers: DriverLocationPoint[]): void {
       const markerElement = document.createElement('button')
       markerElement.type = 'button'
       decorateMarkerElement(markerElement, driver.state)
-      markerElement.title = `Conductor #${driver.driverId}`
+      const identity = getDriverIdentity(driver)
+      markerElement.title = identity.secondary
+        ? `${identity.primary} (${identity.secondary})`
+        : identity.primary
       markerElement.addEventListener('click', () => {
         selectedDriverId.value = driver.driverId
       })
@@ -149,10 +232,13 @@ function updateMarkersIncrementally(drivers: DriverLocationPoint[]): void {
       markersByDriverId.set(driver.driverId, marker)
     }
 
-    lastRenderedRecordedAtByDriverId.set(driver.driverId, driver.recordedAt)
+    lastRenderedRecordedAtByDriverId.set(driver.driverId, getDriverRenderSignature(driver))
   }
 
-  if (autoFitEnabled.value && !userInteracting.value) fitMapToDrivers(drivers)
+  if (!hasAppliedInitialViewport.value && !userInteracting.value) {
+    fitMapToDrivers(drivers)
+    hasAppliedInitialViewport.value = true
+  }
 }
 
 function fitMapToDrivers(drivers: DriverLocationPoint[]): void {
@@ -176,8 +262,7 @@ function clearAllMarkers(): void {
 }
 
 function colorForState(state: DriverState): string {
-  if (state === 'ONLINE') return '#10b981'
-  if (state === 'STALE') return '#f59e0b'
+  if (mapDriverStateToReportingState(state) === 'REPORTING') return '#2563eb'
   return '#ef4444'
 }
 
@@ -219,36 +304,72 @@ function buildPopupContent(driver: DriverLocationPoint): HTMLElement {
   const popup = document.createElement('div')
   popup.className = 'fleet-popup'
 
-  const title = document.createElement('p')
-  title.className = 'fleet-popup-title'
-  title.textContent = `Conductor #${driver.driverId}`
+  const identity = getDriverIdentity(driver)
 
   const status = document.createElement('span')
   status.className = 'fleet-popup-status'
   status.style.backgroundColor = colorForState(driver.state)
-  status.textContent = driver.state
+  status.textContent = stateLabel(driver.state)
 
   const details = document.createElement('div')
   details.className = 'fleet-popup-details'
-  details.innerHTML = `<p>Coords: ${driver.lat.toFixed(5)}, ${driver.lon.toFixed(5)}</p><p>Velocidad: ${driver.speedKph ?? 'N/D'} km/h</p><p>Rumbo: ${driver.headingDeg ?? 'N/D'}°</p><p>Actualizado: ${driver.recordedAt}</p>`
 
-  popup.append(title, status, details)
+  const appendRow = (label: string, value: string, options: { strong?: boolean } = {}) => {
+    const row = document.createElement('div')
+    row.className = 'fleet-popup-row'
+
+    const labelEl = document.createElement('span')
+    labelEl.className = 'fleet-popup-row-label'
+    labelEl.textContent = label
+
+    const valueEl = document.createElement('span')
+    valueEl.className = options.strong ? 'fleet-popup-row-value fleet-popup-row-value-strong' : 'fleet-popup-row-value'
+    valueEl.textContent = value
+
+    row.append(labelEl, valueEl)
+    details.append(row)
+  }
+
+  appendRow('Conductor:', identity.secondary ? `${identity.primary} (${identity.secondary})` : identity.primary, { strong: true })
+  appendRow('Porte:', driver.activePorteId ? `#${driver.activePorteId}` : 'Sin porte activo', { strong: !!driver.activePorteId })
+  appendRow('Destino:', normalizeOptionalText(driver.activePorteDestination) ?? 'No asignado')
+  appendRow('Estado porte:', formatPorteStatus(driver.activePorteStatus))
+  appendRow('Última señal:', formatRecordedAt(driver.recordedAt), { strong: true })
+
+  popup.append(status, details)
   return popup
+}
+
+function formatPorteStatus(status?: string): string {
+  if (!status) return 'Sin estado'
+  const labels: Record<string, string> = {
+    ASIGNADO: 'Asignado',
+    EN_TRANSITO: 'En tránsito',
+    ENTREGADO: 'Entregado',
+    FACTURADO: 'Facturado',
+    CANCELADO: 'Cancelado',
+    PENDIENTE: 'Pendiente',
+  }
+  return labels[status] ?? status.split('_').join(' ').toLowerCase()
 }
 </script>
 
 <template>
-  <section class="space-y-4 text-gray-800">
-    <header class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold text-gray-800">Mapa de flota</h1>
-        <p class="text-sm text-gray-500 flex items-center gap-2">
-          <span>Estado:</span>
-          <span class="text-xs px-2 py-1 rounded-full font-medium" :class="connectionBadgeClass">
-            {{ connectionLabel }}
-          </span>
-          <span v-if="fleetStore.lastSnapshotAt"> · Último snapshot: {{ fleetStore.lastSnapshotAt }}</span>
-        </p>
+  <section class="fleet-map-view text-gray-800 dark:text-gray-100">
+    <header class="shrink-0 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+          <i class="pi pi-map text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">Mapa de flota</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>Total conductores: <strong class="text-slate-700 dark:text-slate-200">{{ totalDriversCount }}</strong></span>
+            <span>Reportan ubicación: <strong class="text-blue-700 dark:text-blue-300">{{ reportingDriversCount }}</strong></span>
+            <span>No reportan ubicación: <strong class="text-rose-700 dark:text-rose-300">{{ notReportingDriversCount }}</strong></span>
+            <span v-if="fleetStore.lastSnapshotAt">Último snapshot: {{ fleetStore.lastSnapshotAt }}</span>
+          </p>
+        </div>
       </div>
       <button
         type="button"
@@ -259,86 +380,103 @@ function buildPopupContent(driver: DriverLocationPoint): HTMLElement {
       </button>
     </header>
 
-    <div
-      v-if="fleetStore.degradedReason"
-      class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-    >
-      Operación degradada: {{ fleetStore.degradedReason }}
-    </div>
-
-    <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
-      <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.45)]">
-        <div class="mb-3 text-sm text-gray-500 flex flex-wrap items-center gap-3">
-          <span class="text-sky-600 font-medium">Actualiza en {{ countdown }}s</span>
-          <span>Conductores: {{ fleetStore.drivers.length }}</span>
-          <button
-            type="button"
-            class="rounded-md px-2 py-1 text-xs font-medium transition"
-            :class="autoFitEnabled ? 'bg-sky-100 text-sky-700' : 'bg-gray-100 text-gray-700'"
-            @click="autoFitEnabled = !autoFitEnabled"
-          >
-            Autoajustar: {{ autoFitEnabled ? 'ON' : 'OFF' }}
-          </button>
+    <div class="fleet-map-layout grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
+      <div class="flex min-h-0 flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.45)] dark:shadow-[0_14px_34px_-20px_rgba(0,0,0,0.75)]">
+        <div class="mb-3 text-sm text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-3">
+          <span class="text-sky-600 dark:text-sky-400 font-medium">Actualiza en {{ countdown }}s</span>
+          <span>Conductores: {{ totalDriversCount }}</span>
           <span class="inline-flex items-center gap-1">
-            <span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>ONLINE
+            <span class="inline-block h-2 w-2 rounded-full bg-blue-600"></span>Reporta ubicación
           </span>
           <span class="inline-flex items-center gap-1">
-            <span class="inline-block h-2 w-2 rounded-full bg-amber-500"></span>STALE
-          </span>
-          <span class="inline-flex items-center gap-1">
-            <span class="inline-block h-2 w-2 rounded-full bg-red-500"></span>OFFLINE
+            <span class="inline-block h-2 w-2 rounded-full bg-red-500"></span>No reporta ubicación
           </span>
         </div>
 
-        <div ref="mapContainer" class="h-[520px] w-full rounded-lg border border-gray-200"></div>
+        <div ref="mapContainer" class="fleet-map-canvas w-full rounded-lg border border-gray-200 dark:border-gray-700"></div>
       </div>
 
-      <aside class="rounded-xl border border-gray-200 bg-white p-4 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.35)]">
-        <div class="space-y-3">
-          <input
-            v-model="driverSearch"
-            type="text"
-            placeholder="Buscar conductor por ID"
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800"
-          />
-          <select
-            v-model="stateFilter"
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800"
-          >
-            <option value="ALL">Todos los estados</option>
-            <option value="ONLINE">ONLINE</option>
-            <option value="STALE">STALE</option>
-            <option value="OFFLINE">OFFLINE</option>
-          </select>
-        </div>
-
-        <p v-if="!fleetStore.hasDrivers" class="mt-4 text-sm text-gray-500">sin conductores activos</p>
-
-        <ul v-else class="mt-4 max-h-56 overflow-auto divide-y divide-gray-100">
-          <li
-            v-for="driver in filteredDrivers"
-            :key="driver.driverId"
-            class="-mx-2 cursor-pointer rounded px-2 py-2 text-sm"
-            :class="selectedDriverId === driver.driverId ? 'bg-gray-100' : ''"
-            @click="selectedDriverId = driver.driverId"
-          >
-            <div class="flex items-center justify-between">
-              <span class="font-medium text-gray-800">#{{ driver.driverId }}</span>
-              <span class="rounded bg-gray-100 px-2 py-1 text-xs text-gray-700">
-                {{ driver.state }}
-              </span>
+      <aside
+        class="h-full min-h-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/60 p-4 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.35)] dark:shadow-[0_14px_34px_-20px_rgba(0,0,0,0.75)]"
+        aria-label="Panel lateral de seguimiento"
+      >
+        <div class="flex h-full min-h-0 flex-col gap-4">
+          <div class="shrink-0 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3">
+            <h2 class="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-300">Filtros de seguimiento</h2>
+            <div class="space-y-3">
+              <div>
+                <label for="driver-search" class="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">Buscar conductor</label>
+                <div class="relative">
+                  <input
+                    id="driver-search"
+                    v-model="driverSearch"
+                    type="text"
+                    placeholder="Ej: Juan Pérez o 1024"
+                    aria-label="Buscar conductor por nombre o ID"
+                    class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-3 pr-9 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-800"
+                  />
+                  <i class="pi pi-search pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:text-slate-500"></i>
+                </div>
+              </div>
+              <div>
+                <label for="state-filter" class="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">Estado</label>
+                <select
+                  id="state-filter"
+                  v-model="stateFilter"
+                  aria-label="Filtrar por estado del conductor"
+                  class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-800"
+                >
+                  <option value="ALL">Todos los estados</option>
+                  <option value="REPORTING">Reporta ubicación</option>
+                  <option value="NOT_REPORTING">No reporta ubicación</option>
+                </select>
+              </div>
             </div>
-            <div class="mt-1 text-xs text-gray-500">{{ driver.recordedAt }}</div>
-          </li>
-        </ul>
+          </div>
 
-        <div v-if="selectedDriver" class="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
-          <h2 class="mb-2 font-semibold text-gray-800">Detalle conductor #{{ selectedDriver.driverId }}</h2>
-          <p><span class="text-gray-500">Estado:</span> {{ selectedDriver.state }}</p>
-          <p><span class="text-gray-500">Coords:</span> {{ selectedDriver.lat }}, {{ selectedDriver.lon }}</p>
-          <p><span class="text-gray-500">Actualizado:</span> {{ selectedDriver.recordedAt }}</p>
-          <p><span class="text-gray-500">Velocidad:</span> {{ selectedDriver.speedKph ?? 'N/D' }}</p>
-          <p><span class="text-gray-500">Rumbo:</span> {{ selectedDriver.headingDeg ?? 'N/D' }}</p>
+          <div class="flex min-h-0 flex-1 flex-col rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3">
+            <div class="mb-3 flex items-center justify-between gap-2">
+              <h3 class="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-300">Conductores visibles</h3>
+              <span class="rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-1 text-xs font-semibold text-slate-700 dark:text-slate-100">{{ filteredDrivers.length }}</span>
+            </div>
+
+            <p v-if="!fleetStore.hasDrivers" class="text-sm text-slate-500 dark:text-slate-400">No hay conductores activos</p>
+
+            <ul
+              v-else
+              class="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1"
+              role="listbox"
+              aria-label="Lista de conductores"
+            >
+              <li v-for="driver in filteredDrivers" :key="driver.driverId">
+                <button
+                  type="button"
+                  class="w-full rounded-xl border px-3 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1"
+                  :class="selectedDriverId === driver.driverId
+                    ? 'border-sky-300 dark:border-sky-500 bg-sky-50 dark:bg-sky-900/30 shadow-sm'
+                    : 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                  role="option"
+                  :aria-selected="selectedDriverId === driver.driverId"
+                  :aria-label="`Seleccionar conductor ${getDriverLabel(driver)}`"
+                  @click="selectedDriverId = driver.driverId"
+                >
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="font-semibold text-slate-900 dark:text-slate-100">{{ getDriverLabel(driver) }}</span>
+                    <span
+                      class="rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1"
+                      :class="stateChipClass(driver.state)"
+                    >
+                      {{ stateLabel(driver.state) }}
+                    </span>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                    <span>Última señal</span>
+                    <span class="font-medium text-slate-600 dark:text-slate-300">{{ formatRecordedAt(driver.recordedAt) }}</span>
+                  </div>
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </aside>
     </div>
@@ -376,6 +514,7 @@ function buildPopupContent(driver: DriverLocationPoint): HTMLElement {
 :deep(.maplibregl-popup-content) {
   border-radius: 12px;
   padding: 0;
+  background: #ffffff;
   box-shadow: 0 14px 34px -18px rgba(15, 23, 42, 0.7);
 }
 
@@ -383,18 +522,24 @@ function buildPopupContent(driver: DriverLocationPoint): HTMLElement {
   border-top-color: #ffffff;
 }
 
+:global(.dark) :deep(.maplibregl-popup-tip) {
+  border-top-color: #0f172a;
+}
+
 .fleet-popup {
-  min-width: 220px;
+  min-width: 260px;
   background: #ffffff;
   color: #0f172a;
-  border-radius: 12px;
-  padding: 10px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  padding: 12px 14px;
 }
 
 .fleet-popup-title {
-  font-size: 0.9rem;
-  font-weight: 700;
-  margin-bottom: 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.4rem;
 }
 
 .fleet-popup-status {
@@ -404,17 +549,92 @@ function buildPopupContent(driver: DriverLocationPoint): HTMLElement {
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  padding: 2px 8px;
-  margin-bottom: 0.45rem;
+  padding: 3px 9px;
+  margin-bottom: 0.65rem;
 }
 
 .fleet-popup-details {
+  display: grid;
+  gap: 6px;
   font-size: 0.76rem;
   line-height: 1.35;
-  opacity: 0.92;
 }
 
-.fleet-popup-details p + p {
-  margin-top: 2px;
+.fleet-popup-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+}
+
+.fleet-popup-row-label {
+  color: #64748b;
+  font-weight: 650;
+}
+
+.fleet-popup-row-value {
+  color: #0f172a;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.fleet-popup-row-value-strong {
+  font-weight: 800;
+}
+
+:global(.dark) .fleet-popup {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+:global(.dark) :deep(.maplibregl-popup-content) {
+  background: #0f172a;
+}
+
+:global(.dark) .fleet-popup-row-label {
+  color: #94a3b8;
+}
+
+:global(.dark) .fleet-popup-row-value {
+  color: #e2e8f0;
+}
+
+:global(.dark) :deep(.maplibregl-ctrl-group) {
+  box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.85);
+}
+
+:global(.dark) :deep(.maplibregl-ctrl-group button) {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+:global(.dark) :deep(.maplibregl-ctrl-group button + button) {
+  border-top-color: rgba(148, 163, 184, 0.22);
+}
+
+.fleet-map-view {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fleet-map-layout {
+  flex: 1;
+  min-height: 0;
+}
+
+.fleet-map-canvas {
+  flex: 1;
+  min-height: 360px;
+}
+
+@media (min-width: 1280px) {
+  .fleet-map-layout {
+    grid-template-rows: minmax(0, 1fr);
+  }
 }
 </style>

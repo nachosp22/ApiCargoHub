@@ -11,12 +11,14 @@
     <dimen name="spacing_3xl">40dp</dimen>
 
     <!-- Backward-compat aliases (old ch_space_* → new tokens) -->
+    <dimen name="ch_space_2xs">@dimen/spacing_2xs</dimen>
     <dimen name="ch_space_xs">@dimen/spacing_xs</dimen>
     <dimen name="ch_space_sm">@dimen/spacing_sm</dimen>
     <dimen name="ch_space_md">@dimen/spacing_md</dimen>
     <dimen name="ch_space_lg">@dimen/spacing_lg</dimen>
     <dimen name="ch_space_xl">@dimen/spacing_xl</dimen>
     <dimen name="ch_space_2xl">@dimen/spacing_2xl</dimen>
+    <dimen name="ch_space_3xl">@dimen/spacing_3xl</dimen>
 
     <!-- ── Radius tokens ── -->
     <dimen name="radius_sm">8dp</dimen>
@@ -53,4 +55,7 @@
     <dimen name="driving_eta_text_size">16sp</dimen>
     <dimen name="driving_distance_text_size">18sp</dimen>
     <dimen name="driving_fab_mini_size">48dp</dimen>
+
+    <!-- Tracking meta card -->
+    <dimen name="tracking_session_meta_card_max_width">240dp</dimen>
 </resources>

@@ -10,9 +10,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.cargohub.mobile.R;
-import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.tabs.TabLayout;
 
 public class IncidenciasOptionsFragment extends Fragment {
+
+    private static final String TAG_ACTIVAS = "activas";
+    private static final String TAG_RESUELTAS = "resueltas";
 
     @Nullable
     @Override
@@ -26,13 +30,32 @@ public class IncidenciasOptionsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        MaterialCardView newIncidentCard = view.findViewById(R.id.incidenciaNewCard);
-        MaterialCardView activeIncidentsCard = view.findViewById(R.id.incidenciaActiveCard);
-        MaterialCardView historyIncidentsCard = view.findViewById(R.id.incidenciaHistoryCard);
+        MaterialButton btnNueva = view.findViewById(R.id.btnNuevaIncidencia);
+        TabLayout tabLayout = view.findViewById(R.id.incidenciasTabLayout);
 
-        newIncidentCard.setOnClickListener(v -> navigateTo(new NuevaIncidenciaFragment()));
-        activeIncidentsCard.setOnClickListener(v -> navigateTo(new IncidenciasActivasFragment()));
-        historyIncidentsCard.setOnClickListener(v -> navigateTo(new HistorialIncidenciasFragment()));
+        btnNueva.setOnClickListener(v -> navigateTo(new NuevaIncidenciaFragment()));
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                showTab(tab.getPosition());
+            }
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
+
+        // Default tab
+        showTab(0);
+    }
+
+    private void showTab(int position) {
+        Fragment fragment = position == 0 ? new IncidenciasActivasFragment() : new HistorialIncidenciasFragment();
+        getChildFragmentManager()
+                .beginTransaction()
+                .replace(R.id.incidenciasContentContainer, fragment)
+                .commitNow();
     }
 
     private void navigateTo(Fragment fragment) {

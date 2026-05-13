@@ -131,7 +131,7 @@ onMounted(async () => {
   if (cId) {
     await Promise.allSettled([
       portesStore.fetchOwn(cId),
-      facturasStore.fetchOwn(cId),
+      facturasStore.fetchMisFacturas(),
     ])
   }
 })

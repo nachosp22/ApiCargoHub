@@ -31,16 +31,16 @@ public class Porte {
     @SerializedName("distanciaKm")
     private Double distanciaKm;
 
-    @SerializedName("origenLat")
+    @SerializedName(value = "origenLat", alternate = {"latitudOrigen"})
     private Double origenLat;
 
-    @SerializedName("origenLon")
+    @SerializedName(value = "origenLon", alternate = {"longitudOrigen"})
     private Double origenLon;
 
-    @SerializedName("destinoLat")
+    @SerializedName(value = "destinoLat", alternate = {"latitudDestino"})
     private Double destinoLat;
 
-    @SerializedName("destinoLon")
+    @SerializedName(value = "destinoLon", alternate = {"longitudDestino"})
     private Double destinoLon;
 
     @SerializedName("mercanciaPeligrosa")
@@ -48,6 +48,24 @@ public class Porte {
 
     @SerializedName("requiereFrio")
     private Boolean requiereFrio;
+
+    @SerializedName("pesoTotalKg")
+    private Double pesoTotalKg;
+
+    @SerializedName("volumenTotalM3")
+    private Double volumenTotalM3;
+
+    @SerializedName("largoMaxPaquete")
+    private Double largoMaxPaquete;
+
+    @SerializedName("anchoMaxPaquete")
+    private Double anchoMaxPaquete;
+
+    @SerializedName("altoMaxPaquete")
+    private Double altoMaxPaquete;
+
+    @SerializedName("tipoVehiculoRequerido")
+    private String tipoVehiculoRequerido;
 
     public Long getId() {
         return id;
@@ -137,6 +155,30 @@ public class Porte {
             return requiereFrio;
         }
         return mercanciaPeligrosa;
+    }
+
+    public Double getPesoTotalKg() {
+        return pesoTotalKg;
+    }
+
+    public Double getVolumenTotalM3() {
+        return volumenTotalM3;
+    }
+
+    public Double getLargoMaxPaquete() {
+        return largoMaxPaquete;
+    }
+
+    public Double getAnchoMaxPaquete() {
+        return anchoMaxPaquete;
+    }
+
+    public Double getAltoMaxPaquete() {
+        return altoMaxPaquete;
+    }
+
+    public String getTipoVehiculoRequerido() {
+        return tipoVehiculoRequerido;
     }
 
     public void setId(Long id) {

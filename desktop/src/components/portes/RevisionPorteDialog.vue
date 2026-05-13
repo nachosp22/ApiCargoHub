@@ -73,8 +73,12 @@ async function onSaveDimensiones(): Promise<void> {
 
 async function onBuscarConductores(): Promise<void> {
   if (!props.porte) return
-  showCandidatos.value = true
-  await portesStore.buscarConductores(props.porte.id)
+  try {
+    showCandidatos.value = true
+    await portesStore.buscarConductores(props.porte.id)
+  } catch {
+    toast.add({ severity: 'error', summary: 'Error al buscar conductores compatibles', life: 5000 })
+  }
 }
 
 async function onAsignar(candidato: ConductorCandidato): Promise<void> {
@@ -98,6 +102,33 @@ function copyToClipboard(text: string, label: string): void {
   navigator.clipboard.writeText(text)
   toast.add({ severity: 'info', summary: `${label} copiado`, life: 2000 })
 }
+
+async function onRetryMatching(): Promise<void> {
+  if (!props.porte) return
+  try {
+    await portesStore.retryMatching(props.porte.id)
+    toast.add({ severity: 'success', summary: 'Matching automático reintentado', life: 3000 })
+    emit('assigned')
+  } catch {
+    toast.add({ severity: 'error', summary: 'Error al reintentar matching automático', life: 5000 })
+  }
+}
+
+const reviewLabel = computed(() =>
+  props.porte?.revisionManual ? 'Revisión Manual' : 'Atención Operativa',
+)
+
+const reviewBannerClass = computed(() =>
+  props.porte?.revisionManual
+    ? 'bg-amber-50 border-amber-200 text-amber-700'
+    : 'bg-sky-50 border-sky-200 text-sky-700',
+)
+
+const reviewBadgeClass = computed(() =>
+  props.porte?.revisionManual
+    ? 'bg-red-50 text-red-700 ring-red-600/20'
+    : 'bg-sky-50 text-sky-700 ring-sky-600/20',
+)
 </script>
 
 <template>
@@ -116,25 +147,27 @@ function copyToClipboard(text: string, label: string): void {
           <span class="text-lg font-bold text-gray-800 dark:text-gray-100">#{{ porte.id }}</span>
           <PorteStatusBadge :estado="porte.estado" />
           <span
-            v-if="porte.revisionManual"
-            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20"
+            v-if="porte.revisionManual || porte.motivoRevision"
+            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
+            :class="reviewBadgeClass"
           >
             <i class="pi pi-exclamation-circle mr-1"></i>
-            Revisión Manual
+            {{ reviewLabel }}
           </span>
         </div>
       </div>
 
-      <!-- Motivo de revisión -->
+      <!-- Motivo de revisión o atención -->
       <div
         v-if="porte.motivoRevision"
-        class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3"
+        class="border rounded-lg px-4 py-3"
+        :class="reviewBannerClass"
       >
         <div class="flex items-center gap-2 mb-1">
-          <i class="pi pi-info-circle text-amber-600"></i>
-          <span class="text-sm font-semibold text-amber-800">Motivo de revisión</span>
+          <i class="pi pi-info-circle"></i>
+          <span class="text-sm font-semibold">{{ reviewLabel }}</span>
         </div>
-        <p class="text-sm text-amber-700">{{ porte.motivoRevision }}</p>
+        <p class="text-sm">{{ porte.motivoRevision }}</p>
       </div>
 
       <!-- Route Info -->
@@ -296,11 +329,19 @@ function copyToClipboard(text: string, label: string): void {
             @click="onSaveDimensiones"
           />
           <Button
-            label="Buscar Conductores"
+            label="Buscar conductores compatibles"
             icon="pi pi-search"
             size="small"
             :loading="portesStore.loadingCandidatos"
             @click="onBuscarConductores"
+          />
+          <Button
+            label="Reintentar matching automático"
+            icon="pi pi-refresh"
+            size="small"
+            severity="contrast"
+            :loading="portesStore.saving"
+            @click="onRetryMatching"
           />
         </div>
       </div>
@@ -310,7 +351,7 @@ function copyToClipboard(text: string, label: string): void {
         <div class="px-5 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
           <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide flex items-center gap-2">
             <i class="pi pi-users text-primary"></i>
-            Conductores Candidatos
+            Conductores compatibles para asignación manual
             <span class="text-xs font-normal text-gray-400">({{ portesStore.conductorCandidatos.length }} encontrados)</span>
           </h4>
         </div>
@@ -322,7 +363,7 @@ function copyToClipboard(text: string, label: string): void {
           size="small"
           :rows="10"
           :paginator="portesStore.conductorCandidatos.length > 10"
-          emptyMessage="No se encontraron conductores disponibles con las dimensiones actuales."
+          emptyMessage="No se encontraron conductores con vehículo compatible para las medidas actuales."
         >
           <Column header="Conductor" :sortable="false">
             <template #body="{ data }">
@@ -330,16 +371,6 @@ function copyToClipboard(text: string, label: string): void {
                 <span class="font-medium text-gray-800 dark:text-gray-100">{{ data.nombre }} {{ data.apellidos ?? '' }}</span>
                 <span v-if="data.ciudadBase" class="block text-xs text-gray-500 dark:text-gray-400">{{ data.ciudadBase }}</span>
               </div>
-            </template>
-          </Column>
-          <Column field="rating" header="Rating" :sortable="true" style="width: 100px">
-            <template #body="{ data }">
-              <div v-if="data.rating != null" class="flex items-center gap-1">
-                <i class="pi pi-star-fill text-amber-400 text-xs"></i>
-                <span class="text-sm font-medium">{{ data.rating?.toFixed(1) }}</span>
-                <span class="text-xs text-gray-400 dark:text-gray-500">({{ data.numeroValoraciones }})</span>
-              </div>
-              <span v-else class="text-gray-400 text-sm">—</span>
             </template>
           </Column>
           <Column field="vehiculoInfo" header="Vehículo" :sortable="false">
@@ -360,7 +391,7 @@ function copyToClipboard(text: string, label: string): void {
           <Column header="" style="width: 100px">
             <template #body="{ data }">
               <Button
-                label="Asignar"
+                label="Asignar manualmente (forzar)"
                 icon="pi pi-check"
                 size="small"
                 severity="success"

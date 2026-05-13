@@ -4,7 +4,6 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
-import Checkbox from 'primevue/checkbox'
 import Button from 'primevue/button'
 import type { Vehiculo, CreateVehiculoRequest, TipoVehiculo } from '@/stores/vehiculos'
 
@@ -39,7 +38,6 @@ const form = ref({
   largoUtilMm: null as number | null,
   anchoUtilMm: null as number | null,
   altoUtilMm: null as number | null,
-  trampillaElevadora: false,
 })
 
 const submitted = ref(false)
@@ -78,7 +76,6 @@ watch(
           largoUtilMm: props.vehiculo.largoUtilMm,
           anchoUtilMm: props.vehiculo.anchoUtilMm,
           altoUtilMm: props.vehiculo.altoUtilMm,
-          trampillaElevadora: props.vehiculo.trampillaElevadora,
         }
       } else {
         form.value = {
@@ -90,7 +87,6 @@ watch(
           largoUtilMm: null,
           anchoUtilMm: null,
           altoUtilMm: null,
-          trampillaElevadora: false,
         }
       }
     }
@@ -110,7 +106,6 @@ function onSubmit(): void {
     largoUtilMm: form.value.largoUtilMm,
     anchoUtilMm: form.value.anchoUtilMm,
     altoUtilMm: form.value.altoUtilMm,
-    trampillaElevadora: form.value.trampillaElevadora,
   }
 
   emit('save', data)
@@ -225,17 +220,6 @@ function onClose(): void {
         </div>
       </div>
 
-      <!-- Trampilla Elevadora -->
-      <div class="flex items-center gap-3">
-        <Checkbox
-          v-model="form.trampillaElevadora"
-          :binary="true"
-          inputId="trampilla"
-        />
-        <label for="trampilla" class="text-sm font-medium text-gray-700 cursor-pointer">
-          Trampilla elevadora
-        </label>
-      </div>
     </div>
 
     <!-- Footer -->

@@ -5,6 +5,7 @@ import com.cargohub.backend.dto.tracking.DriverState;
 import com.cargohub.backend.dto.tracking.FleetSnapshotResponse;
 import com.cargohub.backend.observability.FleetRealtimeMetrics;
 import com.cargohub.backend.repository.ConductorRepository;
+import com.cargohub.backend.repository.PorteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,9 +19,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,6 +32,9 @@ class FleetTrackingServiceTest {
 
     @Mock
     private ConductorRepository conductorRepository;
+
+    @Mock
+    private PorteRepository porteRepository;
 
     private FleetRealtimeProperties properties;
     private FleetRealtimeMetrics metrics;
@@ -44,6 +51,8 @@ class FleetTrackingServiceTest {
         properties.setMaxDrivers(300);
         metrics = new FleetRealtimeMetrics();
         clock = Clock.fixed(Instant.parse("2026-03-16T10:00:00Z"), ZoneOffset.UTC);
+        when(porteRepository.findFirstByConductorIdAndEstadoInOrderByFechaCreacionDesc(anyLong(), anyList()))
+                .thenReturn(Optional.empty());
     }
 
     @Test
@@ -54,7 +63,7 @@ class FleetTrackingServiceTest {
                 projection(3L, 42.4, -5.7, LocalDateTime.of(2026, 3, 16, 9, 55, 0), null, null)
         ));
 
-        FleetTrackingService service = new FleetTrackingService(conductorRepository, properties, metrics, clock);
+        FleetTrackingService service = new FleetTrackingService(conductorRepository, porteRepository, properties, metrics, clock);
         FleetSnapshotResponse response = service.buildSnapshot();
 
         assertEquals(3, response.getDrivers().size());
@@ -71,7 +80,7 @@ class FleetTrackingServiceTest {
                 projection(2L, 40.4, -3.7, LocalDateTime.of(2026, 3, 16, 9, 59, 40), null, null)
         ));
 
-        FleetTrackingService service = new FleetTrackingService(conductorRepository, properties, metrics, clock);
+        FleetTrackingService service = new FleetTrackingService(conductorRepository, porteRepository, properties, metrics, clock);
         FleetSnapshotResponse response = service.buildSnapshot();
 
         assertEquals(1, response.getDrivers().size());
@@ -85,7 +94,7 @@ class FleetTrackingServiceTest {
                 .thenReturn(List.of(projection(2L, 40.4, -3.7, LocalDateTime.of(2026, 3, 16, 9, 59, 40), null, null)))
                 .thenThrow(new RuntimeException("db down"));
 
-        FleetTrackingService service = new FleetTrackingService(conductorRepository, properties, metrics, clock);
+        FleetTrackingService service = new FleetTrackingService(conductorRepository, porteRepository, properties, metrics, clock);
         FleetSnapshotResponse first = service.buildSnapshot();
         FleetSnapshotResponse second = service.buildSnapshot();
 
@@ -110,7 +119,7 @@ class FleetTrackingServiceTest {
         }
         when(conductorRepository.findFleetSnapshot(any(Pageable.class))).thenReturn(drivers);
 
-        FleetTrackingService service = new FleetTrackingService(conductorRepository, properties, metrics, clock);
+        FleetTrackingService service = new FleetTrackingService(conductorRepository, porteRepository, properties, metrics, clock);
 
         List<Long> samplesMs = new ArrayList<>();
         for (int i = 0; i < 40; i++) {
@@ -137,6 +146,16 @@ class FleetTrackingServiceTest {
             @Override
             public Long getId() {
                 return id;
+            }
+
+            @Override
+            public String getNombre() {
+                return "Conductor";
+            }
+
+            @Override
+            public String getApellidos() {
+                return String.valueOf(id);
             }
 
             @Override

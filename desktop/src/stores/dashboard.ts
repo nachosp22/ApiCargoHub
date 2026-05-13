@@ -18,6 +18,9 @@ export interface Porte {
   conductor: string
   estado: string
   fecha: string
+  fechaRecogida?: string
+  revisionManual?: boolean
+  motivoRevision?: string
 }
 
 export interface KpiTrend {
@@ -38,12 +41,14 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const chartData = ref<number[]>([])
   const chartLabels = ref<string[]>([])
   const recentPortes = ref<Porte[]>([])
+  const allPortes = ref<Porte[]>([])
   const trends = ref<Record<string, KpiTrend>>({})
   const loading = ref(false)
   const usingMockData = ref(false)
   const resumen = ref<{ portesMes: number; portesActivos: number; portesManana: number } | null>(null)
   const resumenAnterior = ref<{ portesMes: number; portesActivos: number; portesManana: number } | null>(null)
   const incidenciasPendientes = ref<number>(0)
+  const revisionesPendientes = ref<number>(0)
 
   // --- Getters ---
   const totalPortes = computed(() => recentPortes.value.length)
@@ -60,11 +65,12 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
     try {
       // Fire all requests in parallel
-      const [portesRes, conductoresRes, incidenciasRes, vehiculosRes] = await Promise.allSettled([
+      const [portesRes, conductoresRes, incidenciasRes, vehiculosRes, revisionesRes] = await Promise.allSettled([
         api.get('/portes'),
         api.get('/conductores'),
         api.get('/incidencias'),
         api.get('/vehiculos'),
+        api.get('/portes/pendientes-revision'),
       ])
 
       // Compute KPIs from API responses
@@ -83,7 +89,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
         kpis.value = {
           portesActivos: portesList.filter((p: Record<string, unknown>) =>
-            ['EN_RUTA', 'PENDIENTE', 'PROGRAMADO'].includes(String(p.estado ?? ''))
+            ['PENDIENTE', 'ASIGNADO', 'EN_TRANSITO'].includes(String(p.estado ?? ''))
           ).length,
           conductores: conductoresList.length,
           incidenciasAbiertas: incidenciasList.filter((i: Record<string, unknown>) =>
@@ -96,15 +102,29 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
         // Map recent portes for the table
         if (portesList.length > 0) {
-          recentPortes.value = portesList.slice(0, 20).map((p: Record<string, unknown>) => ({
+          const mappedPortes = portesList.map((p: Record<string, unknown>) => ({
             id: Number(p.id ?? 0),
             origen: String(p.origen ?? p.ciudadOrigen ?? '—'),
             destino: String(p.destino ?? p.ciudadDestino ?? '—'),
             conductor: extractConductorName(p),
             estado: String(p.estado ?? 'PENDIENTE'),
             fecha: formatDateFromApi(p.fecha ?? p.fechaCreacion ?? p.fechaSalida),
+            fechaRecogida: formatDateFromApi(p.fechaRecogida ?? p.fechaSalida),
+            revisionManual: p.revisionManual === true,
+            motivoRevision: p.motivoRevision ? String(p.motivoRevision) : undefined,
           }))
+
+          allPortes.value = mappedPortes
+          recentPortes.value = mappedPortes.slice(0, 20)
+        } else {
+          allPortes.value = []
         }
+
+        revisionesPendientes.value = revisionesRes.status === 'fulfilled'
+          ? extractArray(revisionesRes.value.data).length
+          : portesList.filter((p: Record<string, unknown>) =>
+            p.revisionManual === true || (String(p.estado ?? '') === 'PENDIENTE' && !p.conductor && !!p.motivoRevision)
+          ).length
 
         // --- Chart: group portes by month (last 12 months) ---
         computeChartFromPortes(portesList)
@@ -112,15 +132,19 @@ export const useDashboardStore = defineStore('dashboard', () => {
         usingMockData.value = true
         kpis.value = { portesActivos: 0, conductores: 0, incidenciasAbiertas: 0, vehiculosDisponibles: 0 }
         recentPortes.value = []
+        allPortes.value = []
         chartData.value = []
         chartLabels.value = []
+        revisionesPendientes.value = 0
       }
     } catch {
       usingMockData.value = true
       kpis.value = { portesActivos: 0, conductores: 0, incidenciasAbiertas: 0, vehiculosDisponibles: 0 }
       recentPortes.value = []
+      allPortes.value = []
       chartData.value = []
       chartLabels.value = []
+      revisionesPendientes.value = 0
     } finally {
       loading.value = false
     }
@@ -274,6 +298,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
     resumen,
     resumenAnterior,
     incidenciasPendientes,
+    revisionesPendientes,
+    allPortes,
     // Getters
     totalPortes,
     // Actions

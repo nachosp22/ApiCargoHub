@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -33,10 +34,15 @@ public class OfferDetailFragment extends Fragment {
     private LinearLayout errorContainer;
     private LinearLayout contentContainer;
     private TextView titleText;
-    private TextView stateText;
-    private TextView scheduleText;
+    private TextView routeText;
+    private TextView pickupText;
+    private TextView distanceText;
     private TextView cargoText;
     private TextView priceText;
+    private TextView weightText;
+    private TextView volumeText;
+    private TextView dimensionsText;
+    private TextView vehicleText;
     private TextView helperText;
     private TextView emptyMessage;
     private TextView errorMessage;
@@ -65,17 +71,22 @@ public class OfferDetailFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        porteId = requireArguments().getLong(ARG_PORTE_ID);
+        Bundle args = getArguments();
         swipeRefreshLayout = view.findViewById(R.id.offerDetailSwipeRefresh);
         loadingContainer = view.findViewById(R.id.offerDetailLoadingContainer);
         emptyContainer = view.findViewById(R.id.offerDetailEmptyContainer);
         errorContainer = view.findViewById(R.id.offerDetailErrorContainer);
         contentContainer = view.findViewById(R.id.offerDetailContentContainer);
         titleText = view.findViewById(R.id.offerDetailTitleText);
-        stateText = view.findViewById(R.id.offerDetailStateText);
-        scheduleText = view.findViewById(R.id.offerDetailScheduleText);
+        routeText = view.findViewById(R.id.offerDetailRouteText);
+        pickupText = view.findViewById(R.id.offerDetailPickupText);
+        distanceText = view.findViewById(R.id.offerDetailDistanceText);
         cargoText = view.findViewById(R.id.offerDetailCargoText);
         priceText = view.findViewById(R.id.offerDetailPriceText);
+        weightText = view.findViewById(R.id.offerDetailWeightText);
+        volumeText = view.findViewById(R.id.offerDetailVolumeText);
+        dimensionsText = view.findViewById(R.id.offerDetailDimensionsText);
+        vehicleText = view.findViewById(R.id.offerDetailVehicleText);
         helperText = view.findViewById(R.id.offerDetailHelperText);
         emptyMessage = view.findViewById(R.id.offerDetailEmptyText);
         errorMessage = view.findViewById(R.id.offerDetailErrorMessage);
@@ -88,16 +99,36 @@ public class OfferDetailFragment extends Fragment {
         acceptButton.setOnClickListener(v -> acceptOffer());
         rejectButton.setOnClickListener(v -> rejectOffer());
         retryButton.setOnClickListener(v -> loadOffer());
+
+        if (args == null || !args.containsKey(ARG_PORTE_ID)) {
+            showError(getString(R.string.offer_missing_id));
+            return;
+        }
+        porteId = args.getLong(ARG_PORTE_ID);
+        if (porteId <= 0L) {
+            showError(getString(R.string.offer_missing_id));
+            return;
+        }
         loadOffer();
     }
 
     private void loadOffer() {
+        Long conductorId = SessionManager.resolveConductorId();
+        if (conductorId == null || conductorId <= 0) {
+            showError(getString(R.string.incidencia_error_sesion));
+            swipeRefreshLayout.setRefreshing(false);
+            return;
+        }
         showLoading();
-        porteRepository.getPorteDetail(porteId, result -> {
+        porteRepository.getOfferDetailForConductor(porteId, conductorId, result -> {
             if (!isAdded()) {
                 return;
             }
             swipeRefreshLayout.setRefreshing(false);
+            if (!result.isSuccessful() && result.getCode() == 404) {
+                showEmpty(getString(R.string.offer_detail_state_empty_body));
+                return;
+            }
             if (!result.isSuccessful()) {
                 showError(result.getMessage());
                 return;
@@ -113,12 +144,17 @@ public class OfferDetailFragment extends Fragment {
     }
 
     private void renderOffer(@NonNull Porte porte) {
-        titleText.setText(UiFormatters.formatPorteTitle(porte));
-        stateText.setText(UiFormatters.formatPorteState(porte));
-        scheduleText.setText(UiFormatters.formatPorteSchedule(porte));
-        cargoText.setText(UiFormatters.formatPorteCargo(porte));
-        priceText.setText(UiFormatters.formatPortePrice(porte));
-        applyStateColor(stateText, porte.getEstadoPorte());
+        titleText.setText(UiFormatters.formatPorteShortTitle(porte));
+        routeText.setText(getString(R.string.offer_detail_route_value, UiFormatters.formatPorteRoute(porte)));
+        pickupText.setText(getString(R.string.offer_detail_pickup_value, UiFormatters.formatDateTime(porte.getFechaRecogida())));
+        distanceText.setText(getString(R.string.offer_detail_distance_value, UiFormatters.formatPorteDistance(porte)));
+        priceText.setText(getString(R.string.offer_detail_price_value, UiFormatters.formatPortePrice(porte)));
+        cargoText.setText(getString(R.string.offer_detail_cargo_value,
+                UiFormatters.valueOrFallback(porte.getDescripcionMercancia(), getString(R.string.offer_detail_not_available))));
+        weightText.setText(getString(R.string.offer_detail_weight_value, UiFormatters.formatPorteWeight(porte)));
+        volumeText.setText(getString(R.string.offer_detail_volume_value, UiFormatters.formatPorteVolume(porte)));
+        dimensionsText.setText(getString(R.string.offer_detail_dimensions_value, UiFormatters.formatPorteDimensions(porte)));
+        vehicleText.setText(getString(R.string.offer_detail_vehicle_value, UiFormatters.formatPorteVehicleRequirement(porte)));
         boolean actionable = porteRepository.canAcceptOffer(porte);
         acceptButton.setEnabled(actionable);
         rejectButton.setEnabled(actionable && porteRepository.supportsOfferRejection());
@@ -133,7 +169,7 @@ public class OfferDetailFragment extends Fragment {
         }
         Long conductorId = SessionManager.resolveConductorId();
         if (conductorId == null || conductorId <= 0) {
-            Snackbar.make(requireView(), R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG).show();
+            showSnackbar(R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG);
             return;
         }
         setActionsEnabled(false);
@@ -146,7 +182,7 @@ public class OfferDetailFragment extends Fragment {
         }
         Long conductorId = SessionManager.resolveConductorId();
         if (conductorId == null || conductorId <= 0) {
-            Snackbar.make(requireView(), R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG).show();
+            showSnackbar(R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG);
             return;
         }
         setActionsEnabled(false);
@@ -159,14 +195,17 @@ public class OfferDetailFragment extends Fragment {
         }
         setActionsEnabled(true);
         if (!result.isSuccessful() || result.getData() == null) {
-            Snackbar.make(requireView(), result.getMessage(), Snackbar.LENGTH_LONG).show();
+            showSnackbar(result.getMessage(), R.string.offer_detail_state_error_body, Snackbar.LENGTH_LONG);
             return;
         }
         currentPorte = result.getData();
         renderOffer(currentPorte);
-        Snackbar.make(requireView(), R.string.offer_accept_success, Snackbar.LENGTH_LONG)
-                .setAction(R.string.offer_accept_open_trip, v -> openTripDetail())
-                .show();
+        View view = getView();
+        if (view != null) {
+            Snackbar.make(view, R.string.offer_accept_success, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.offer_accept_open_trip, v -> openTripDetail())
+                    .show();
+        }
     }
 
     private void handleRejectResult(@NonNull RepositoryResult<Void> result) {
@@ -175,14 +214,33 @@ public class OfferDetailFragment extends Fragment {
         }
         setActionsEnabled(true);
         if (!result.isSuccessful()) {
-            Snackbar.make(requireView(), result.getMessage(), Snackbar.LENGTH_LONG).show();
+            showSnackbar(result.getMessage(), R.string.offer_detail_state_error_body, Snackbar.LENGTH_LONG);
             return;
         }
         Bundle refresh = new Bundle();
         refresh.putBoolean(OfferInboxFragment.RESULT_KEY_REFRESH, true);
         getParentFragmentManager().setFragmentResult(OfferInboxFragment.REQUEST_KEY_REFRESH, refresh);
-        Snackbar.make(requireView(), R.string.offer_reject_success, Snackbar.LENGTH_SHORT).show();
+        showSnackbar(R.string.offer_reject_success, Snackbar.LENGTH_SHORT);
         getParentFragmentManager().popBackStack();
+    }
+
+    private void showSnackbar(@StringRes int messageRes, int duration) {
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, messageRes, duration).show();
+        }
+    }
+
+    private void showSnackbar(@Nullable String message, @StringRes int fallbackRes, int duration) {
+        String resolvedMessage = message != null ? message.trim() : "";
+        if (resolvedMessage.isEmpty()) {
+            showSnackbar(fallbackRes, duration);
+            return;
+        }
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, resolvedMessage, duration).show();
+        }
     }
 
     private void openTripDetail() {
@@ -224,7 +282,7 @@ public class OfferDetailFragment extends Fragment {
         emptyContainer.setVisibility(View.GONE);
         errorContainer.setVisibility(View.VISIBLE);
         if (message.trim().isEmpty()) {
-            errorMessage.setText(R.string.offer_detail_state_error_title);
+            errorMessage.setText(R.string.offer_detail_state_error_body);
         } else {
             errorMessage.setText(message);
         }
@@ -238,21 +296,4 @@ public class OfferDetailFragment extends Fragment {
                 && porteRepository.supportsOfferRejection());
     }
 
-    private void applyStateColor(@NonNull TextView stateText, EstadoPorte state) {
-        int backgroundRes = R.color.ch_blue_100;
-        int textRes = R.color.ch_blue_700;
-        if (state == EstadoPorte.PENDIENTE) {
-            backgroundRes = R.color.ch_warning_soft;
-            textRes = R.color.ch_warning_text;
-        } else if (state == EstadoPorte.ASIGNADO || state == EstadoPorte.EN_TRANSITO) {
-            backgroundRes = R.color.ch_success_soft;
-            textRes = R.color.ch_success_text;
-        } else if (state == EstadoPorte.ENTREGADO) {
-            backgroundRes = R.color.ch_blue_50;
-            textRes = R.color.ch_blue_700;
-        }
-        stateText.setBackgroundResource(R.drawable.bg_state_chip);
-        stateText.setBackgroundTintList(stateText.getContext().getColorStateList(backgroundRes));
-        stateText.setTextColor(stateText.getContext().getColor(textRes));
-    }
 }

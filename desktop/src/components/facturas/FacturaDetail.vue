@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
+import Select from 'primevue/select'
 import { useFacturasStore, type Factura } from '@/stores/facturas'
 
 interface Props {
@@ -16,6 +18,21 @@ const emit = defineEmits<{
 }>()
 
 const facturasStore = useFacturasStore()
+const formaPagoSeleccionada = ref('TRANSFERENCIA')
+
+const formaPagoOptions = [
+  { label: 'Transferencia', value: 'TRANSFERENCIA' },
+  { label: 'Tarjeta (próximamente)', value: 'TARJETA', disabled: true },
+  { label: 'Efectivo (próximamente)', value: 'EFECTIVO', disabled: true },
+]
+
+watch(
+  () => props.factura,
+  () => {
+    formaPagoSeleccionada.value = 'TRANSFERENCIA'
+  },
+  { immediate: true },
+)
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—'
@@ -114,7 +131,14 @@ async function handleDownloadPdf() {
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div>
           <span class="text-xs text-gray-400 dark:text-gray-500 uppercase">Forma de Pago</span>
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ factura.formaPago ?? '—' }}</p>
+          <Select
+            v-model="formaPagoSeleccionada"
+            :options="formaPagoOptions"
+            optionLabel="label"
+            optionValue="value"
+            optionDisabled="disabled"
+            class="mt-1 w-full sm:w-56"
+          />
         </div>
         <div>
           <span class="text-xs text-gray-400 dark:text-gray-500 uppercase">Condiciones</span>

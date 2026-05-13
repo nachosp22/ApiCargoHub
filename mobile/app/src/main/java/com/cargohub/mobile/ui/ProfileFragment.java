@@ -17,6 +17,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -47,7 +48,7 @@ import retrofit2.Response;
 public class ProfileFragment extends Fragment {
 
     private static final int MAX_PHOTO_WIDTH = 600;
-    private static final int MAX_PHOTO_BYTES = 500 * 1024; // 500KB
+    private static final int MAX_PHOTO_BYTES = 500 * 1024;
 
     private final ConductorRepository conductorRepository = new ConductorRepository();
 
@@ -55,21 +56,28 @@ public class ProfileFragment extends Fragment {
     private TextView nameText;
     private TextView emailText;
     private TextView idText;
-    private TextView detailText;
+    private ShapeableImageView avatarImage;
+    private FloatingActionButton avatarEditFab;
+    private MaterialButton saveChangesButton;
+    private MaterialButton vehiclesButton;
+    private MaterialButton deactivateButton;
+
     private EditText nombreInput;
     private EditText apellidosInput;
     private EditText telefonoInput;
+    private EditText dniInput;
+    private EditText emailInput;
     private EditText ciudadInput;
+    private EditText radioAccionKmInput;
     private TextInputLayout nombreLayout;
-    private ShapeableImageView avatarImage;
+
+    private int busyOperations;
 
     @Nullable
     private Long conductorId;
 
     @Nullable
     private String currentFotoUrl;
-
-    // ── Camera launcher (reuses pattern from FotoCargaFragment) ──
 
     private final ActivityResultLauncher<Intent> cameraLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -84,8 +92,6 @@ public class ProfileFragment extends Fragment {
                 }
             });
 
-    // ── Gallery launcher ──
-
     private final ActivityResultLauncher<Intent> galleryLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null
@@ -98,7 +104,7 @@ public class ProfileFragment extends Fragment {
                             uploadProfilePhoto(resizeBitmap(bitmap, MAX_PHOTO_WIDTH));
                         }
                     } catch (Exception e) {
-                        Snackbar.make(requireView(), R.string.profile_photo_upload_error, Snackbar.LENGTH_LONG).show();
+                        showSnackbar(R.string.profile_photo_upload_error, Snackbar.LENGTH_LONG);
                     }
                 }
             });
@@ -114,28 +120,29 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         loadingProgress = view.findViewById(R.id.profileLoadingProgress);
         nameText = view.findViewById(R.id.profileNameTextView);
         emailText = view.findViewById(R.id.profileEmailTextView);
         idText = view.findViewById(R.id.profileIdTextView);
-        detailText = view.findViewById(R.id.profileDetailTextView);
+        avatarImage = view.findViewById(R.id.profileAvatarImage);
+        avatarEditFab = view.findViewById(R.id.profileAvatarEditFab);
+        saveChangesButton = view.findViewById(R.id.profileSaveChangesButton);
+        vehiclesButton = view.findViewById(R.id.profileVehiclesButton);
+        deactivateButton = view.findViewById(R.id.profileDeactivateButton);
+
         nombreInput = view.findViewById(R.id.profileNombreInput);
         apellidosInput = view.findViewById(R.id.profileApellidosInput);
         telefonoInput = view.findViewById(R.id.profileTelefonoInput);
+        dniInput = view.findViewById(R.id.profileDniInput);
+        emailInput = view.findViewById(R.id.profileEmailInput);
         ciudadInput = view.findViewById(R.id.profileCiudadInput);
+        radioAccionKmInput = view.findViewById(R.id.profileRadioAccionKmInput);
         nombreLayout = view.findViewById(R.id.profileNombreLayout);
-        avatarImage = view.findViewById(R.id.profileAvatarImage);
-        FloatingActionButton avatarEditFab = view.findViewById(R.id.profileAvatarEditFab);
-        MaterialButton agendaButton = view.findViewById(R.id.profileOpenAgendaButton);
-        MaterialButton vehicleButton = view.findViewById(R.id.profileOpenVehicleButton);
-        MaterialButton saveChangesButton = view.findViewById(R.id.profileSaveChangesButton);
-        MaterialButton deactivateButton = view.findViewById(R.id.profileDeactivateButton);
 
-        agendaButton.setOnClickListener(v -> navigateTo(new AgendaFragment()));
-        vehicleButton.setOnClickListener(v -> navigateTo(new VehicleFragment()));
         saveChangesButton.setOnClickListener(v -> saveProfileChanges());
+        vehiclesButton.setOnClickListener(v -> navigateToVehicles());
         deactivateButton.setOnClickListener(v -> confirmDeactivateAccount());
-
         avatarImage.setOnClickListener(v -> showPhotoOptionsDialog());
         avatarEditFab.setOnClickListener(v -> showPhotoOptionsDialog());
 
@@ -143,9 +150,15 @@ public class ProfileFragment extends Fragment {
         loadProfilePhoto();
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // Profile photo
-    // ══════════════════════════════════════════════════════════════
+    private void navigateToVehicles() {
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFragmentContainer, new VehicleFragment())
+                .addToBackStack(null)
+                .commit();
+    }
+
+    // ── Profile photo ──
 
     private void showPhotoOptionsDialog() {
         String[] options;
@@ -166,15 +179,9 @@ public class ProfileFragment extends Fragment {
                 .setTitle(R.string.profile_photo_dialog_title)
                 .setItems(options, (dialog, which) -> {
                     switch (which) {
-                        case 0:
-                            openCamera();
-                            break;
-                        case 1:
-                            openGallery();
-                            break;
-                        case 2:
-                            deleteProfilePhoto();
-                            break;
+                        case 0: openCamera(); break;
+                        case 1: openGallery(); break;
+                        case 2: deleteProfilePhoto(); break;
                     }
                 })
                 .show();
@@ -185,7 +192,7 @@ public class ProfileFragment extends Fragment {
         if (intent.resolveActivity(requireActivity().getPackageManager()) != null) {
             cameraLauncher.launch(intent);
         } else {
-            Snackbar.make(requireView(), R.string.profile_photo_no_camera, Snackbar.LENGTH_LONG).show();
+            showSnackbar(R.string.profile_photo_no_camera, Snackbar.LENGTH_LONG);
         }
     }
 
@@ -197,65 +204,58 @@ public class ProfileFragment extends Fragment {
 
     private void uploadProfilePhoto(@NonNull Bitmap bitmap) {
         String base64 = bitmapToBase64(bitmap);
-
-        // Check size (base64 is ~33% larger than raw bytes)
         byte[] rawBytes = Base64.decode(base64, Base64.DEFAULT);
         if (rawBytes.length > MAX_PHOTO_BYTES) {
-            Snackbar.make(requireView(), R.string.profile_photo_too_large, Snackbar.LENGTH_LONG).show();
+            showSnackbar(R.string.profile_photo_too_large, Snackbar.LENGTH_LONG);
             return;
         }
-
-        loadingProgress.setVisibility(View.VISIBLE);
-
+        setBusy(true);
         Map<String, String> body = new HashMap<>();
         body.put("imagen", base64);
-
         ApiClient.getInstance().subirFotoPerfil(body).enqueue(new Callback<Map<String, String>>() {
             @Override
             public void onResponse(@NonNull Call<Map<String, String>> call,
                                    @NonNull Response<Map<String, String>> response) {
                 if (!isAdded()) return;
-                loadingProgress.setVisibility(View.GONE);
+                setBusy(false);
                 if (response.isSuccessful() && response.body() != null) {
                     String url = response.body().get("url");
                     currentFotoUrl = url;
                     loadAvatarFromUrl(url);
-                    Snackbar.make(requireView(), R.string.profile_photo_upload_success, Snackbar.LENGTH_SHORT).show();
+                    showSnackbar(R.string.profile_photo_upload_success, Snackbar.LENGTH_SHORT);
                 } else {
-                    Snackbar.make(requireView(), R.string.profile_photo_upload_error, Snackbar.LENGTH_LONG).show();
+                    showSnackbar(R.string.profile_photo_upload_error, Snackbar.LENGTH_LONG);
                 }
             }
-
             @Override
             public void onFailure(@NonNull Call<Map<String, String>> call, @NonNull Throwable t) {
                 if (!isAdded()) return;
-                loadingProgress.setVisibility(View.GONE);
-                Snackbar.make(requireView(), R.string.profile_photo_upload_error, Snackbar.LENGTH_LONG).show();
+                setBusy(false);
+                showSnackbar(R.string.profile_photo_upload_error, Snackbar.LENGTH_LONG);
             }
         });
     }
 
     private void deleteProfilePhoto() {
-        loadingProgress.setVisibility(View.VISIBLE);
+        setBusy(true);
         ApiClient.getInstance().eliminarFotoPerfil().enqueue(new Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 if (!isAdded()) return;
-                loadingProgress.setVisibility(View.GONE);
+                setBusy(false);
                 if (response.isSuccessful()) {
                     currentFotoUrl = null;
                     avatarImage.setImageResource(R.drawable.ic_nav_profile);
-                    Snackbar.make(requireView(), R.string.profile_photo_remove_success, Snackbar.LENGTH_SHORT).show();
+                    showSnackbar(R.string.profile_photo_remove_success, Snackbar.LENGTH_SHORT);
                 } else {
-                    Snackbar.make(requireView(), R.string.profile_photo_remove_error, Snackbar.LENGTH_LONG).show();
+                    showSnackbar(R.string.profile_photo_remove_error, Snackbar.LENGTH_LONG);
                 }
             }
-
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                 if (!isAdded()) return;
-                loadingProgress.setVisibility(View.GONE);
-                Snackbar.make(requireView(), R.string.profile_photo_remove_error, Snackbar.LENGTH_LONG).show();
+                setBusy(false);
+                showSnackbar(R.string.profile_photo_remove_error, Snackbar.LENGTH_LONG);
             }
         });
     }
@@ -273,9 +273,7 @@ public class ProfileFragment extends Fragment {
                         loadAvatarFromUrl(url);
                     }
                 }
-                // 204 or error — keep default placeholder
             }
-
             @Override
             public void onFailure(@NonNull Call<Map<String, String>> call, @NonNull Throwable t) {
                 // Silently keep placeholder
@@ -293,10 +291,6 @@ public class ProfileFragment extends Fragment {
                 .into(avatarImage);
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // Image helpers (pattern from FotoCargaFragment)
-    // ══════════════════════════════════════════════════════════════
-
     private Bitmap resizeBitmap(@NonNull Bitmap original, int maxWidth) {
         if (original.getWidth() <= maxWidth) return original;
         float ratio = (float) maxWidth / original.getWidth();
@@ -311,40 +305,31 @@ public class ProfileFragment extends Fragment {
         return Base64.encodeToString(bytes, Base64.NO_WRAP);
     }
 
-    // ══════════════════════════════════════════════════════════════
-    // Existing profile logic (unchanged)
-    // ══════════════════════════════════════════════════════════════
+    // ── Profile logic ──
 
     private void loadProfile() {
         conductorId = SessionManager.resolveConductorId();
         if (conductorId == null || conductorId <= 0) {
-            Snackbar.make(requireView(), R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG).show();
+            showSnackbar(R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG);
             return;
         }
-        loadingProgress.setVisibility(View.VISIBLE);
-        idText.setText(getString(R.string.profile_id_value, conductorId));
+        setBusy(true);
+        idText.setText(getString(R.string.home_profile_id_value, conductorId));
         conductorRepository.getConductorProfile(conductorId, new ConductorRepository.ProfileCallback() {
             @Override
             public void onSuccess(@NonNull ConductorProfileResponse profile) {
-                if (!isAdded()) {
-                    return;
-                }
-                loadingProgress.setVisibility(View.GONE);
+                if (!isAdded()) return;
+                setBusy(false);
                 nameText.setText(UiFormatters.valueOrFallback(profile.getNombreCompleto(), getString(R.string.profile_name_fallback, conductorId)));
                 emailText.setText(UiFormatters.valueOrFallback(profile.getEmail(), getString(R.string.home_profile_email_placeholder)));
-                detailText.setText(UiFormatters.formatProfileSummary(profile));
                 bindEditableFields(profile);
             }
-
             @Override
             public void onError(@NonNull String message) {
-                if (!isAdded()) {
-                    return;
-                }
-                loadingProgress.setVisibility(View.GONE);
+                if (!isAdded()) return;
+                setBusy(false);
                 nameText.setText(getString(R.string.profile_name_fallback, conductorId));
                 emailText.setText(getString(R.string.home_profile_email_placeholder));
-                detailText.setText(message);
             }
         });
     }
@@ -353,12 +338,15 @@ public class ProfileFragment extends Fragment {
         nombreInput.setText(valueOrEmpty(profile.getNombre()));
         apellidosInput.setText(valueOrEmpty(profile.getApellidos()));
         telefonoInput.setText(valueOrEmpty(profile.getTelefono()));
+        dniInput.setText(valueOrEmpty(profile.getDni()));
+        emailInput.setText(valueOrEmpty(profile.getEmail()));
         ciudadInput.setText(valueOrEmpty(profile.getCiudadBase()));
+        radioAccionKmInput.setText(profile.getRadioAccionKm() != null ? String.valueOf(profile.getRadioAccionKm()) : "");
     }
 
     private void saveProfileChanges() {
         if (conductorId == null || conductorId <= 0) {
-            Snackbar.make(requireView(), R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG).show();
+            showSnackbar(R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG);
             return;
         }
         nombreLayout.setError(null);
@@ -371,32 +359,31 @@ public class ProfileFragment extends Fragment {
                 nombre,
                 textValue(apellidosInput),
                 textValue(telefonoInput),
-                textValue(ciudadInput)
+                textValue(dniInput),
+                textValue(ciudadInput),
+                parseInteger(radioAccionKmInput)
         );
-        loadingProgress.setVisibility(View.VISIBLE);
+        setBusy(true);
         conductorRepository.updateConductorProfile(conductorId, request, this::handleProfileUpdateResult);
     }
 
     private void handleProfileUpdateResult(@NonNull RepositoryResult<ConductorProfileResponse> result) {
-        if (!isAdded()) {
-            return;
-        }
-        loadingProgress.setVisibility(View.GONE);
+        if (!isAdded()) return;
+        setBusy(false);
         if (!result.isSuccessful() || result.getData() == null) {
-            Snackbar.make(requireView(), result.getMessage(), Snackbar.LENGTH_LONG).show();
+            showSnackbar(result.getMessage(), Snackbar.LENGTH_LONG);
             return;
         }
         ConductorProfileResponse profile = result.getData();
         nameText.setText(UiFormatters.valueOrFallback(profile.getNombreCompleto(), getString(R.string.profile_name_fallback, conductorId != null ? conductorId : 0)));
         emailText.setText(UiFormatters.valueOrFallback(profile.getEmail(), getString(R.string.home_profile_email_placeholder)));
-        detailText.setText(UiFormatters.formatProfileSummary(profile));
         bindEditableFields(profile);
-        Snackbar.make(requireView(), R.string.profile_save_success, Snackbar.LENGTH_LONG).show();
+        showSnackbar(R.string.profile_save_success, Snackbar.LENGTH_LONG);
     }
 
     private void confirmDeactivateAccount() {
         if (conductorId == null || conductorId <= 0) {
-            Snackbar.make(requireView(), R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG).show();
+            showSnackbar(R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG);
             return;
         }
         new MaterialAlertDialogBuilder(requireContext())
@@ -408,22 +395,43 @@ public class ProfileFragment extends Fragment {
     }
 
     private void deactivateAccount() {
-        if (conductorId == null || conductorId <= 0) {
-            return;
-        }
-        loadingProgress.setVisibility(View.VISIBLE);
+        if (conductorId == null || conductorId <= 0) return;
+        setBusy(true);
         conductorRepository.deactivateConductor(conductorId, result -> {
-            if (!isAdded()) {
-                return;
-            }
-            loadingProgress.setVisibility(View.GONE);
+            if (!isAdded()) return;
+            setBusy(false);
             if (!result.isSuccessful()) {
-                Snackbar.make(requireView(), result.getMessage(), Snackbar.LENGTH_LONG).show();
+                showSnackbar(result.getMessage(), Snackbar.LENGTH_LONG);
                 return;
             }
             SessionManager.clearSession();
             LoginNavigator.openLoginAndFinish(requireActivity());
         });
+    }
+
+    private void setBusy(boolean busy) {
+        if (busy) {
+            busyOperations++;
+        } else if (busyOperations > 0) {
+            busyOperations--;
+        }
+        boolean isBusy = busyOperations > 0;
+        loadingProgress.setVisibility(isBusy ? View.VISIBLE : View.GONE);
+        setInputsEnabled(!isBusy);
+    }
+
+    private void setInputsEnabled(boolean enabled) {
+        avatarImage.setEnabled(enabled);
+        avatarEditFab.setEnabled(enabled);
+        nombreInput.setEnabled(enabled);
+        apellidosInput.setEnabled(enabled);
+        telefonoInput.setEnabled(enabled);
+        dniInput.setEnabled(enabled);
+        ciudadInput.setEnabled(enabled);
+        radioAccionKmInput.setEnabled(enabled);
+        saveChangesButton.setEnabled(enabled);
+        vehiclesButton.setEnabled(enabled);
+        deactivateButton.setEnabled(enabled);
     }
 
     @NonNull
@@ -436,11 +444,31 @@ public class ProfileFragment extends Fragment {
         return value == null ? "" : value;
     }
 
-    private void navigateTo(@NonNull Fragment fragment) {
-        getParentFragmentManager()
-                .beginTransaction()
-                .replace(R.id.contentFragmentContainer, fragment)
-                .addToBackStack(null)
-                .commit();
+    @Nullable
+    private Integer parseInteger(@NonNull EditText input) {
+        String raw = textValue(input);
+        if (raw.isEmpty()) return null;
+        try {
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private void showSnackbar(@StringRes int messageResId, int duration) {
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, messageResId, duration).show();
+        }
+    }
+
+    private void showSnackbar(@Nullable String message, int duration) {
+        String safeMessage = (message == null || message.trim().isEmpty())
+                ? getString(R.string.generic_api_error_short)
+                : message;
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, safeMessage, duration).show();
+        }
     }
 }

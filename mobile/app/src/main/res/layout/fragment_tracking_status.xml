@@ -5,65 +5,104 @@
     android:layout_height="match_parent"
     android:background="@color/ch_background">
 
-    <!-- Map occupies full screen behind everything -->
+    <!-- Map takes available space above bottom panel -->
     <org.osmdroid.views.MapView
         android:id="@+id/trackingMapView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_above="@id/trackingStatsCard" />
 
     <!-- Permission / no-trip overlay (shown when tracking can't start) -->
     <LinearLayout
         android:id="@+id/trackingSetupOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/ch_surface"
+        android:background="@color/ch_overlay_medium"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="@dimen/spacing_xl"
         android:visibility="gone">
 
-        <ProgressBar
-            android:id="@+id/trackingLoadingProgress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/trackingStatusText"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/tracking_status_idle"
-            android:textColor="@color/ch_on_surface"
-            android:textSize="@dimen/ch_text_size_title"
-            android:textStyle="bold" />
+            app:cardBackgroundColor="@color/ch_surface_card"
+            app:cardCornerRadius="@dimen/radius_lg"
+            app:cardElevation="2dp"
+            app:strokeColor="@android:color/transparent"
+            app:strokeWidth="0dp">
 
-        <TextView
-            android:id="@+id/trackingPermissionText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:gravity="center"
-            android:textColor="@color/ch_on_surface_variant"
-            android:textSize="@dimen/ch_text_size_body" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/ch_space_lg">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/trackingPermissionButton"
-            style="@style/Widget.ApiCargoHub.Button.Primary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:text="@string/tracking_permission_request"
-            android:textAllCaps="false" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/tracking_setup_title"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleLarge"
+                    android:textColor="@color/ch_text_primary"
+                    android:textStyle="bold" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/trackingToggleButton"
-            style="@style/Widget.ApiCargoHub.Button.Primary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:text="@string/tracking_start_action"
-            android:textAllCaps="false" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_xs"
+                    android:gravity="center"
+                    android:text="@string/tracking_setup_subtitle"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
+                    android:textColor="@color/ch_text_secondary" />
+
+                <ProgressBar
+                    android:id="@+id/trackingLoadingProgress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/ch_space_md"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/trackingStatusText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_md"
+                    android:gravity="center"
+                    android:text="@string/tracking_status_idle"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+                    android:textColor="@color/ch_text_primary"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/trackingPermissionText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_xs"
+                    android:gravity="center"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+                    android:textColor="@color/ch_text_secondary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/trackingPermissionButton"
+                    style="@style/Widget.ApiCargoHub.Button.Primary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_md"
+                    android:text="@string/tracking_permission_request"
+                    android:textAllCaps="false" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/trackingToggleButton"
+                    style="@style/Widget.ApiCargoHub.Button.Secondary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:text="@string/tracking_start_action"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
     <!-- Driving mode button - top right corner over map -->
@@ -89,7 +128,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:background="#99000000"
+        android:background="@color/ch_overlay_strong"
         android:paddingHorizontal="@dimen/spacing_xl"
         android:paddingTop="@dimen/spacing_3xl"
         android:paddingBottom="@dimen/spacing_md"
@@ -147,7 +186,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_2xs"
-                    android:background="#4016A34A"
+                    android:background="@color/ch_success_chip_tint"
                     android:paddingHorizontal="@dimen/spacing_xs"
                     android:paddingVertical="2dp"
                     android:text="@string/driving_mode_on_route"
@@ -164,7 +203,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="#99000000"
+        android:background="@color/ch_overlay_strong"
         android:paddingHorizontal="@dimen/spacing_xl"
         android:paddingVertical="@dimen/spacing_md"
         android:visibility="gone">
@@ -205,11 +244,11 @@
                 android:layout_width="@dimen/driving_fab_mini_size"
                 android:layout_height="@dimen/driving_fab_mini_size"
                 android:contentDescription="@string/driving_mode_exit"
-                app:backgroundTint="#80FFFFFF"
+                app:backgroundTint="@color/ch_surface"
                 app:fabSize="mini"
                 app:maxImageSize="20dp"
                 app:srcCompat="@android:drawable/ic_menu_close_clear_cancel"
-                app:tint="#FFFFFF" />
+                app:tint="@color/ch_text_primary" />
         </LinearLayout>
     </FrameLayout>
 
@@ -220,7 +259,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/spacing_md"
+        android:layout_marginTop="@dimen/ch_space_lg"
         android:visibility="gone"
         app:cardBackgroundColor="@color/ch_success"
         app:cardCornerRadius="@dimen/radius_xl"
@@ -236,6 +275,50 @@
             android:textColor="@color/white"
             android:textSize="@dimen/ch_text_size_label"
             android:textStyle="bold" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/trackingSessionMetaCard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/trackingStatusChipCard"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/ch_space_xs"
+        android:maxWidth="@dimen/tracking_session_meta_card_max_width"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/ch_surface_card"
+        app:cardCornerRadius="@dimen/radius_lg"
+        app:cardElevation="1dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_sm"
+            android:paddingVertical="@dimen/spacing_2xs">
+
+            <TextView
+                android:id="@+id/trackingSessionStatusValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:textColor="@color/ch_text_primary"
+                android:textSize="@dimen/ch_text_size_label"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/trackingSessionPhaseValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:textColor="@color/ch_text_secondary"
+                android:textSize="@dimen/ch_text_size_label" />
+        </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
     <!-- Play/Pause FAB - between map and stats -->
@@ -255,24 +338,62 @@
         app:srcCompat="@android:drawable/ic_media_pause"
         app:tint="@color/white" />
 
-    <!-- Stats panel - bottom card overlay on the map -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/trackingRecenterFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/trackingStatsCard"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_marginBottom="@dimen/spacing_sm"
+        android:contentDescription="@string/tracking_recenter_action"
+        android:visibility="gone"
+        app:backgroundTint="@color/ch_surface"
+        app:fabSize="mini"
+        app:maxImageSize="20dp"
+        app:srcCompat="@android:drawable/ic_menu_mylocation"
+        app:tint="@color/ch_primary" />
+
+    <!-- Info FAB - top left corner over map (above recenter) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/trackingInfoFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:contentDescription="@string/tracking_active_trip_details_content_description"
+        android:visibility="gone"
+        app:backgroundTint="@color/ch_surface"
+        app:fabSize="mini"
+        app:maxImageSize="22dp"
+        app:srcCompat="@android:drawable/ic_menu_info_details"
+        app:tint="@color/ch_primary" />
+
+    <!-- Stats panel anchored below map (no overlap) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/trackingStatsCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginHorizontal="@dimen/spacing_sm"
-        android:layout_marginBottom="@dimen/spacing_sm"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:layout_marginBottom="@dimen/spacing_xs"
         android:visibility="gone"
-        app:cardBackgroundColor="#F0FFFFFF"
+        app:cardBackgroundColor="@color/ch_surface_card"
         app:cardCornerRadius="@dimen/radius_lg"
-        app:cardElevation="4dp">
+        app:cardElevation="4dp"
+        app:strokeColor="@android:color/transparent"
+        app:strokeWidth="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/spacing_md">
+                android:paddingHorizontal="@dimen/spacing_md"
+                android:paddingTop="@dimen/spacing_sm"
+                android:paddingBottom="@dimen/spacing_sm">
 
             <!-- ETA row -->
             <LinearLayout
@@ -297,6 +418,32 @@
                     android:textColor="@color/ch_primary"
                     android:textSize="@dimen/ch_text_size_title"
                     android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/trackingGpsStatusValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/tracking_gps_searching"
+                    android:textColor="@color/ch_on_surface_variant"
+                    android:textSize="@dimen/ch_text_size_caption" />
+
+                <TextView
+                    android:id="@+id/trackingSyncStatusValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:text="@string/tracking_sync_paused"
+                    android:textColor="@color/ch_on_surface_variant"
+                    android:textSize="@dimen/ch_text_size_caption" />
             </LinearLayout>
 
             <!-- Distance remaining -->
@@ -412,30 +559,6 @@
                         android:textSize="@dimen/ch_text_size_caption" />
                 </LinearLayout>
 
-                <!-- Avg speed -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/trackingAvgSpeedValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0 km/h"
-                        android:textColor="@color/ch_on_surface"
-                        android:textSize="@dimen/ch_text_size_body_large"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/tracking_map_avg_speed_label"
-                        android:textColor="@color/ch_on_surface_variant"
-                        android:textSize="@dimen/ch_text_size_caption" />
-                </LinearLayout>
             </LinearLayout>
 
             <View
@@ -526,14 +649,27 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Finalizar jornada button -->
+            <!-- Acciones operativas del porte -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/trackingReportIncidentButton"
+                style="@style/Widget.ApiCargoHub.Button.Primary"
+                android:backgroundTint="@color/ch_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:contentDescription="@string/tracking_report_incident_content_description"
+                android:text="@string/trip_report_incident_action"
+                android:textAllCaps="false"
+                android:visibility="gone" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/trackingStopButton"
                 style="@style/Widget.ApiCargoHub.Button.Primary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_sm"
-                android:backgroundTint="@color/ch_error"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:backgroundTint="@color/ch_success"
+                android:contentDescription="@string/tracking_finalize_content_description"
                 android:text="@string/tracking_finalize_action"
                 android:textAllCaps="false" />
         </LinearLayout>

@@ -65,35 +65,68 @@
             android:visibility="gone">
 
             <TextView
-                android:id="@+id/incidenciaDetailTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
-                android:textColor="@color/ch_text_primary"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/incidenciaDetailState"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/ch_space_sm"
-                android:background="@drawable/bg_state_chip"
-                android:backgroundTint="@color/ch_blue_100"
-                android:paddingStart="@dimen/ch_space_sm"
-                android:paddingTop="6dp"
-                android:paddingEnd="@dimen/ch_space_sm"
-                android:paddingBottom="6dp"
-                android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
-                android:textColor="@color/ch_blue_700"
-                android:textStyle="bold" />
+                android:text="@string/offer_section_label"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.SectionLabel"
+                android:textColor="@color/ch_text_secondary" />
 
             <TextView
-                android:id="@+id/incidenciaDetailMetadata"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/ch_space_sm"
-                android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
+                android:layout_marginTop="@dimen/ch_space_xs"
+                android:text="@string/incidencia_detail_subtitle"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
                 android:textColor="@color/ch_text_secondary" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ch_space_md"
+                app:cardBackgroundColor="@color/ch_surface_card"
+                app:cardCornerRadius="@dimen/radius_md"
+                app:cardElevation="2dp"
+                app:strokeColor="@android:color/transparent"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/ch_space_md">
+
+                    <TextView
+                        android:id="@+id/incidenciaDetailTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleLarge"
+                        android:textColor="@color/ch_text_primary"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/incidenciaDetailState"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_sm"
+                        android:background="@drawable/bg_state_chip"
+                        android:backgroundTint="@color/ch_blue_100"
+                        android:paddingStart="@dimen/ch_space_sm"
+                        android:paddingTop="6dp"
+                        android:paddingEnd="@dimen/ch_space_sm"
+                        android:paddingBottom="6dp"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
+                        android:textColor="@color/ch_blue_700"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/incidenciaDetailMetadata"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_sm"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
+                        android:textColor="@color/ch_text_secondary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Description section -->
             <com.google.android.material.card.MaterialCardView
@@ -113,9 +146,18 @@
                     android:padding="@dimen/ch_space_md">
 
                     <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/incidencia_detail_description_title"
+                        android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+                        android:textColor="@color/ch_text_primary"
+                        android:textStyle="bold" />
+
+                    <TextView
                         android:id="@+id/incidenciaDetailDescription"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ch_space_xs"
                         android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyLarge"
                         android:textColor="@color/ch_text_primary" />
                 </LinearLayout>

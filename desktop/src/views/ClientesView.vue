@@ -1,32 +1,35 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useClientesStore } from '@/stores/clientes'
 import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import ClienteTable from '@/components/clientes/ClienteTable.vue'
 import ClienteDialog from '@/components/clientes/ClienteDialog.vue'
-import ClientePortesTab from '@/components/clientes/ClientePortesTab.vue'
 import type { Cliente, CreateClienteRequest } from '@/stores/clientes'
 
 const clientesStore = useClientesStore()
 const toast = useToast()
+const route = useRoute()
+const router = useRouter()
 
 // --- Dialog state ---
 const showDialog = ref(false)
 const editingCliente = ref<Cliente | null>(null)
 
-// --- Portes panel state ---
-const showPortes = ref(false)
-const portesCliente = ref<Cliente | null>(null)
-
-// --- Delete confirmation ---
-const showDeleteConfirm = ref(false)
-const deletingCliente = ref<Cliente | null>(null)
+// --- Detail panel state ---
+const showDetail = ref(false)
+const detailCliente = ref<Cliente | null>(null)
 
 // --- Lifecycle ---
 onMounted(async () => {
   await clientesStore.fetchClientes()
+  await openClienteFromQuery()
+})
+
+watch(() => route.query.clienteId, () => {
+  void openClienteFromQuery()
 })
 
 // --- Handlers ---
@@ -41,15 +44,34 @@ function onEditCliente(cliente: Cliente): void {
   showDialog.value = true
 }
 
-async function onViewPortes(cliente: Cliente): Promise<void> {
-  portesCliente.value = cliente
-  showPortes.value = true
-  await clientesStore.fetchClientePortes(cliente.id)
+function onViewCliente(cliente: Cliente): void {
+  detailCliente.value = cliente
+  showDetail.value = true
 }
 
-function onConfirmDelete(cliente: Cliente): void {
-  deletingCliente.value = cliente
-  showDeleteConfirm.value = true
+async function openClienteFromQuery(): Promise<void> {
+  const rawId = route.query.clienteId
+  const clienteId = typeof rawId === 'string' ? Number.parseInt(rawId, 10) : NaN
+  if (Number.isNaN(clienteId)) return
+
+  const cliente = await clientesStore.fetchCliente(clienteId)
+  if (cliente) {
+    onViewCliente(cliente)
+    await clearQueryParam('clienteId')
+  }
+}
+
+async function clearQueryParam(param: string): Promise<void> {
+  const nextQuery = { ...route.query }
+  delete nextQuery[param]
+  await router.replace({ query: nextQuery })
+}
+
+async function onViewPortes(cliente: Cliente): Promise<void> {
+  await router.push({
+    path: '/portes',
+    query: { clienteId: String(cliente.id) },
+  })
 }
 
 async function onSaveCliente(data: CreateClienteRequest): Promise<void> {
@@ -91,34 +113,12 @@ async function onSaveCliente(data: CreateClienteRequest): Promise<void> {
   }
 }
 
-async function onDeleteCliente(): Promise<void> {
-  if (!deletingCliente.value) return
-  try {
-    const cliente = deletingCliente.value
-    await clientesStore.deleteCliente(cliente.id)
-    toast.add({
-      severity: 'success',
-      summary: 'Cliente eliminado',
-      detail: `${cliente.nombreEmpresa} ha sido eliminado.`,
-      life: 3000,
-    })
-    showDeleteConfirm.value = false
-    deletingCliente.value = null
-  } catch {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'No se pudo eliminar el cliente. Inténtalo de nuevo.',
-      life: 5000,
-    })
-  }
-}
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="h-full min-h-0 flex flex-col gap-6 overflow-hidden">
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
+    <div class="shrink-0 flex items-center justify-between">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
           <i class="pi pi-building text-2xl"></i>
@@ -138,57 +138,22 @@ async function onDeleteCliente(): Promise<void> {
     <!-- Mock Data Banner -->
     <div
       v-if="clientesStore.usingMockData"
-      class="flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm"
+      class="shrink-0 flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm"
     >
       <i class="pi pi-info-circle text-amber-500"></i>
       <span>Mostrando datos de demostración — la API no está disponible en este momento.</span>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-3 gap-4">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
-            <i class="pi pi-building text-lg"></i>
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ clientesStore.totalClientes }}</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Total Clientes</p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-            <i class="pi pi-envelope text-lg"></i>
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ clientesStore.clientes.filter(c => c.emailContacto).length }}</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Con Email</p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <i class="pi pi-phone text-lg"></i>
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ clientesStore.clientes.filter(c => c.telefono).length }}</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Con Teléfono</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Data Table -->
-    <ClienteTable
-      :clientes="clientesStore.clientes"
-      :loading="clientesStore.loading"
-      @edit="onEditCliente"
-      @view-portes="onViewPortes"
-      @delete="onConfirmDelete"
-    />
+    <div class="flex-1 min-h-0 overflow-auto">
+      <ClienteTable
+        :clientes="clientesStore.clientes"
+        :loading="clientesStore.loading"
+        @view="onViewCliente"
+        @edit="onEditCliente"
+        @view-portes="onViewPortes"
+      />
+    </div>
 
     <!-- Create/Edit Dialog -->
     <ClienteDialog
@@ -198,61 +163,48 @@ async function onDeleteCliente(): Promise<void> {
       @save="onSaveCliente"
     />
 
-    <!-- Portes Dialog -->
+    <!-- Detail Dialog -->
     <Dialog
-      v-model:visible="showPortes"
-      :header="`Portes de ${portesCliente?.nombreEmpresa ?? ''}`"
+      v-model:visible="showDetail"
+      :header="`Cliente #${detailCliente?.id ?? ''}`"
       :modal="true"
       :closable="true"
-      :style="{ width: '800px' }"
+      :style="{ width: '650px' }"
     >
-      <div class="pt-2">
-        <ClientePortesTab
-          :portes="clientesStore.clientePortes"
-          :loading="clientesStore.loadingPortes"
-        />
-      </div>
-    </Dialog>
-
-    <!-- Delete Confirmation Dialog -->
-    <Dialog
-      v-model:visible="showDeleteConfirm"
-      header="Eliminar Cliente"
-      :modal="true"
-      :closable="true"
-      :style="{ width: '450px' }"
-    >
-      <div class="flex items-start gap-4 py-2">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-red-50">
-          <i class="pi pi-trash text-red-500"></i>
+      <div class="pt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Empresa</p>
+          <p class="text-sm text-gray-800 dark:text-gray-100">{{ detailCliente?.nombreEmpresa || '—' }}</p>
         </div>
         <div>
-          <p class="text-gray-800 font-medium">
-            ¿Eliminar a {{ deletingCliente?.nombreEmpresa }}?
-          </p>
-          <p class="text-sm text-gray-500 mt-1">
-            Esta acción no se puede deshacer. Se eliminará el cliente y toda su información asociada.
-          </p>
+          <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">CIF/NIF</p>
+          <p class="text-sm text-gray-700 dark:text-gray-300">{{ detailCliente?.cif || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Email</p>
+          <p class="text-sm text-gray-700 dark:text-gray-300">{{ detailCliente?.emailContacto || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Teléfono</p>
+          <p class="text-sm text-gray-700 dark:text-gray-300">{{ detailCliente?.telefono || '—' }}</p>
+        </div>
+        <div class="md:col-span-2">
+          <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Dirección</p>
+          <p class="text-sm text-gray-700 dark:text-gray-300">{{ detailCliente?.direccion || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Ciudad</p>
+          <p class="text-sm text-gray-700 dark:text-gray-300">{{ detailCliente?.ciudad || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Código Postal</p>
+          <p class="text-sm text-gray-700 dark:text-gray-300">{{ detailCliente?.codigoPostal || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">País</p>
+          <p class="text-sm text-gray-700 dark:text-gray-300">{{ detailCliente?.pais || '—' }}</p>
         </div>
       </div>
-
-      <template #footer>
-        <div class="flex items-center justify-end gap-3">
-          <Button
-            label="Cancelar"
-            severity="secondary"
-            text
-            @click="showDeleteConfirm = false"
-          />
-          <Button
-            label="Eliminar"
-            severity="danger"
-            icon="pi pi-trash"
-            :loading="clientesStore.saving"
-            @click="onDeleteCliente"
-          />
-        </div>
-      </template>
     </Dialog>
   </div>
 </template>

@@ -20,6 +20,7 @@ public class VehiculoAdapter extends RecyclerView.Adapter<VehiculoAdapter.Vehicu
 
     public interface VehiculoActionListener {
         void onToggleState(@NonNull Vehiculo vehiculo);
+        void onEdit(@NonNull Vehiculo vehiculo);
     }
 
     private final List<Vehiculo> vehiculos = new ArrayList<>();
@@ -59,6 +60,7 @@ public class VehiculoAdapter extends RecyclerView.Adapter<VehiculoAdapter.Vehicu
         private final TextView summaryText;
         private final TextView dimensionsText;
         private final MaterialButton stateButton;
+        private final View editButton;
 
         private VehiculoViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -66,6 +68,7 @@ public class VehiculoAdapter extends RecyclerView.Adapter<VehiculoAdapter.Vehicu
             summaryText = itemView.findViewById(R.id.vehiculoItemSummaryText);
             dimensionsText = itemView.findViewById(R.id.vehiculoItemDimensionsText);
             stateButton = itemView.findViewById(R.id.vehiculoItemStateButton);
+            editButton = itemView.findViewById(R.id.vehiculoItemEditButton);
         }
 
         private void bind(@NonNull Vehiculo vehiculo) {
@@ -84,6 +87,7 @@ public class VehiculoAdapter extends RecyclerView.Adapter<VehiculoAdapter.Vehicu
             boolean active = vehiculo.getEstado() == EstadoVehiculo.DISPONIBLE;
             stateButton.setText(active ? R.string.vehicle_action_deactivate : R.string.vehicle_action_activate);
             stateButton.setOnClickListener(v -> listener.onToggleState(vehiculo));
+            editButton.setOnClickListener(v -> listener.onEdit(vehiculo));
 
             itemView.setOnClickListener(v -> {
                 boolean isVisible = dimensionsText.getVisibility() == View.VISIBLE;

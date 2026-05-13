@@ -132,7 +132,6 @@ public final class EntityMapper {
         e.anchoUtilMm = vehiculo.getAnchoUtilMm();
         e.altoUtilMm = vehiculo.getAltoUtilMm();
         e.volumenM3 = vehiculo.getVolumenM3();
-        e.trampillaElevadora = vehiculo.isTrampillaElevadora();
         e.conductorId = conductorId;
         e.cachedAt = System.currentTimeMillis();
         return e;

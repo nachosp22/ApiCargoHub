@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useIncidenciasStore } from '@/stores/incidencias'
 import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
@@ -11,6 +12,8 @@ import type { Incidencia, CrearIncidenciaRequest, ResolverIncidenciaRequest } fr
 
 const incidenciasStore = useIncidenciasStore()
 const toast = useToast()
+const route = useRoute()
+const router = useRouter()
 
 // --- Dialog state ---
 const showCreateDialog = ref(false)
@@ -19,27 +22,21 @@ const showDetail = ref(false)
 const detailIncidencia = ref<Incidencia | null>(null)
 const resolvingIncidencia = ref<Incidencia | null>(null)
 
-// --- Overdue toggle ---
-const showingVencidas = ref(false)
 
 // --- Lifecycle ---
 onMounted(async () => {
   await Promise.all([incidenciasStore.fetchIncidencias(), incidenciasStore.fetchPorteOptions()])
+  await openIncidenciaFromQuery()
+})
+
+watch(() => route.query.incidenciaId, () => {
+  void openIncidenciaFromQuery()
 })
 
 // --- Handlers ---
 
 function onNewIncidencia(): void {
   showCreateDialog.value = true
-}
-
-async function onToggleVencidas(): Promise<void> {
-  showingVencidas.value = !showingVencidas.value
-  if (showingVencidas.value) {
-    await incidenciasStore.fetchVencidas()
-  } else {
-    await incidenciasStore.fetchIncidencias()
-  }
 }
 
 function onViewIncidencia(incidencia: Incidencia): void {
@@ -94,34 +91,49 @@ async function onResolverIncidencia(id: number, data: ResolverIncidenciaRequest)
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: 'No se pudo resolver la incidencia. Inténtalo de nuevo.',
+      detail: 'No se pudo guardar la edición de la incidencia. Inténtalo de nuevo.',
       life: 5000,
     })
   }
 }
+
+async function openIncidenciaFromQuery(): Promise<void> {
+  const rawId = route.query.incidenciaId
+  const incidenciaId = typeof rawId === 'string' ? Number.parseInt(rawId, 10) : NaN
+  if (Number.isNaN(incidenciaId)) return
+
+  const incidencia = await incidenciasStore.fetchIncidenciaById(incidenciaId)
+  if (incidencia) {
+    onViewIncidencia(incidencia)
+    await clearQueryParam('incidenciaId')
+  }
+}
+
+async function clearQueryParam(param: string): Promise<void> {
+  const nextQuery = { ...route.query }
+  delete nextQuery[param]
+  await router.replace({ query: nextQuery })
+}
+
+async function onOpenPorteFromIncidencia(porteId: number): Promise<void> {
+  await router.push({ path: '/portes', query: { porteId: String(porteId) } })
+}
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="h-full min-h-0 flex flex-col gap-6 overflow-hidden">
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
+    <div class="shrink-0 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+        <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center">
           <i class="pi pi-exclamation-triangle text-2xl"></i>
         </div>
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">Incidencias</h1>
-          <p class="text-sm text-gray-500 mt-0.5">Gestión de incidencias y seguimiento SLA</p>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Incidencias</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Gestión de incidencias</p>
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <Button
-          :label="showingVencidas ? 'Ver Todas' : 'Ver Vencidas'"
-          icon="pi pi-clock"
-          :severity="showingVencidas ? 'primary' : 'secondary'"
-          :outlined="!showingVencidas"
-          @click="onToggleVencidas"
-        />
         <Button
           label="Nueva Incidencia"
           icon="pi pi-plus"
@@ -133,28 +145,22 @@ async function onResolverIncidencia(id: number, data: ResolverIncidenciaRequest)
     <!-- Mock Data Banner -->
     <div
       v-if="incidenciasStore.usingMockData"
-      class="flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm"
+      class="shrink-0 flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 rounded-lg px-4 py-3 text-sm"
     >
-      <i class="pi pi-info-circle text-amber-500"></i>
+      <i class="pi pi-info-circle text-amber-500 dark:text-amber-400"></i>
       <span>Mostrando datos de demostración — la API no está disponible en este momento.</span>
     </div>
 
-    <!-- Overdue Banner -->
-    <div
-      v-if="showingVencidas"
-      class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-lg px-4 py-3 text-sm"
-    >
-      <i class="pi pi-clock text-red-500"></i>
-      <span>Mostrando solo incidencias con SLA vencido.</span>
-    </div>
-
     <!-- Data Table -->
-    <IncidenciaTable
-      :incidencias="incidenciasStore.incidencias"
-      :loading="incidenciasStore.loading"
-      @view="onViewIncidencia"
-      @resolve="onResolveIncidencia"
-    />
+    <div class="flex-1 min-h-0 overflow-auto">
+      <IncidenciaTable
+        :incidencias="incidenciasStore.incidencias"
+        :loading="incidenciasStore.loading"
+        @view="onViewIncidencia"
+        @resolve="onResolveIncidencia"
+        @open-porte="onOpenPorteFromIncidencia"
+      />
+    </div>
 
     <!-- Create Incidencia Dialog -->
     <IncidenciaDialog

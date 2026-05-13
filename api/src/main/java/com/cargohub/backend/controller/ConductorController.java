@@ -1,5 +1,7 @@
 package com.cargohub.backend.controller;
 
+import com.cargohub.backend.dto.ActualizarConductorRequest;
+import com.cargohub.backend.dto.ConductorCreateRequest;
 import com.cargohub.backend.entity.BloqueoAgenda;
 import com.cargohub.backend.entity.Conductor;
 import com.cargohub.backend.entity.Vehiculo;
@@ -19,7 +21,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/conductores")
-@CrossOrigin(origins = "*")
 public class ConductorController {
 
     @Autowired
@@ -38,6 +39,21 @@ public class ConductorController {
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<List<Conductor>> listarTodos() {
         return ResponseEntity.ok(conductorService.listarTodos());
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<Conductor> crearConductor(@Valid @RequestBody ConductorCreateRequest request) {
+        Conductor conductor = conductorService.crearConductorAdmin(
+                request.getNombre(),
+                request.getApellidos(),
+                request.getEmail(),
+                request.getPassword(),
+                request.getDni(),
+                request.getTelefono(),
+                request.getCiudadBase()
+        );
+        return ResponseEntity.status(201).body(conductor);
     }
 
     // --- APROBACIÓN DE CONDUCTORES ---
@@ -107,18 +123,26 @@ public class ConductorController {
     // Actualizar perfil
     @PutMapping("/{id}")
     @PreAuthorize("@ownership.canAccessConductor(authentication, #id)")
-    public ResponseEntity<Conductor> actualizarPerfil(@PathVariable Long id, @RequestBody Conductor datosNuevos) {
+    public ResponseEntity<Conductor> actualizarPerfil(@PathVariable Long id, @RequestBody ActualizarConductorRequest dto) {
         Conductor conductor = conductorService.obtenerPorId(id);
 
-        // Actualizamos solo lo editable
-        if (datosNuevos.getNombre() != null) conductor.setNombre(datosNuevos.getNombre());
-        if (datosNuevos.getApellidos() != null) conductor.setApellidos(datosNuevos.getApellidos());
-        if (datosNuevos.getTelefono() != null) conductor.setTelefono(datosNuevos.getTelefono());
-        if (datosNuevos.getCiudadBase() != null) conductor.setCiudadBase(datosNuevos.getCiudadBase());
-        if (datosNuevos.getLatitudBase() != null) conductor.setLatitudBase(datosNuevos.getLatitudBase());
-        if (datosNuevos.getLongitudBase() != null) conductor.setLongitudBase(datosNuevos.getLongitudBase());
-        if (datosNuevos.getRadioAccionKm() != null) conductor.setRadioAccionKm(datosNuevos.getRadioAccionKm());
-        if (datosNuevos.getDiasLaborables() != null) conductor.setDiasLaborables(datosNuevos.getDiasLaborables());
+        if (dto.getNombre() != null) conductor.setNombre(dto.getNombre());
+        if (dto.getApellidos() != null) conductor.setApellidos(dto.getApellidos());
+        if (dto.getTelefono() != null) conductor.setTelefono(dto.getTelefono());
+        if (dto.getDni() != null) conductor.setDni(dto.getDni());
+        if (dto.getCiudadBase() != null) conductor.setCiudadBase(dto.getCiudadBase());
+        if (dto.getRadioAccionKm() != null) conductor.setRadioAccionKm(dto.getRadioAccionKm());
+        if (dto.getDisponible() != null) {
+            boolean isAdmin = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                    .getAuthentication()
+                    .getAuthorities()
+                    .stream()
+                    .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()) || "ROLE_SUPERADMIN".equals(a.getAuthority()));
+            if (!isAdmin) {
+                return ResponseEntity.status(403).build();
+            }
+            conductor.setDisponible(dto.getDisponible());
+        }
 
         return ResponseEntity.ok(conductorService.guardarOActualizar(conductor));
     }
@@ -159,6 +183,14 @@ public class ConductorController {
         return ResponseEntity.ok(vehiculoService.listarPorConductor(conductorId));
     }
 
+    @PutMapping("/{conductorId}/vehiculos/{vehiculoId}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN','CONDUCTOR') and @ownership.canAccessConductor(authentication, #conductorId)")
+    public ResponseEntity<Vehiculo> actualizarVehiculo(@PathVariable Long conductorId,
+                                                        @PathVariable Long vehiculoId,
+                                                        @Valid @RequestBody Vehiculo request) {
+        return ResponseEntity.ok(vehiculoService.actualizarVehiculo(vehiculoId, conductorId, request));
+    }
+
     // --- BLOQUEOS RECURRENTES ---
 
     @GetMapping("/{id}/bloqueos-recurrentes")
@@ -173,6 +205,19 @@ public class ConductorController {
     public ResponseEntity<List<BloqueoRecurrenteService.BloqueoRecurrenteResponse>> setBloqueoRecurrentes(
             @PathVariable Long id, @RequestBody List<Integer> diasBloqueados) {
         return ResponseEntity.ok(bloqueoRecurrenteService.setBulk(id, diasBloqueados));
+    }
+
+    @GetMapping("/{id}/dias-laborables")
+    @PreAuthorize("@ownership.canAccessConductor(authentication, #id)")
+    public ResponseEntity<List<Integer>> getDiasLaborables(@PathVariable Long id) {
+        return ResponseEntity.ok(conductorService.obtenerDiasLaborables(id));
+    }
+
+    @PutMapping("/{id}/dias-laborables")
+    @PreAuthorize("@ownership.canAccessConductor(authentication, #id)")
+    public ResponseEntity<List<Integer>> setDiasLaborables(@PathVariable Long id,
+                                                            @RequestBody List<Integer> diasLaborables) {
+        return ResponseEntity.ok(conductorService.actualizarDiasLaborables(id, diasLaborables));
     }
 
     // --- CONDUCTOR MATCHING ---

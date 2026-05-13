@@ -100,7 +100,7 @@ function onClose(): void {
 <template>
   <Dialog
     :visible="visible"
-    header="Resolver Incidencia"
+    header="Editar Incidencia"
     :modal="true"
     :closable="true"
     :style="{ width: '550px' }"
@@ -151,7 +151,7 @@ function onClose(): void {
           maxlength="4000"
         />
         <small v-if="errors.resolucion" class="text-red-500 text-xs mt-1">
-          Campo requerido para resolver la incidencia
+          Campo requerido para guardar la edición de la incidencia
         </small>
       </div>
 
@@ -179,8 +179,8 @@ function onClose(): void {
           :disabled="saving"
         />
         <Button
-          label="Confirmar"
-          icon="pi pi-check"
+          label="Guardar cambios"
+          icon="pi pi-pencil"
           @click="onSubmit"
           :loading="saving"
         />

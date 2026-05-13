@@ -40,11 +40,11 @@ public class TrackingCoordinator {
         void onLocationUpdated(@NonNull Location location);
     }
 
-    private static final long MIN_TIME_MS = 30_000L;
-    private static final float MIN_DISTANCE_METERS = 30f;
+    private static final long MIN_TIME_MS = 2_000L;
+    private static final float MIN_DISTANCE_METERS = 0f;
 
-    private static final long HIGH_FREQ_TIME_MS = 5_000L;
-    private static final float HIGH_FREQ_DISTANCE_METERS = 10f;
+    private static final long HIGH_FREQ_TIME_MS = 2_000L;
+    private static final float HIGH_FREQ_DISTANCE_METERS = 0f;
 
     private final Context appContext;
     private final TrackingRepository trackingRepository;
@@ -53,8 +53,10 @@ public class TrackingCoordinator {
     private Listener listener;
     private boolean running;
     private boolean highFrequencyMode;
+    private boolean backendSyncEnabled = true;
     private Long activeConductorId;
     private Long activePorteId;
+    private Long activeSessionId;
 
     private final LocationListener locationListener = new LocationListener() {
         @Override
@@ -106,6 +108,14 @@ public class TrackingCoordinator {
         this.highFrequencyMode = enabled;
     }
 
+    public void setBackendSyncEnabled(boolean enabled) {
+        this.backendSyncEnabled = enabled;
+    }
+
+    public void setActiveSessionId(@Nullable Long sessionId) {
+        this.activeSessionId = sessionId;
+    }
+
     public void start(@NonNull Porte porte, @NonNull Listener listener) {
         this.listener = listener;
         if (!SessionManager.hasActiveSession()) {
@@ -141,6 +151,10 @@ public class TrackingCoordinator {
             if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, timeMs, distanceM, locationListener);
             }
+            Location lastKnown = getLastKnownLocation();
+            if (lastKnown != null) {
+                locationListener.onLocationChanged(lastKnown);
+            }
         } catch (Exception ex) {
             stopInternal("No pudimos iniciar el tracking en este dispositivo.");
         }
@@ -164,7 +178,8 @@ public class TrackingCoordinator {
                 if (loc != null) return loc;
             }
             if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                return locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                Location loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                if (loc != null) return loc;
             }
         } catch (Exception ignored) {
         }
@@ -185,12 +200,19 @@ public class TrackingCoordinator {
         );
         Double speedKph = location.hasSpeed() ? location.getSpeed() * 3.6d : null;
         Integer headingDeg = location.hasBearing() ? Math.round(location.getBearing()) : null;
+        if (!backendSyncEnabled) {
+            if (listener != null) {
+                listener.onLocationSynced(recordedAt);
+            }
+            return;
+        }
         DriverLocationUpdateRequest request = new DriverLocationUpdateRequest(
                 location.getLatitude(),
                 location.getLongitude(),
                 recordedAt,
                 speedKph,
-                headingDeg
+                headingDeg,
+                activeSessionId
         );
         trackingRepository.upsertLocation(activeConductorId, request, new com.cargohub.mobile.data.RepositoryCallback<Void>() {
             @Override
@@ -214,6 +236,7 @@ public class TrackingCoordinator {
         running = false;
         activeConductorId = null;
         activePorteId = null;
+        activeSessionId = null;
         try {
             locationManager.removeUpdates(locationListener);
         } catch (Exception ignored) {

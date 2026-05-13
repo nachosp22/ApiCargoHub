@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import type { RouteLocationRaw } from 'vue-router'
 import { useConductoresStore } from '@/stores/conductores'
 import { usePortesStore } from '@/stores/portes'
 import { useClientesStore } from '@/stores/clientes'
@@ -10,14 +11,14 @@ import { useFacturasStore } from '@/stores/facturas'
 
 // --- Types ---
 
-export type EntityType = 'conductor' | 'porte' | 'cliente' | 'vehiculo' | 'incidencia' | 'factura'
+export type EntityType = 'accion' | 'conductor' | 'porte' | 'cliente' | 'vehiculo' | 'incidencia' | 'factura'
 
 export interface SearchResult {
   id: number
   type: EntityType
   title: string
   subtitle: string
-  route: string
+  route: RouteLocationRaw
   icon: string
   /** 0 = exact match, 1 = partial — used for sorting */
   _score: number
@@ -27,6 +28,7 @@ export interface SearchResult {
 
 const MAX_PER_CATEGORY = 4
 const MAX_TOTAL = 20
+const fleetRealtimeEnabled = import.meta.env.VITE_FEATURE_FLEET_REALTIME === 'true'
 
 function normalize(str: string): string {
   return str
@@ -76,6 +78,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
     try {
       const found = await Promise.all([
+        Promise.resolve(searchAcciones(q)),
         searchConductores(q),
         searchPortes(q),
         searchClientes(q),
@@ -108,6 +111,94 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     router.push(result.route)
   }
 
+  function searchAcciones(q: string): SearchResult[] {
+    const actions: SearchResult[] = [
+      {
+        id: 1,
+        type: 'accion',
+        title: 'Ir a Dashboard',
+        subtitle: 'Resumen operativo',
+        route: '/dashboard',
+        icon: 'pi pi-home',
+        _score: 1,
+      },
+      {
+        id: 2,
+        type: 'accion',
+        title: 'Ir a Incidencias',
+        subtitle: 'Gestión y resolución de incidencias',
+        route: '/incidencias',
+        icon: 'pi pi-exclamation-triangle',
+        _score: 1,
+      },
+      {
+        id: 3,
+        type: 'accion',
+        title: 'Ir a Revisión de portes',
+        subtitle: 'Pendientes de revisión manual',
+        route: '/revision-portes',
+        icon: 'pi pi-eye',
+        _score: 1,
+      },
+      {
+        id: 4,
+        type: 'accion',
+        title: 'Ir a Portes',
+        subtitle: 'Operación completa de portes',
+        route: '/portes',
+        icon: 'pi pi-box',
+        _score: 1,
+      },
+      {
+        id: 5,
+        type: 'accion',
+        title: 'Ir a Conductores',
+        subtitle: 'Disponibilidad y estado de conductores',
+        route: '/conductores',
+        icon: 'pi pi-users',
+        _score: 1,
+      },
+      {
+        id: 6,
+        type: 'accion',
+        title: 'Ir a Vehículos',
+        subtitle: 'Flota y disponibilidad',
+        route: '/vehiculos',
+        icon: 'pi pi-car',
+        _score: 1,
+      },
+      {
+        id: 7,
+        type: 'accion',
+        title: 'Ir a Clientes',
+        subtitle: 'Cartera de clientes',
+        route: '/clientes',
+        icon: 'pi pi-building',
+        _score: 1,
+      },
+    ]
+
+    if (fleetRealtimeEnabled) {
+      actions.push({
+        id: 8,
+        type: 'accion',
+        title: 'Ir a Mapa de flota',
+        subtitle: 'Tracking en tiempo real',
+        route: '/fleet-map',
+        icon: 'pi pi-map',
+        _score: 1,
+      })
+    }
+
+    return actions.reduce<SearchResult[]>((acc, action) => {
+      const s = score([action.title, action.subtitle], q)
+      if (s !== null) {
+        acc.push({ ...action, _score: s })
+      }
+      return acc
+    }, [])
+  }
+
   // --- Per-entity search helpers ---
 
   async function searchConductores(q: string): Promise<SearchResult[]> {
@@ -122,7 +213,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
           type: 'conductor',
           title: `${c.nombre} ${c.apellidos}`,
           subtitle: c.email,
-          route: '/conductores',
+          route: { path: '/conductores', query: { conductorId: String(c.id) } },
           icon: 'pi pi-user',
           _score: s,
         })
@@ -143,7 +234,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
           type: 'porte',
           title: `#${p.id} ${p.origen} → ${p.destino}`,
           subtitle: `${p.estado}${p.fechaCreacion ? ' · ' + p.fechaCreacion.split('T')[0] : ''}`,
-          route: '/portes',
+          route: { path: '/portes', query: { porteId: String(p.id) } },
           icon: 'pi pi-box',
           _score: s,
         })
@@ -164,7 +255,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
           type: 'cliente',
           title: c.nombreEmpresa,
           subtitle: c.cif,
-          route: '/clientes',
+          route: { path: '/clientes', query: { clienteId: String(c.id) } },
           icon: 'pi pi-building',
           _score: s,
         })
@@ -185,7 +276,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
           type: 'vehiculo',
           title: v.matricula,
           subtitle: `${v.marca} ${v.modelo}`,
-          route: '/vehiculos',
+          route: { path: '/vehiculos', query: { vehiculoId: String(v.id) } },
           icon: 'pi pi-car',
           _score: s,
         })
@@ -206,7 +297,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
           type: 'incidencia',
           title: `#${i.id} ${i.titulo}`,
           subtitle: i.estado,
-          route: '/incidencias',
+          route: { path: '/incidencias', query: { incidenciaId: String(i.id) } },
           icon: 'pi pi-exclamation-triangle',
           _score: s,
         })
@@ -227,7 +318,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
           type: 'factura',
           title: f.numeroSerie,
           subtitle: `${f.importeTotal.toFixed(2)} € · ${f.pagada ? 'Pagada' : 'Pendiente'}`,
-          route: '/facturas',
+          route: { path: '/facturas', query: { facturaId: String(f.id) } },
           icon: 'pi pi-file-edit',
           _score: s,
         })

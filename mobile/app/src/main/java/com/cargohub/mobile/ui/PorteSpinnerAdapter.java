@@ -39,7 +39,7 @@ public class PorteSpinnerAdapter extends ArrayAdapter<Porte> {
         }
         Porte porte = getItem(position);
         TextView text = convertView.findViewById(R.id.porteSpinnerText);
-        text.setText(porte != null ? porte.toString() : "");
+        text.setText(porte != null && porte.getId() != null ? "Porte #" + porte.getId() : "");
         return convertView;
     }
 
@@ -52,7 +52,7 @@ public class PorteSpinnerAdapter extends ArrayAdapter<Porte> {
         }
         Porte porte = getItem(position);
         TextView text = convertView.findViewById(R.id.porteSpinnerText);
-        text.setText(porte != null ? porte.toString() : "");
+        text.setText(porte != null && porte.getId() != null ? "Porte #" + porte.getId() : "");
         return convertView;
     }
 }

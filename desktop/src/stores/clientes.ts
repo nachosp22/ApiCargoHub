@@ -10,7 +10,8 @@ export interface Cliente {
   cif: string
   emailContacto: string
   telefono: string
-  direccion: string
+  direccionFiscal?: string
+  direccion?: string
   ciudad: string
   codigoPostal: string
   pais: string
@@ -21,6 +22,7 @@ export interface CreateClienteRequest {
   cif: string
   emailContacto: string
   telefono?: string
+  direccionFiscal?: string
   direccion?: string
   ciudad?: string
   codigoPostal?: string
@@ -32,6 +34,7 @@ export interface UpdateClienteRequest {
   cif?: string
   emailContacto?: string
   telefono?: string
+  direccionFiscal?: string
   direccion?: string
   ciudad?: string
   codigoPostal?: string
@@ -98,6 +101,7 @@ const MOCK_PORTES: Record<number, ClientePorte[]> = {
 // --- Store ---
 
 export const useClientesStore = defineStore('clientes', () => {
+  type DataSource = 'api' | 'mock'
   // --- State ---
   const clientes = ref<Cliente[]>([])
   const selectedCliente = ref<Cliente | null>(null)
@@ -106,6 +110,9 @@ export const useClientesStore = defineStore('clientes', () => {
   const saving = ref(false)
   const loadingPortes = ref(false)
   const usingMockData = ref(false)
+  const dataSource = ref<DataSource>('api')
+  const warning = ref<string | null>(null)
+  const error = ref<string | null>(null)
 
   // --- Getters ---
   const totalClientes = computed(() => clientes.value.length)
@@ -118,6 +125,9 @@ export const useClientesStore = defineStore('clientes', () => {
   async function fetchClientes(): Promise<void> {
     loading.value = true
     usingMockData.value = false
+    dataSource.value = 'api'
+    warning.value = null
+    error.value = null
 
     try {
       const response = await api.get('/clientes')
@@ -126,6 +136,9 @@ export const useClientesStore = defineStore('clientes', () => {
     } catch {
       // API unavailable — use mock data
       usingMockData.value = true
+      dataSource.value = 'mock'
+      warning.value = 'Mostrando clientes mock porque la API no respondió'
+      error.value = 'No se pudo obtener clientes desde la API'
       clientes.value = [...MOCK_CLIENTES]
     } finally {
       loading.value = false
@@ -143,6 +156,7 @@ export const useClientesStore = defineStore('clientes', () => {
       selectedCliente.value = cliente
       return cliente
     } catch {
+      error.value = 'No se pudo cargar el cliente solicitado'
       // Try from local list
       const found = clientes.value.find((c) => c.id === id)
       if (found) {
@@ -179,7 +193,8 @@ export const useClientesStore = defineStore('clientes', () => {
           cif: request.cif,
           emailContacto: request.emailContacto,
           telefono: request.telefono ?? '',
-          direccion: request.direccion ?? '',
+          direccionFiscal: request.direccionFiscal ?? request.direccion ?? '',
+          direccion: request.direccionFiscal ?? request.direccion ?? '',
           ciudad: request.ciudad ?? '',
           codigoPostal: request.codigoPostal ?? '',
           pais: request.pais ?? 'España',
@@ -216,7 +231,8 @@ export const useClientesStore = defineStore('clientes', () => {
             cif: request.cif ?? current.cif,
             emailContacto: request.emailContacto ?? current.emailContacto,
             telefono: request.telefono ?? current.telefono,
-            direccion: request.direccion ?? current.direccion,
+            direccionFiscal: request.direccionFiscal ?? request.direccion ?? current.direccionFiscal,
+            direccion: request.direccionFiscal ?? request.direccion ?? current.direccionFiscal,
             ciudad: request.ciudad ?? current.ciudad,
             codigoPostal: request.codigoPostal ?? current.codigoPostal,
             pais: request.pais ?? current.pais,
@@ -264,6 +280,9 @@ export const useClientesStore = defineStore('clientes', () => {
       clientePortes.value = data.map(mapClientePorteFromApi)
     } catch {
       // Fallback to mock
+      usingMockData.value = true
+      dataSource.value = 'mock'
+      warning.value = 'Mostrando portes mock del cliente por indisponibilidad de API'
       clientePortes.value = MOCK_PORTES[clienteId] ?? []
     } finally {
       loadingPortes.value = false
@@ -290,7 +309,8 @@ export const useClientesStore = defineStore('clientes', () => {
       cif: String(c.cif ?? ''),
       emailContacto: String(c.emailContacto ?? c.email ?? ''),
       telefono: String(c.telefono ?? ''),
-      direccion: String(c.direccion ?? ''),
+      direccionFiscal: String(c.direccionFiscal ?? c.direccion ?? ''),
+      direccion: String(c.direccionFiscal ?? c.direccion ?? ''),
       ciudad: String(c.ciudad ?? ''),
       codigoPostal: String(c.codigoPostal ?? ''),
       pais: String(c.pais ?? ''),
@@ -319,6 +339,9 @@ export const useClientesStore = defineStore('clientes', () => {
     saving,
     loadingPortes,
     usingMockData,
+    dataSource,
+    warning,
+    error,
     // Getters
     totalClientes,
     // Actions

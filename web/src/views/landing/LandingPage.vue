@@ -125,9 +125,9 @@
           </h2>
         </div>
 
-        <div class="grid lg:grid-cols-2 gap-12">
+        <div class="grid lg:grid-cols-2 gap-12 items-stretch">
           <!-- Para Empresas -->
-          <div class="bg-gradient-to-br from-blue-50 to-primary-50 dark:from-blue-950/30 dark:to-primary-950/30 rounded-3xl p-8 border border-blue-100 dark:border-blue-900">
+          <div class="bg-gradient-to-br from-blue-50 to-primary-50 dark:from-blue-950/30 dark:to-primary-950/30 rounded-3xl p-8 border border-blue-100 dark:border-blue-900 h-full flex flex-col">
             <div class="flex items-center gap-3 mb-8">
               <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center">
                 <i class="pi pi-building text-white text-xl"></i>
@@ -135,7 +135,7 @@
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('landing.howItWorks.forCompanies') }}</h3>
             </div>
 
-            <div class="space-y-6">
+            <div class="space-y-6 lg:min-h-[240px]">
               <div v-for="(step, index) in stepsEmpresas" :key="step.title" class="flex gap-4">
                 <div class="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-sm">
                   {{ index + 1 }}
@@ -147,17 +147,19 @@
               </div>
             </div>
 
-            <router-link
-              to="/register"
-              class="mt-8 inline-flex items-center justify-center w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/25 hover:-translate-y-0.5"
-            >
-              {{ t('landing.howItWorks.registerAsCompany') }}
-              <i class="pi pi-arrow-right ml-2"></i>
-            </router-link>
+            <div class="mt-auto pt-8">
+              <router-link
+                to="/register"
+                class="inline-flex items-center justify-center w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/25 hover:-translate-y-0.5"
+              >
+                {{ t('landing.howItWorks.registerAsCompany') }}
+                <i class="pi pi-arrow-right ml-2"></i>
+              </router-link>
+            </div>
           </div>
 
           <!-- Para Camioneros -->
-          <div class="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 rounded-3xl p-8 border border-emerald-100 dark:border-emerald-900">
+          <div class="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 rounded-3xl p-8 border border-emerald-100 dark:border-emerald-900 h-full flex flex-col">
             <div class="flex items-center gap-3 mb-8">
               <div class="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center">
                 <i class="pi pi-car text-white text-xl"></i>
@@ -165,25 +167,27 @@
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('landing.howItWorks.forDrivers') }}</h3>
             </div>
 
-            <div class="space-y-6">
+            <div class="space-y-6 lg:min-h-[240px]">
               <div v-for="(step, index) in stepsCamioneros" :key="step.title" class="flex gap-4">
                 <div class="flex-shrink-0 w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center font-bold text-sm">
                   {{ index + 1 }}
                 </div>
                 <div>
-                  <h4 class="font-semibold text-gray-900">{{ step.title }}</h4>
-                  <p class="text-sm text-gray-500 mt-1">{{ step.description }}</p>
+                  <h4 class="font-semibold text-gray-900 dark:text-white">{{ step.title }}</h4>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ step.description }}</p>
                 </div>
               </div>
             </div>
 
-            <router-link
-              to="/register"
-              class="mt-8 inline-flex items-center justify-center w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 hover:-translate-y-0.5"
-            >
-              {{ t('landing.howItWorks.registerAsDriver') }}
-              <i class="pi pi-arrow-right ml-2"></i>
-            </router-link>
+            <div class="mt-auto pt-8">
+              <router-link
+                to="/register"
+                class="inline-flex items-center justify-center w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 hover:-translate-y-0.5"
+              >
+                {{ t('landing.howItWorks.registerAsDriver') }}
+                <i class="pi pi-arrow-right ml-2"></i>
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -267,50 +271,50 @@
         </div>
 
         <div class="max-w-2xl mx-auto">
-          <div class="relative bg-gradient-to-br from-primary-50 to-blue-50 rounded-3xl p-10 border border-primary-100 shadow-xl shadow-primary/10">
+          <div class="relative bg-gradient-to-br from-primary-50 to-blue-50 rounded-3xl p-8 sm:p-10 border border-primary-100 shadow-xl shadow-primary/10">
             <div class="absolute -top-3 left-1/2 -translate-x-1/2">
               <span class="px-4 py-1.5 bg-primary text-white text-sm font-semibold rounded-full">
                 {{ t('landing.pricing.badge') }}
               </span>
             </div>
 
-            <div class="text-center mb-8">
+            <div class="text-center mb-6">
               <div class="text-6xl font-extrabold text-gray-900 mb-2">0€</div>
               <p class="text-lg text-gray-500">{{ t('landing.pricing.priceSubtitle') }}</p>
             </div>
 
-            <div class="grid sm:grid-cols-2 gap-4 mb-8">
-              <div class="flex items-start gap-3">
-                <i class="pi pi-check-circle text-green-500 mt-0.5 flex-shrink-0"></i>
-                <span class="text-sm text-gray-700">{{ t('landing.pricing.freeRegistration') }}</span>
+            <div class="grid sm:grid-cols-3 gap-3 mb-6">
+              <div class="bg-white/80 border border-primary-100 rounded-xl px-4 py-3 text-center">
+                <p class="text-sm font-semibold text-gray-800">Transparente</p>
               </div>
-              <div class="flex items-start gap-3">
-                <i class="pi pi-check-circle text-green-500 mt-0.5 flex-shrink-0"></i>
-                <span class="text-sm text-gray-700">{{ t('landing.pricing.aiAnalysis') }}</span>
+              <div class="bg-white/80 border border-primary-100 rounded-xl px-4 py-3 text-center">
+                <p class="text-sm font-semibold text-gray-800">Sin costes ocultos</p>
               </div>
-              <div class="flex items-start gap-3">
-                <i class="pi pi-check-circle text-green-500 mt-0.5 flex-shrink-0"></i>
-                <span class="text-sm text-gray-700">{{ t('landing.pricing.gpsTracking') }}</span>
-              </div>
-              <div class="flex items-start gap-3">
-                <i class="pi pi-check-circle text-green-500 mt-0.5 flex-shrink-0"></i>
-                <span class="text-sm text-gray-700">{{ t('landing.pricing.autoInvoicing') }}</span>
-              </div>
-              <div class="flex items-start gap-3">
-                <i class="pi pi-check-circle text-green-500 mt-0.5 flex-shrink-0"></i>
-                <span class="text-sm text-gray-700">{{ t('landing.pricing.insurance') }}</span>
-              </div>
-              <div class="flex items-start gap-3">
-                <i class="pi pi-check-circle text-green-500 mt-0.5 flex-shrink-0"></i>
-                <span class="text-sm text-gray-700">{{ t('landing.pricing.dashboard') }}</span>
+              <div class="bg-white/80 border border-primary-100 rounded-xl px-4 py-3 text-center">
+                <p class="text-sm font-semibold text-gray-800">Calculado por porte</p>
               </div>
             </div>
 
-            <div class="bg-white/80 rounded-2xl p-6 text-center border border-primary-100">
+            <div class="bg-white/80 rounded-2xl p-5 text-center border border-primary-100">
               <p class="text-sm text-gray-500 mb-1">{{ t('landing.pricing.commissionModel') }}</p>
-              <p class="text-gray-700 font-medium">
+              <p class="text-gray-700 font-medium text-sm sm:text-base">
                 {{ t('landing.pricing.commissionDesc') }}
               </p>
+            </div>
+
+            <div class="mt-5 grid sm:grid-cols-3 gap-2 text-xs text-gray-600">
+              <div class="flex items-center justify-center gap-2">
+                <i class="pi pi-check-circle text-green-500"></i>
+                <span>{{ t('landing.pricing.freeRegistration') }}</span>
+              </div>
+              <div class="flex items-center justify-center gap-2">
+                <i class="pi pi-check-circle text-green-500"></i>
+                <span>{{ t('landing.pricing.dashboard') }}</span>
+              </div>
+              <div class="flex items-center justify-center gap-2">
+                <i class="pi pi-check-circle text-green-500"></i>
+                <span>{{ t('landing.pricing.insurance') }}</span>
+              </div>
             </div>
 
             <router-link
@@ -332,7 +336,7 @@
         <h2 class="text-3xl sm:text-4xl font-bold text-white mb-6">
           {{ t('landing.cta.title') }}
         </h2>
-        <p class="text-lg text-primary-100 mb-8 max-w-2xl mx-auto">
+        <p class="text-lg text-primary-100 mb-8 max-w-xl mx-auto">
           {{ t('landing.cta.subtitle') }}
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">

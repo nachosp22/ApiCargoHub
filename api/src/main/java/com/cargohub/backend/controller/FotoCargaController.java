@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/portes/{porteId}/fotos")
-@CrossOrigin(origins = "*")
 public class FotoCargaController {
 
     @Autowired

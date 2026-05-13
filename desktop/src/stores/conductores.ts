@@ -16,8 +16,6 @@ export interface Conductor {
   ciudadBase: string
   disponible: boolean
   estado: EstadoConductor
-  rating: number
-  numeroValoraciones: number
   latitudBase: number | null
   longitudBase: number | null
   radioAccionKm: number
@@ -30,8 +28,8 @@ export interface CreateConductorRequest {
   apellidos: string
   email: string
   telefono?: string
-  dni?: string
-  password?: string
+  dni: string
+  password: string
   ciudadBase?: string
 }
 
@@ -86,73 +84,73 @@ const MOCK_CONDUCTORES: Conductor[] = [
   {
     id: 1, nombre: 'Juan', apellidos: 'Pérez García', email: 'juan.perez@cargohub.es',
     telefono: '612345678', dni: '12345678A', ciudadBase: 'Madrid', disponible: true,
-    estado: 'ACTIVO', rating: 4.5, numeroValoraciones: 28, latitudBase: 40.416, longitudBase: -3.703,
+    estado: 'ACTIVO', latitudBase: 40.416, longitudBase: -3.703,
     radioAccionKm: 300, diasLaborables: '1,2,3,4,5', portesAsignados: 12,
   },
   {
     id: 2, nombre: 'María', apellidos: 'López Fernández', email: 'maria.lopez@cargohub.es',
     telefono: '623456789', dni: '23456789B', ciudadBase: 'Barcelona', disponible: true,
-    estado: 'ACTIVO', rating: 4.8, numeroValoraciones: 35, latitudBase: 41.389, longitudBase: 2.159,
+    estado: 'ACTIVO', latitudBase: 41.389, longitudBase: 2.159,
     radioAccionKm: 250, diasLaborables: '1,2,3,4,5', portesAsignados: 15,
   },
   {
     id: 3, nombre: 'Carlos', apellidos: 'Ruiz Martínez', email: 'carlos.ruiz@cargohub.es',
     telefono: '634567890', dni: '34567890C', ciudadBase: 'Valencia', disponible: true,
-    estado: 'ACTIVO', rating: 4.2, numeroValoraciones: 19, latitudBase: 39.469, longitudBase: -0.376,
+    estado: 'ACTIVO', latitudBase: 39.469, longitudBase: -0.376,
     radioAccionKm: 200, diasLaborables: '1,2,3,4,5,6', portesAsignados: 8,
   },
   {
     id: 4, nombre: 'Ana', apellidos: 'García Sánchez', email: 'ana.garcia@cargohub.es',
     telefono: '645678901', dni: '45678901D', ciudadBase: 'Sevilla', disponible: false,
-    estado: 'SUSPENDIDO', rating: 3.9, numeroValoraciones: 14, latitudBase: 37.389, longitudBase: -5.984,
+    estado: 'SUSPENDIDO', latitudBase: 37.389, longitudBase: -5.984,
     radioAccionKm: 150, diasLaborables: '1,2,3,4,5', portesAsignados: 5,
   },
   {
     id: 5, nombre: 'Pedro', apellidos: 'Martín Díaz', email: 'pedro.martin@cargohub.es',
     telefono: '656789012', dni: '56789012E', ciudadBase: 'Bilbao', disponible: false,
-    estado: 'INACTIVO', rating: 4.0, numeroValoraciones: 10, latitudBase: 43.263, longitudBase: -2.935,
+    estado: 'INACTIVO', latitudBase: 43.263, longitudBase: -2.935,
     radioAccionKm: 200, diasLaborables: '1,2,3,4,5', portesAsignados: 0,
   },
   {
     id: 6, nombre: 'Laura', apellidos: 'Hernández Romero', email: 'laura.hernandez@cargohub.es',
     telefono: '667890123', dni: '67890123F', ciudadBase: 'Zaragoza', disponible: true,
-    estado: 'ACTIVO', rating: 4.6, numeroValoraciones: 22, latitudBase: 41.649, longitudBase: -0.887,
+    estado: 'ACTIVO', latitudBase: 41.649, longitudBase: -0.887,
     radioAccionKm: 350, diasLaborables: '1,2,3,4,5', portesAsignados: 10,
   },
   {
     id: 7, nombre: 'Diego', apellidos: 'Navarro Torres', email: 'diego.navarro@cargohub.es',
     telefono: '678901234', dni: '78901234G', ciudadBase: 'Málaga', disponible: true,
-    estado: 'ACTIVO', rating: 4.3, numeroValoraciones: 17, latitudBase: 36.721, longitudBase: -4.421,
+    estado: 'ACTIVO', latitudBase: 36.721, longitudBase: -4.421,
     radioAccionKm: 180, diasLaborables: '1,2,3,4,5,6', portesAsignados: 7,
   },
   {
     id: 8, nombre: 'Sofía', apellidos: 'Jiménez Moreno', email: 'sofia.jimenez@cargohub.es',
     telefono: '689012345', dni: '89012345H', ciudadBase: 'Alicante', disponible: true,
-    estado: 'ACTIVO', rating: 4.7, numeroValoraciones: 31, latitudBase: 38.345, longitudBase: -0.481,
+    estado: 'ACTIVO', latitudBase: 38.345, longitudBase: -0.481,
     radioAccionKm: 220, diasLaborables: '1,2,3,4,5', portesAsignados: 14,
   },
   {
     id: 9, nombre: 'Miguel', apellidos: 'Álvarez Gil', email: 'miguel.alvarez@cargohub.es',
     telefono: '690123456', dni: '90123456I', ciudadBase: 'Valladolid', disponible: false,
-    estado: 'INACTIVO', rating: 3.8, numeroValoraciones: 8, latitudBase: 41.652, longitudBase: -4.724,
+    estado: 'INACTIVO', latitudBase: 41.652, longitudBase: -4.724,
     radioAccionKm: 150, diasLaborables: '1,2,3,4,5', portesAsignados: 0,
   },
   {
     id: 10, nombre: 'Elena', apellidos: 'Morales Vega', email: 'elena.morales@cargohub.es',
     telefono: '601234567', dni: '01234567J', ciudadBase: 'Murcia', disponible: true,
-    estado: 'ACTIVO', rating: 4.4, numeroValoraciones: 25, latitudBase: 37.984, longitudBase: -1.128,
+    estado: 'ACTIVO', latitudBase: 37.984, longitudBase: -1.128,
     radioAccionKm: 200, diasLaborables: '1,2,3,4,5', portesAsignados: 9,
   },
   {
     id: 11, nombre: 'Raúl', apellidos: 'Castillo Prieto', email: 'raul.castillo@cargohub.es',
     telefono: '612098765', dni: '11234567K', ciudadBase: 'Santander', disponible: true,
-    estado: 'ACTIVO', rating: 4.1, numeroValoraciones: 13, latitudBase: 43.462, longitudBase: -3.810,
+    estado: 'ACTIVO', latitudBase: 43.462, longitudBase: -3.810,
     radioAccionKm: 280, diasLaborables: '1,2,3,4,5,6', portesAsignados: 6,
   },
   {
     id: 12, nombre: 'Lucía', apellidos: 'Domínguez Ortiz', email: 'lucia.dominguez@cargohub.es',
     telefono: '623098765', dni: '12234567L', ciudadBase: 'Córdoba', disponible: false,
-    estado: 'SUSPENDIDO', rating: 3.5, numeroValoraciones: 6, latitudBase: 37.884, longitudBase: -4.779,
+    estado: 'SUSPENDIDO', latitudBase: 37.884, longitudBase: -4.779,
     radioAccionKm: 120, diasLaborables: '1,2,3,4,5', portesAsignados: 2,
   },
 ]
@@ -160,12 +158,18 @@ const MOCK_CONDUCTORES: Conductor[] = [
 // --- Store ---
 
 export const useConductoresStore = defineStore('conductores', () => {
+  const AGENDA_RANGE_DAYS = 90
+
+  type DataSource = 'api' | 'mock'
   // --- State ---
   const conductores = ref<Conductor[]>([])
   const selectedConductor = ref<Conductor | null>(null)
   const loading = ref(false)
   const saving = ref(false)
   const usingMockData = ref(false)
+  const dataSource = ref<DataSource>('api')
+  const warning = ref<string | null>(null)
+  const error = ref<string | null>(null)
 
   // --- Pending approval state ---
   const pendientesAprobacion = ref<Conductor[]>([])
@@ -173,6 +177,7 @@ export const useConductoresStore = defineStore('conductores', () => {
 
   // --- Detail tabs state ---
   const detailAgenda = ref<BloqueoAgenda[]>([])
+  const detailRecurrentUnavailableDays = ref<number[]>([])
   const detailVehiculos = ref<VehiculoConductor[]>([])
   const detailEstadisticas = ref<EstadisticasConductor | null>(null)
   const detailPortes = ref<PorteConductor[]>([])
@@ -205,6 +210,9 @@ export const useConductoresStore = defineStore('conductores', () => {
   async function fetchConductores(): Promise<void> {
     loading.value = true
     usingMockData.value = false
+    dataSource.value = 'api'
+    warning.value = null
+    error.value = null
 
     try {
       const response = await api.get('/conductores')
@@ -213,6 +221,9 @@ export const useConductoresStore = defineStore('conductores', () => {
     } catch {
       // API unavailable — use mock data
       usingMockData.value = true
+      dataSource.value = 'mock'
+      warning.value = 'Mostrando conductores mock porque la API no respondió'
+      error.value = 'No se pudo obtener conductores desde la API'
       conductores.value = [...MOCK_CONDUCTORES]
     } finally {
       loading.value = false
@@ -230,6 +241,7 @@ export const useConductoresStore = defineStore('conductores', () => {
       selectedConductor.value = conductor
       return conductor
     } catch {
+      error.value = 'No se pudo cargar el conductor solicitado'
       // Try from local list
       const found = conductores.value.find((c) => c.id === id)
       if (found) {
@@ -271,8 +283,6 @@ export const useConductoresStore = defineStore('conductores', () => {
           ciudadBase: request.ciudadBase ?? '',
           disponible: true,
           estado: 'ACTIVO',
-          rating: 4.0,
-          numeroValoraciones: 0,
           latitudBase: null,
           longitudBase: null,
           radioAccionKm: 0,
@@ -433,29 +443,31 @@ export const useConductoresStore = defineStore('conductores', () => {
   // --- Detail Tab Actions ---
 
   /**
-   * Fetch agenda (bloqueos + bloqueos recurrentes) for a conductor.
+   * Fetch agenda (bloqueos por fecha/rango) for a conductor.
    */
   async function fetchAgenda(conductorId: number): Promise<void> {
     detailLoading.value = true
     try {
-      const [agendaRes, recurrentesRes] = await Promise.allSettled([
-        api.get(`/conductores/${conductorId}/agenda`),
-        api.get(`/conductores/${conductorId}/bloqueos-recurrentes`),
-      ])
+      const desde = new Date()
+      desde.setHours(0, 0, 0, 0)
+      const hasta = new Date(desde)
+      hasta.setDate(hasta.getDate() + AGENDA_RANGE_DAYS)
 
-      const agenda = agendaRes.status === 'fulfilled' ? extractArray(agendaRes.value.data) : []
-      const recurrentes = recurrentesRes.status === 'fulfilled' ? extractArray(recurrentesRes.value.data) : []
+      const agendaRes = await api.get(`/conductores/${conductorId}/agenda`, {
+        params: {
+          desde: toApiDate(desde),
+          hasta: toApiDate(hasta),
+        },
+      })
 
-      detailAgenda.value = [...agenda, ...recurrentes].map((b) => ({
-        id: Number(b.id ?? 0),
-        tipo: String(b.tipo ?? b.tipoBloqueo ?? 'BLOQUEO'),
-        descripcion: String(b.descripcion ?? b.motivo ?? '—'),
-        fechaInicio: String(b.fechaInicio ?? b.inicio ?? '—'),
-        fechaFin: String(b.fechaFin ?? b.fin ?? '—'),
-        diaSemana: b.diaSemana != null ? Number(b.diaSemana) : undefined,
-      }))
+      const agenda = extractArray(agendaRes.data)
+      const bloqueosAgenda = agenda.map((b) => mapBloqueoAgenda(b))
+
+      detailRecurrentUnavailableDays.value = []
+      detailAgenda.value = bloqueosAgenda
     } catch {
       detailAgenda.value = []
+      detailRecurrentUnavailableDays.value = []
     } finally {
       detailLoading.value = false
     }
@@ -533,6 +545,7 @@ export const useConductoresStore = defineStore('conductores', () => {
    */
   function clearDetail(): void {
     detailAgenda.value = []
+    detailRecurrentUnavailableDays.value = []
     detailVehiculos.value = []
     detailEstadisticas.value = null
     detailPortes.value = []
@@ -542,10 +555,32 @@ export const useConductoresStore = defineStore('conductores', () => {
 
   function formatDateLocal(value: unknown): string {
     if (!value) return '—'
-    const str = String(value)
+    const str = String(value).trim()
     if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str
+
+    const parsed = new Date(str)
+    if (!Number.isNaN(parsed.getTime())) return toApiDate(parsed)
+
     if (str.includes('T')) return str.split('T')[0]
     return str
+  }
+
+  function mapBloqueoAgenda(raw: Record<string, unknown>): BloqueoAgenda {
+    return {
+      id: Number(raw.id ?? 0),
+      tipo: String(raw.tipo ?? raw.tipoBloqueo ?? 'BLOQUEO'),
+      descripcion: String(raw.titulo ?? raw.descripcion ?? raw.motivo ?? '—'),
+      fechaInicio: formatDateLocal(raw.fechaInicio ?? raw.inicio),
+      fechaFin: formatDateLocal(raw.fechaFin ?? raw.fin ?? raw.fechaInicio ?? raw.inicio),
+      diaSemana: raw.diaSemana != null ? Number(raw.diaSemana) : undefined,
+    }
+  }
+
+  function toApiDate(date: Date): string {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
   function extractArray(data: unknown): Record<string, unknown>[] {
@@ -580,8 +615,6 @@ export const useConductoresStore = defineStore('conductores', () => {
       ciudadBase: String(c.ciudadBase ?? ''),
       disponible: c.disponible !== false,
       estado,
-      rating: c.rating != null ? Number(c.rating) : 4.0,
-      numeroValoraciones: c.numeroValoraciones != null ? Number(c.numeroValoraciones) : 0,
       latitudBase: c.latitudBase != null ? Number(c.latitudBase) : null,
       longitudBase: c.longitudBase != null ? Number(c.longitudBase) : null,
       radioAccionKm: c.radioAccionKm != null ? Number(c.radioAccionKm) : 0,
@@ -598,9 +631,13 @@ export const useConductoresStore = defineStore('conductores', () => {
     loading,
     saving,
     usingMockData,
+    dataSource,
+    warning,
+    error,
     pendientesAprobacion,
     pendientesLoading,
     detailAgenda,
+    detailRecurrentUnavailableDays,
     detailVehiculos,
     detailEstadisticas,
     detailPortes,

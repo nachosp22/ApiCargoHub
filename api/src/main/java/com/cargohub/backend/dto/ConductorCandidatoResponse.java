@@ -13,8 +13,6 @@ public class ConductorCandidatoResponse {
     private String apellidos;
     private String telefono;
     private String ciudadBase;
-    private Double rating;
-    private Integer numeroValoraciones;
     private String vehiculoInfo;
     private Double score;
 }

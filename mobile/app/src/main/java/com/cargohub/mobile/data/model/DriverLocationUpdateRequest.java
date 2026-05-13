@@ -7,17 +7,20 @@ public class DriverLocationUpdateRequest {
     private final String recordedAt;
     private final Double speedKph;
     private final Integer headingDeg;
+    private final Long sessionId;
 
     public DriverLocationUpdateRequest(Double lat,
                                        Double lon,
                                        String recordedAt,
                                        Double speedKph,
-                                       Integer headingDeg) {
+                                       Integer headingDeg,
+                                       Long sessionId) {
         this.lat = lat;
         this.lon = lon;
         this.recordedAt = recordedAt;
         this.speedKph = speedKph;
         this.headingDeg = headingDeg;
+        this.sessionId = sessionId;
     }
 
     public Double getLat() {
@@ -38,5 +41,9 @@ public class DriverLocationUpdateRequest {
 
     public Integer getHeadingDeg() {
         return headingDeg;
+    }
+
+    public Long getSessionId() {
+        return sessionId;
     }
 }

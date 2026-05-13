@@ -2,25 +2,41 @@ package com.cargohub.mobile.data.model;
 
 import androidx.annotation.Nullable;
 
+import com.google.gson.annotations.SerializedName;
+
 public class ConductorProfileUpdateRequest {
 
     @Nullable
-    private final String nombre;
+    @SerializedName("nombre")
+    private String nombre;
     @Nullable
-    private final String apellidos;
+    @SerializedName("apellidos")
+    private String apellidos;
     @Nullable
-    private final String telefono;
+    @SerializedName("telefono")
+    private String telefono;
     @Nullable
-    private final String ciudadBase;
+    @SerializedName("dni")
+    private String dni;
+    @Nullable
+    @SerializedName("ciudadBase")
+    private String ciudadBase;
+    @Nullable
+    @SerializedName("radioAccionKm")
+    private Integer radioAccionKm;
 
     public ConductorProfileUpdateRequest(@Nullable String nombre,
                                          @Nullable String apellidos,
                                          @Nullable String telefono,
-                                         @Nullable String ciudadBase) {
+                                         @Nullable String dni,
+                                         @Nullable String ciudadBase,
+                                         @Nullable Integer radioAccionKm) {
         this.nombre = clean(nombre);
         this.apellidos = clean(apellidos);
         this.telefono = clean(telefono);
+        this.dni = clean(dni);
         this.ciudadBase = clean(ciudadBase);
+        this.radioAccionKm = radioAccionKm;
     }
 
     @Nullable

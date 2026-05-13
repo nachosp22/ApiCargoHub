@@ -10,7 +10,6 @@ public class VehiculoUpsertRequest {
     private final Integer largoUtilMm;
     private final Integer anchoUtilMm;
     private final Integer altoUtilMm;
-    private final boolean trampillaElevadora;
 
     public VehiculoUpsertRequest(String matricula,
                                  String marca,
@@ -19,8 +18,7 @@ public class VehiculoUpsertRequest {
                                  Integer capacidadCargaKg,
                                  Integer largoUtilMm,
                                  Integer anchoUtilMm,
-                                 Integer altoUtilMm,
-                                 boolean trampillaElevadora) {
+                                 Integer altoUtilMm) {
         this.matricula = matricula;
         this.marca = marca;
         this.modelo = modelo;
@@ -29,7 +27,6 @@ public class VehiculoUpsertRequest {
         this.largoUtilMm = largoUtilMm;
         this.anchoUtilMm = anchoUtilMm;
         this.altoUtilMm = altoUtilMm;
-        this.trampillaElevadora = trampillaElevadora;
     }
 
     public String getMatricula() {
@@ -62,9 +59,5 @@ public class VehiculoUpsertRequest {
 
     public Integer getAltoUtilMm() {
         return altoUtilMm;
-    }
-
-    public boolean isTrampillaElevadora() {
-        return trampillaElevadora;
     }
 }

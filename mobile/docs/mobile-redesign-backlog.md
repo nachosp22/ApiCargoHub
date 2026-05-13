@@ -77,20 +77,19 @@ Alcance: app Android Java con fragments + drawer. Objetivo: mejorar UX visual si
 
 ## Ticket 9 - QA manual E2E conductor (opcion 1)
 - **Objetivo**: ejecutar cierre funcional manual sobre los flujos criticos del conductor.
-- **Detalle operativo**: ver `mobile/README.md` en la seccion `QA manual E2E conductor (opcion 1)` para pasos y resultados esperados por caso.
-- **Casos incluidos**: login, ofertas, viajes, detalle de viaje, incidencias, perfil, agenda, vehiculo, tracking, logout.
+- **Detalle operativo**: ver `mobile/README.md` en la seccion `QA manual E2E conductor y alcance de demo recomendado`.
+- **Flujo incluido**: `login -> ofertas -> detalle -> aceptar/rechazar -> viaje -> incidencias -> tracking -> logout`.
+- **Criterio de cierre**: ejecutar checklist con `OK/FAIL` por paso y completar matriz de evidencia.
 
 ### Matriz de ejecucion
 
 | Caso | Estado (OK/FAIL/PENDIENTE) | Evidencia | Notas |
 |---|---|---|---|
-| Login conductor | PENDIENTE | - | - |
-| Ofertas | PENDIENTE | - | - |
-| Viajes | PENDIENTE | - | - |
-| Detalle de viaje | PENDIENTE | - | - |
-| Incidencias | PENDIENTE | - | - |
-| Perfil conductor | PENDIENTE | - | - |
-| Agenda | PENDIENTE | - | - |
-| Vehiculo | PENDIENTE | - | - |
-| Tracking | PENDIENTE | - | - |
-| Logout | PENDIENTE | - | - |
+| 1. Login | PENDIENTE | - | - |
+| 2. Ofertas | PENDIENTE | - | - |
+| 3. Detalle de oferta | PENDIENTE | - | - |
+| 4. Aceptar/rechazar oferta | PENDIENTE | - | - |
+| 5. Viaje | PENDIENTE | - | - |
+| 6. Incidencias | PENDIENTE | - | - |
+| 7. Tracking | PENDIENTE | - | - |
+| 8. Logout | PENDIENTE | - | - |

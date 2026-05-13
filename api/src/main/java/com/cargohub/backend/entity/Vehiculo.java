@@ -45,8 +45,6 @@ public class Vehiculo {
     private Integer altoUtilMm;
     private Double volumenM3;
 
-    private boolean trampillaElevadora;
-
     @ManyToOne
     @JoinColumn(name = "conductor_id")
     private Conductor conductor;
@@ -55,7 +53,8 @@ public class Vehiculo {
     @PreUpdate
     public void calcularVolumenAutomatico() {
         if (largoUtilMm != null && anchoUtilMm != null && altoUtilMm != null) {
-            this.volumenM3 = (double) (largoUtilMm * anchoUtilMm * altoUtilMm) / 1_000_000_000.0;
+            long volumenMm3 = (long) largoUtilMm * anchoUtilMm * altoUtilMm;
+            this.volumenM3 = volumenMm3 / 1_000_000_000.0;
             this.volumenM3 = Math.round(this.volumenM3 * 100.0) / 100.0;
         }
     }

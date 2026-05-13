@@ -279,27 +279,6 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Change password for authenticated client.
-   */
-  async function changePassword(clienteId: number, currentPassword: string, newPassword: string): Promise<void> {
-    await api.put(`/clientes/${clienteId}/change-password`, { currentPassword, newPassword })
-  }
-
-  /**
-   * Request a password reset (forgot password).
-   */
-  async function forgotPassword(email: string): Promise<void> {
-    await api.post('/auth/forgot-password', { email })
-  }
-
-  /**
-   * Reset password with a token.
-   */
-  async function resetPassword(resetToken: string, newPassword: string): Promise<void> {
-    await api.post('/auth/reset-password', { token: resetToken, newPassword })
-  }
-
-  /**
    * Fetch client profile data from API.
    */
   async function fetchProfile(clienteId: number): Promise<Record<string, unknown>> {
@@ -317,9 +296,6 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     loadFromStorage,
     updateProfile,
-    changePassword,
-    forgotPassword,
-    resetPassword,
     fetchProfile,
   }
 })

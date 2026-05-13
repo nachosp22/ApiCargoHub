@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-3xl">
+  <div class="w-full">
     <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Mi Perfil</h2>
 
     <!-- Profile Section -->
@@ -43,17 +43,18 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email de Contacto</label>
             <InputText v-model="form.emailContacto" class="w-full" :disabled="!editing" />
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sector</label>
-            <Dropdown
-              v-model="form.sector"
-              :options="sectores"
-              placeholder="Seleccionar sector"
-              class="w-full"
-              :disabled="!editing"
-            />
-          </div>
-        </div>
+           <div>
+             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sector</label>
+             <Dropdown
+               v-model="form.sector"
+               :options="sectores"
+               placeholder="Seleccionar sector"
+               class="w-full"
+               disabled
+             />
+             <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Actualización temporalmente no disponible</p>
+           </div>
+         </div>
 
         <div v-if="editing" class="flex gap-3 pt-2">
           <Button type="submit" label="Guardar" icon="pi pi-check" :loading="saving" />
@@ -62,31 +63,6 @@
       </form>
     </div>
 
-    <!-- Change Password Section -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Cambiar Contrasena</h3>
-
-      <form @submit.prevent="handleChangePassword" class="space-y-4 max-w-md">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contrasena Actual</label>
-          <InputText v-model="pwForm.currentPassword" type="password" class="w-full" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nueva Contrasena</label>
-          <InputText v-model="pwForm.newPassword" type="password" class="w-full" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirmar Nueva Contrasena</label>
-          <InputText v-model="pwForm.confirmPassword" type="password" class="w-full" />
-        </div>
-        <Button
-          type="submit"
-          label="Cambiar Contraseña"
-          icon="pi pi-lock"
-          :loading="changingPassword"
-        />
-      </form>
-    </div>
   </div>
 </template>
 
@@ -104,7 +80,6 @@ const toast = useToast()
 const editing = ref(false)
 const loadingProfile = ref(true)
 const saving = ref(false)
-const changingPassword = ref(false)
 
 const sectores = [
   'Alimentación',
@@ -126,12 +101,6 @@ const form = ref({
   telefono: '',
   emailContacto: '',
   sector: '',
-})
-
-const pwForm = ref({
-  currentPassword: '',
-  newPassword: '',
-  confirmPassword: '',
 })
 
 onMounted(async () => {
@@ -174,7 +143,6 @@ async function saveProfile() {
       direccionFiscal: form.value.direccionFiscal,
       telefono: form.value.telefono,
       emailContacto: form.value.emailContacto,
-      sector: form.value.sector,
     })
     editing.value = false
     toast.add({ severity: 'success', summary: 'Perfil actualizado', detail: 'Los datos se guardaron correctamente', life: 3000 })
@@ -185,27 +153,4 @@ async function saveProfile() {
   }
 }
 
-async function handleChangePassword() {
-  if (pwForm.value.newPassword !== pwForm.value.confirmPassword) {
-    toast.add({ severity: 'warn', summary: 'Error', detail: 'Las contraseñas no coinciden', life: 3000 })
-    return
-  }
-  if (pwForm.value.newPassword.length < 6) {
-    toast.add({ severity: 'warn', summary: 'Error', detail: 'La contraseña debe tener al menos 6 caracteres', life: 3000 })
-    return
-  }
-
-  changingPassword.value = true
-  try {
-    const clienteId = authStore.clienteId
-    if (!clienteId) return
-    await authStore.changePassword(clienteId, pwForm.value.currentPassword, pwForm.value.newPassword)
-    pwForm.value = { currentPassword: '', newPassword: '', confirmPassword: '' }
-    toast.add({ severity: 'success', summary: 'Contraseña cambiada', detail: 'Tu contraseña se actualizó correctamente', life: 3000 })
-  } catch {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar la contraseña. Verifica tu contraseña actual.', life: 3000 })
-  } finally {
-    changingPassword.value = false
-  }
-}
 </script>

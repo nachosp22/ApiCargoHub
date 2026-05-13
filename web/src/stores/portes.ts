@@ -24,6 +24,9 @@ export interface Porte {
   descripcionCliente?: string
   pesoTotalKg?: number
   volumenTotalM3?: number
+  largoMaxPaquete?: number
+  anchoMaxPaquete?: number
+  altoMaxPaquete?: number
   tipoVehiculoRequerido?: string
   revisionManual?: boolean
   motivoRevision?: string
@@ -148,6 +151,9 @@ export const usePortesStore = defineStore('portes', () => {
       descripcionCliente: p.descripcionCliente ? String(p.descripcionCliente) : undefined,
       pesoTotalKg: p.pesoTotalKg != null ? Number(p.pesoTotalKg) : undefined,
       volumenTotalM3: p.volumenTotalM3 != null ? Number(p.volumenTotalM3) : undefined,
+      largoMaxPaquete: p.largoMaxPaquete != null ? Number(p.largoMaxPaquete) : undefined,
+      anchoMaxPaquete: p.anchoMaxPaquete != null ? Number(p.anchoMaxPaquete) : undefined,
+      altoMaxPaquete: p.altoMaxPaquete != null ? Number(p.altoMaxPaquete) : undefined,
       tipoVehiculoRequerido: p.tipoVehiculoRequerido ? String(p.tipoVehiculoRequerido) : undefined,
       revisionManual: p.revisionManual === true,
       motivoRevision: p.motivoRevision ? String(p.motivoRevision) : undefined,

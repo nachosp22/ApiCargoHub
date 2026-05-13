@@ -16,6 +16,7 @@
   "build": {
     "appId": "com.cargohub.desktop",
     "productName": "CargoHub Desktop",
+    "icon": "public/assets/brand/logo.png",
     "directories": {
       "output": "dist-electron-builder"
     },
@@ -25,6 +26,7 @@
       "package.json"
     ],
     "win": {
+      "icon": "public/assets/brand/logo.png",
       "target": "portable"
     },
     "portable": {

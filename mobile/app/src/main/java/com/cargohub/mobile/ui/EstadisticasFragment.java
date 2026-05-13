@@ -88,7 +88,7 @@ public class EstadisticasFragment extends Fragment {
     private void loadData() {
         Long conductorId = SessionManager.resolveConductorId();
         if (conductorId == null) {
-            showError("No se encontró tu identificador de conductor.");
+            showError(getString(R.string.stats_error_missing_driver_id));
             return;
         }
 

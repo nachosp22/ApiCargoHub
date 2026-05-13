@@ -70,6 +70,11 @@
                 android:id="@+id/incidenciaSeveridad"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_state_chip"
+                android:paddingStart="@dimen/ch_space_sm"
+                android:paddingTop="4dp"
+                android:paddingEnd="@dimen/ch_space_sm"
+                android:paddingBottom="4dp"
                 android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
                 android:textStyle="bold" />
 

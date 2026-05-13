@@ -17,9 +17,15 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class FacturaService {
+
+    private static final String DEFAULT_FACTURA_PREFIX = "F";
+    private static final int DEFAULT_SEQUENCE_PADDING = 4;
+    private static final Pattern FACTURA_CODE_PATTERN = Pattern.compile("^([A-Za-z]+)-(\\d{4})-([A-Za-z]*)(\\d+)$");
 
     @Autowired
     private FacturaRepository facturaRepository;
@@ -69,26 +75,58 @@ public class FacturaService {
         Optional<Factura> ultimaFactura = facturaRepository.findTopByOrderByIdDesc();
 
         int secuencia = 1; // Por defecto empezamos en 1
+        String prefijoFactura = DEFAULT_FACTURA_PREFIX;
+        String prefijoSecuencia = "";
+        int longitudSecuencia = DEFAULT_SEQUENCE_PADDING;
 
         if (ultimaFactura.isPresent()) {
             String ultimoCodigo = ultimaFactura.get().getNumeroSerie();
-            // Parseamos el código: F-2025-0001
-            String[] partes = ultimoCodigo.split("-");
+            Optional<FacturaCodeParts> parsed = parseFacturaCode(ultimoCodigo);
 
-            if (partes.length == 3) {
-                int anioUltima = Integer.parseInt(partes[1]);
-                int numeroUltima = Integer.parseInt(partes[2]);
+            if (parsed.isPresent()) {
+                FacturaCodeParts last = parsed.get();
+                prefijoFactura = last.prefijoFactura();
+                prefijoSecuencia = last.prefijoSecuencia();
+                longitudSecuencia = Math.max(last.longitudSecuencia(), DEFAULT_SEQUENCE_PADDING);
 
                 // Si seguimos en el mismo año, sumamos 1.
                 // Si hemos cambiado de año (ej: 2026), se reinicia a 1.
-                if (anioUltima == anioActual) {
-                    secuencia = numeroUltima + 1;
+                if (last.anio() == anioActual) {
+                    secuencia = last.secuencia() + 1;
                 }
             }
         }
 
         // Formateamos con 4 dígitos de relleno (padding)
-        return String.format("F-%d-%04d", anioActual, secuencia);
+        String secuenciaFormateada = String.format("%0" + longitudSecuencia + "d", secuencia);
+        return String.format("%s-%d-%s%s", prefijoFactura, anioActual, prefijoSecuencia, secuenciaFormateada);
+    }
+
+    private Optional<FacturaCodeParts> parseFacturaCode(String codigo) {
+        if (codigo == null || codigo.isBlank()) {
+            return Optional.empty();
+        }
+
+        Matcher matcher = FACTURA_CODE_PATTERN.matcher(codigo.trim());
+        if (!matcher.matches()) {
+            return Optional.empty();
+        }
+
+        try {
+            String prefijoFactura = matcher.group(1).toUpperCase();
+            int anio = Integer.parseInt(matcher.group(2));
+            String prefijoSecuencia = matcher.group(3).toUpperCase();
+            String secuenciaRaw = matcher.group(4);
+            int secuencia = Integer.parseInt(secuenciaRaw);
+
+            return Optional.of(new FacturaCodeParts(prefijoFactura, anio, prefijoSecuencia, secuencia, secuenciaRaw.length()));
+        } catch (NumberFormatException ex) {
+            return Optional.empty();
+        }
+    }
+
+    private record FacturaCodeParts(String prefijoFactura, int anio, String prefijoSecuencia, int secuencia,
+                                    int longitudSecuencia) {
     }
 
     // ── Métodos para conductor ──

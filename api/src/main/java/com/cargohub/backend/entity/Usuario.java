@@ -43,6 +43,6 @@ public class Usuario {
 
     private String tokenRecuperacion;
 
-    @Column(name = "foto_url")
+    @Column(name = "foto_url", columnDefinition = "TEXT")
     private String fotoUrl;
 }

@@ -2,12 +2,14 @@ package com.cargohub.backend.security;
 
 import com.cargohub.backend.entity.Cliente;
 import com.cargohub.backend.entity.Conductor;
+import com.cargohub.backend.entity.enums.EstadoPorte;
 import com.cargohub.backend.entity.enums.RolUsuario;
 import com.cargohub.backend.repository.BloqueoAgendaRepository;
 import com.cargohub.backend.repository.ClienteRepository;
 import com.cargohub.backend.repository.ConductorRepository;
 import com.cargohub.backend.repository.IncidenciaRepository;
 import com.cargohub.backend.repository.PorteRepository;
+import com.cargohub.backend.repository.TrackingSessionRepository;
 import com.cargohub.backend.repository.UsuarioRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,19 +24,22 @@ public class OwnershipSecurityService {
     private final PorteRepository porteRepository;
     private final BloqueoAgendaRepository bloqueoAgendaRepository;
     private final IncidenciaRepository incidenciaRepository;
+    private final TrackingSessionRepository trackingSessionRepository;
 
     public OwnershipSecurityService(UsuarioRepository usuarioRepository,
                                     ClienteRepository clienteRepository,
                                     ConductorRepository conductorRepository,
                                     PorteRepository porteRepository,
                                     BloqueoAgendaRepository bloqueoAgendaRepository,
-                                    IncidenciaRepository incidenciaRepository) {
+                                    IncidenciaRepository incidenciaRepository,
+                                    TrackingSessionRepository trackingSessionRepository) {
         this.usuarioRepository = usuarioRepository;
         this.clienteRepository = clienteRepository;
         this.conductorRepository = conductorRepository;
         this.porteRepository = porteRepository;
         this.bloqueoAgendaRepository = bloqueoAgendaRepository;
         this.incidenciaRepository = incidenciaRepository;
+        this.trackingSessionRepository = trackingSessionRepository;
     }
 
     public boolean canAccessCliente(Authentication authentication, Long clienteId) {
@@ -71,7 +76,19 @@ public class OwnershipSecurityService {
 
         if (hasRole(authentication, RolUsuario.CONDUCTOR)) {
             Long currentConductorId = resolveConductorId(authentication);
-            return currentConductorId != null && porteRepository.existsByIdAndConductorId(porteId, currentConductorId);
+            if (currentConductorId == null) {
+                return false;
+            }
+            if (porteRepository.existsByIdAndConductorId(porteId, currentConductorId)) {
+                return true;
+            }
+            return porteRepository.findById(porteId)
+                    .map(porte -> porte.getEstado() == EstadoPorte.PENDIENTE
+                            && porte.getConductor() == null
+                            && !porte.isRevisionManual()
+                            && (porte.getConductoresRechazados() == null
+                                    || !porte.getConductoresRechazados().contains(currentConductorId)))
+                    .orElse(false);
         }
 
         return false;
@@ -105,6 +122,24 @@ public class OwnershipSecurityService {
         }
 
         return false;
+    }
+
+    public boolean canAccessTrackingSession(Authentication authentication, Long sessionId) {
+        if (isAdmin(authentication)) {
+            return true;
+        }
+        if (!hasRole(authentication, RolUsuario.CONDUCTOR)) {
+            return false;
+        }
+
+        Long currentConductorId = resolveConductorId(authentication);
+        if (currentConductorId == null) {
+            return false;
+        }
+
+        return trackingSessionRepository.findById(sessionId)
+                .map(session -> session.getConductor() != null && currentConductorId.equals(session.getConductor().getId()))
+                .orElse(false);
     }
 
     /**

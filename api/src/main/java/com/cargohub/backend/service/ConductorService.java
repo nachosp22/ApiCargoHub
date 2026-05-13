@@ -5,6 +5,7 @@ import com.cargohub.backend.entity.Conductor;
 import com.cargohub.backend.entity.Usuario;
 import com.cargohub.backend.entity.Vehiculo;
 import com.cargohub.backend.entity.enums.EstadoVehiculo;
+import com.cargohub.backend.entity.enums.RolUsuario;
 import com.cargohub.backend.repository.BloqueoAgendaRepository;
 import com.cargohub.backend.repository.ConductorRepository;
 import com.cargohub.backend.repository.UsuarioRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,6 +25,7 @@ public class ConductorService {
     @Autowired private BloqueoAgendaRepository bloqueoRepository;
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private VehiculoRepository vehiculoRepository; // Para dar de baja sus camiones
+    @Autowired private UsuarioService usuarioService;
 
     // --- 1. GESTIÓN DE PERFIL ---
     @Transactional
@@ -44,6 +47,30 @@ public class ConductorService {
 
     public List<Conductor> listarTodos() {
         return conductorRepository.findAll();
+    }
+
+    @Transactional
+    public Conductor crearConductorAdmin(String nombre,
+                                         String apellidos,
+                                         String email,
+                                         String password,
+                                         String dni,
+                                         String telefono,
+                                         String ciudadBase) {
+        Usuario usuario = usuarioService.registrarUsuario(email, password, RolUsuario.CONDUCTOR);
+        usuario.setActivo(true);
+        usuario = usuarioService.guardar(usuario);
+
+        Conductor conductor = new Conductor();
+        conductor.setUsuario(usuario);
+        conductor.setNombre(nombre);
+        conductor.setApellidos(apellidos);
+        conductor.setDni(dni);
+        conductor.setTelefono(telefono);
+        conductor.setCiudadBase(ciudadBase);
+        conductor.setDisponible(true);
+
+        return conductorRepository.save(conductor);
     }
 
     // --- APROBACIÓN DE CONDUCTORES ---
@@ -151,5 +178,58 @@ public class ConductorService {
     @Transactional
     public void eliminarBloqueo(Long bloqueoId) {
         bloqueoRepository.deleteById(bloqueoId);
+    }
+
+    public List<Integer> obtenerDiasLaborables(Long conductorId) {
+        Conductor conductor = obtenerPorId(conductorId);
+        return parseDiasLaborables(conductor.getDiasLaborables());
+    }
+
+    @Transactional
+    public List<Integer> actualizarDiasLaborables(Long conductorId, List<Integer> diasLaborables) {
+        Conductor conductor = obtenerPorId(conductorId);
+        conductor.setDiasLaborables(formatDiasLaborables(diasLaborables));
+        conductorRepository.save(conductor);
+        return parseDiasLaborables(conductor.getDiasLaborables());
+    }
+
+    private List<Integer> parseDiasLaborables(String diasLaborablesRaw) {
+        List<Integer> resultado = new ArrayList<>();
+        if (diasLaborablesRaw == null || diasLaborablesRaw.trim().isEmpty()) {
+            return resultado;
+        }
+        String[] tokens = diasLaborablesRaw.split(",");
+        for (String token : tokens) {
+            try {
+                int dia = Integer.parseInt(token.trim());
+                if (dia >= 1 && dia <= 7 && !resultado.contains(dia)) {
+                    resultado.add(dia);
+                }
+            } catch (NumberFormatException ignored) {
+                // Ignora tokens inválidos
+            }
+        }
+        return resultado;
+    }
+
+    private String formatDiasLaborables(List<Integer> diasLaborables) {
+        if (diasLaborables == null || diasLaborables.isEmpty()) {
+            return "";
+        }
+        List<Integer> normalizados = new ArrayList<>();
+        for (Integer dia : diasLaborables) {
+            if (dia != null && dia >= 1 && dia <= 7 && !normalizados.contains(dia)) {
+                normalizados.add(dia);
+            }
+        }
+        normalizados.sort(Integer::compareTo);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < normalizados.size(); i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append(normalizados.get(i));
+        }
+        return sb.toString();
     }
 }

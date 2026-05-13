@@ -143,7 +143,7 @@ public class FotoCargaFragment extends Fragment {
         if (intent.resolveActivity(requireActivity().getPackageManager()) != null) {
             cameraLauncher.launch(intent);
         } else {
-            Snackbar.make(requireView(), "No se encontro una app de camara", Snackbar.LENGTH_LONG).show();
+            showSnackbar(getString(R.string.photo_error_no_camera_app), Snackbar.LENGTH_LONG);
         }
     }
 
@@ -160,23 +160,27 @@ public class FotoCargaFragment extends Fragment {
         preview.setImageBitmap(pendingBitmap);
 
         String[] tipos = {"CARGA", "DESCARGA", "DANO"};
-        String[] tipoLabels = {"Carga", "Descarga", "Daño"};
+        String[] tipoLabels = {
+                getString(R.string.photo_type_label_carga),
+                getString(R.string.photo_type_label_descarga),
+                getString(R.string.photo_type_label_dano)
+        };
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item, tipoLabels);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         tipoSpinner.setAdapter(spinnerAdapter);
 
         new AlertDialog.Builder(requireContext())
-                .setTitle("Subir Foto")
+                .setTitle(R.string.photo_upload_dialog_title)
                 .setView(dialogView)
-                .setPositiveButton("Subir", (dialog, which) -> {
+                .setPositiveButton(R.string.photo_upload_action, (dialog, which) -> {
                     String tipo = tipos[tipoSpinner.getSelectedItemPosition()];
                     String descripcion = descInput.getText().toString().trim();
                     String base64 = bitmapToBase64(pendingBitmap);
                     uploadFoto(tipo, base64, descripcion);
                     pendingBitmap = null;
                 })
-                .setNegativeButton("Cancelar", (dialog, which) -> pendingBitmap = null)
+                .setNegativeButton(R.string.photo_cancel_action, (dialog, which) -> pendingBitmap = null)
                 .show();
     }
 
@@ -185,14 +189,14 @@ public class FotoCargaFragment extends Fragment {
             @Override
             public void onSuccess(@NonNull FotoCarga foto) {
                 if (!isAdded()) return;
-                Snackbar.make(requireView(), "Foto subida correctamente", Snackbar.LENGTH_SHORT).show();
+                showSnackbar(getString(R.string.photo_upload_success), Snackbar.LENGTH_SHORT);
                 loadFotos();
             }
 
             @Override
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
-                Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show();
+                showApiError(message, Snackbar.LENGTH_LONG);
             }
         });
     }
@@ -200,25 +204,25 @@ public class FotoCargaFragment extends Fragment {
     private void confirmDelete(FotoCarga foto) {
         if (foto.getId() == null) return;
         new AlertDialog.Builder(requireContext())
-                .setTitle("Eliminar foto")
-                .setMessage("¿Seguro que queres eliminar esta foto?")
-                .setPositiveButton("Eliminar", (dialog, which) -> {
+                .setTitle(R.string.photo_delete_dialog_title)
+                .setMessage(R.string.photo_delete_dialog_message)
+                .setPositiveButton(R.string.photo_delete_action, (dialog, which) -> {
                     repository.eliminarFoto(porteId, foto.getId(), new FotoCargaRepository.DeleteCallback() {
                         @Override
                         public void onSuccess() {
                             if (!isAdded()) return;
-                            Snackbar.make(requireView(), "Foto eliminada", Snackbar.LENGTH_SHORT).show();
+                            showSnackbar(getString(R.string.photo_delete_success), Snackbar.LENGTH_SHORT);
                             loadFotos();
                         }
 
                         @Override
                         public void onError(@NonNull String message) {
                             if (!isAdded()) return;
-                            Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show();
+                            showApiError(message, Snackbar.LENGTH_LONG);
                         }
                     });
                 })
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton(R.string.photo_cancel_action, null)
                 .show();
     }
 
@@ -241,10 +245,27 @@ public class FotoCargaFragment extends Fragment {
             new AlertDialog.Builder(requireContext())
                     .setTitle(title)
                     .setView(imageView)
-                    .setPositiveButton("Cerrar", null)
+                    .setPositiveButton(R.string.photo_close_action, null)
                     .show();
         } catch (Exception ignored) {
-            Snackbar.make(requireView(), "No se pudo cargar la imagen", Snackbar.LENGTH_SHORT).show();
+            showSnackbar(getString(R.string.photo_error_load_image), Snackbar.LENGTH_SHORT);
+        }
+    }
+
+    private void showSnackbar(@NonNull String message, int duration) {
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, message, duration).show();
+        }
+    }
+
+    private void showApiError(@Nullable String message, int duration) {
+        String safeMessage = (message == null || message.trim().isEmpty())
+                ? getString(R.string.generic_api_error_short)
+                : message;
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, safeMessage, duration).show();
         }
     }
 

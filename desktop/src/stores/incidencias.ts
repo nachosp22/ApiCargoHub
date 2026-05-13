@@ -215,6 +215,7 @@ export interface PorteRef {
 // --- Store ---
 
 export const useIncidenciasStore = defineStore('incidencias', () => {
+  type DataSource = 'api' | 'mock'
   // --- State ---
   const incidencias = ref<Incidencia[]>([])
   const selectedIncidencia = ref<Incidencia | null>(null)
@@ -224,6 +225,9 @@ export const useIncidenciasStore = defineStore('incidencias', () => {
   const saving = ref(false)
   const loadingHistorial = ref(false)
   const usingMockData = ref(false)
+  const dataSource = ref<DataSource>('api')
+  const warning = ref<string | null>(null)
+  const error = ref<string | null>(null)
 
   // --- Getters ---
   const totalIncidencias = computed(() => incidencias.value.length)
@@ -253,6 +257,9 @@ export const useIncidenciasStore = defineStore('incidencias', () => {
   async function fetchIncidencias(): Promise<void> {
     loading.value = true
     usingMockData.value = false
+    dataSource.value = 'api'
+    warning.value = null
+    error.value = null
 
     try {
       const response = await api.get('/incidencias')
@@ -260,6 +267,9 @@ export const useIncidenciasStore = defineStore('incidencias', () => {
       incidencias.value = data.map(mapIncidenciaFromApi)
     } catch {
       usingMockData.value = true
+      dataSource.value = 'mock'
+      warning.value = 'Mostrando incidencias mock porque la API no respondió'
+      error.value = 'No se pudieron cargar incidencias desde la API'
       incidencias.value = [...MOCK_INCIDENCIAS]
     } finally {
       loading.value = false
@@ -277,6 +287,9 @@ export const useIncidenciasStore = defineStore('incidencias', () => {
     } catch {
       // Fallback: filter mock data to show overdue
       usingMockData.value = true
+      dataSource.value = 'mock'
+      warning.value = 'Mostrando incidencias vencidas mock por indisponibilidad de API'
+      error.value = 'No se pudieron cargar incidencias vencidas desde la API'
       const now = new Date()
       incidencias.value = MOCK_INCIDENCIAS.filter((i) => {
         if (i.estado === 'RESUELTA' || i.estado === 'DESESTIMADA') return false
@@ -296,6 +309,7 @@ export const useIncidenciasStore = defineStore('incidencias', () => {
       selectedIncidencia.value = inc
       return inc
     } catch {
+      error.value = 'No se pudo cargar la incidencia solicitada'
       const found = incidencias.value.find((i) => i.id === id)
       if (found) {
         selectedIncidencia.value = found
@@ -471,6 +485,9 @@ export const useIncidenciasStore = defineStore('incidencias', () => {
     saving,
     loadingHistorial,
     usingMockData,
+    dataSource,
+    warning,
+    error,
     // Getters
     totalIncidencias,
     incidenciasByEstado,

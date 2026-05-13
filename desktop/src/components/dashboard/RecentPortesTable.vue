@@ -82,11 +82,11 @@ function formatDate(fecha: string): string {
 
       <!-- Search -->
       <div class="relative">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+        <i class="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
         <InputText
           v-model="globalFilter"
           placeholder="Buscar portes..."
-          class="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
+          class="pl-4 pr-9 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
         />
       </div>
     </div>

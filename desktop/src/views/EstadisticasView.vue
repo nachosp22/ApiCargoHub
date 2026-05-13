@@ -132,13 +132,18 @@ function formatTrend(val: number): string {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="h-full min-h-0 overflow-y-auto space-y-6 pr-1">
     <!-- Page Header -->
-    <div>
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Estadísticas Globales</h1>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-        Panel de análisis y métricas de la plataforma
-      </p>
+    <div class="shrink-0 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+        <i class="pi pi-chart-line text-2xl"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Estadísticas Globales</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          Panel de análisis y métricas de la plataforma
+        </p>
+      </div>
     </div>
 
     <!-- Loading -->
@@ -264,7 +269,7 @@ function formatTrend(val: number): string {
                 <th class="text-left py-2 text-gray-500 dark:text-gray-400 font-medium">#</th>
                 <th class="text-left py-2 text-gray-500 dark:text-gray-400 font-medium">Nombre</th>
                 <th class="text-right py-2 text-gray-500 dark:text-gray-400 font-medium">Portes</th>
-                <th class="text-right py-2 text-gray-500 dark:text-gray-400 font-medium">Rating</th>
+                <th class="text-right py-2 text-gray-500 dark:text-gray-400 font-medium">Estado</th>
               </tr>
             </thead>
             <tbody>
@@ -276,12 +281,7 @@ function formatTrend(val: number): string {
                 <td class="py-2.5 text-gray-400 dark:text-gray-500 font-medium">{{ i + 1 }}</td>
                 <td class="py-2.5 text-gray-800 dark:text-gray-100 font-medium">{{ c.nombre }}</td>
                 <td class="py-2.5 text-right text-gray-600 dark:text-gray-400">{{ c.portes }}</td>
-                <td class="py-2.5 text-right">
-                  <span class="inline-flex items-center gap-1 text-amber-600">
-                    <i class="pi pi-star-fill text-xs"></i>
-                    {{ c.rating.toFixed(1) }}
-                  </span>
-                </td>
+                <td class="py-2.5 text-right text-gray-400">—</td>
               </tr>
               <tr v-if="!store.data.topConductores.length">
                 <td colspan="4" class="py-4 text-center text-gray-400 dark:text-gray-500">Sin datos</td>

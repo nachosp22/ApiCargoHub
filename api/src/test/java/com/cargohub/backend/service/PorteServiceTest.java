@@ -1,6 +1,7 @@
 package com.cargohub.backend.service;
 
 import com.cargohub.backend.dto.CargoAnalysisResponse;
+import com.cargohub.backend.dto.ConductorCandidatoResponse;
 import com.cargohub.backend.entity.Conductor;
 import com.cargohub.backend.entity.Porte;
 import com.cargohub.backend.entity.Vehiculo;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.List;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,6 +27,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
@@ -251,7 +254,7 @@ class PorteServiceTest {
         when(calculadoraPrecio.calcularPrecioTotal(any(Porte.class))).thenReturn(150.0);
         when(vehiculoRepository.findCandidatos(any(TipoVehiculo.class), anyDouble(), anyInt(), anyInt(), anyInt(), anyDouble()))
                 .thenReturn(java.util.List.of(vehiculo));
-        when(conductorMatchingService.buscarDisponibles(any(), any(), any()))
+        when(conductorMatchingService.buscarDisponibles(any(), any(), any(), any(), any(), any()))
                 .thenReturn(java.util.List.of(conductor));
         when(porteRepository.save(any(Porte.class))).thenAnswer(invocation -> invocation.getArgument(0));
         
@@ -310,7 +313,7 @@ class PorteServiceTest {
         cargoAnalysisResponse.setLargoMaxPaquete(2.0);
         cargoAnalysisResponse.setTipoVehiculoRequerido("FURGONETA");
         cargoAnalysisResponse.setRevisionManual(true);
-        cargoAnalysisResponse.setMotivoRevision("Falta volumen total (m3), se requiere revision manual.");
+        cargoAnalysisResponse.setMotivoRevision("No se ha podido analizar la carga. El porte sera revisado manualmente por uno de nuestros agentes.");
 
         when(cargoAnalysisService.calcularDimensiones(anyString())).thenReturn(cargoAnalysisResponse);
         when(cargoAnalysisService.convertirTipoVehiculo("FURGONETA")).thenReturn(TipoVehiculo.FURGONETA);
@@ -325,5 +328,87 @@ class PorteServiceTest {
         assertNull(resultado.getConductor());
         verify(vehiculoRepository, never()).findCandidatos(any(), anyDouble(), anyInt(), anyInt(), anyInt(), anyDouble());
         verify(conductorMatchingService, never()).buscarDisponibles(any(), any(), any());
+    }
+
+    @Test
+    void testRetryMatching_WhenMissingCriticalData_SetsManualReview() {
+        porte.setTipoVehiculoRequerido(null);
+        porte.setMotivoRevision("Texto anterior");
+        when(porteRepository.findById(1L)).thenReturn(Optional.of(porte));
+        when(porteRepository.save(any(Porte.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Porte resultado = porteService.retryMatching(1L);
+
+        assertTrue(resultado.isRevisionManual());
+        assertEquals(PorteService.MSG_REVISION_MANUAL_CLIENTE, resultado.getMotivoRevision());
+        assertEquals(EstadoPorte.PENDIENTE, resultado.getEstado());
+        assertNull(resultado.getConductor());
+        verify(vehiculoRepository, never()).findCandidatos(any(), anyDouble(), anyInt(), anyInt(), anyInt(), anyDouble());
+    }
+
+    @Test
+    void testRetryMatching_WhenNoVehiculosCompatibles_SetsNoVehicleMessage() {
+        porte.setFechaRecogida(LocalDateTime.now().plusDays(1));
+        porte.setFechaEntrega(LocalDateTime.now().plusDays(2));
+
+        when(porteRepository.findById(1L)).thenReturn(Optional.of(porte));
+        when(vehiculoRepository.findTodosCandidatos(any(), anyDouble(), anyInt(), anyInt(), anyInt(), anyDouble()))
+                .thenReturn(List.of());
+        when(porteRepository.save(any(Porte.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Porte resultado = porteService.retryMatching(1L);
+
+        assertFalse(resultado.isRevisionManual());
+        assertEquals(PorteService.MSG_SIN_MATCH_VEHICULO_CONDUCTOR, resultado.getMotivoRevision());
+        assertEquals(EstadoPorte.PENDIENTE, resultado.getEstado());
+        assertNull(resultado.getConductor());
+    }
+
+    @Test
+    void testBuscarConductoresParaPorte_ManualSearchOnlyUsesVehicleCompatibility() {
+        Vehiculo vehiculo = new Vehiculo();
+        vehiculo.setId(10L);
+        vehiculo.setMarca("Iveco");
+        vehiculo.setModelo("Daily");
+        vehiculo.setMatricula("1234ABC");
+        vehiculo.setCapacidadCargaKg(1200);
+        vehiculo.setConductor(conductor);
+
+        when(porteRepository.findById(1L)).thenReturn(Optional.of(porte));
+        when(vehiculoRepository.findTodosCandidatos(any(), anyDouble(), anyInt(), anyInt(), anyInt(), anyDouble()))
+                .thenReturn(List.of(vehiculo));
+
+        List<ConductorCandidatoResponse> result = porteService.buscarConductoresParaPorte(1L);
+
+        assertEquals(1, result.size());
+        assertEquals(conductor.getId(), result.get(0).getId());
+        assertTrue(result.get(0).getVehiculoInfo().contains("1234ABC"));
+        verify(conductorMatchingService, never()).buscarDisponibles(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void testAsignarConductorManualmente_FailsWhenVehicleDoesNotFit() {
+        when(porteRepository.findById(1L)).thenReturn(Optional.of(porte));
+        when(conductorRepository.findById(1L)).thenReturn(Optional.of(conductor));
+        when(vehiculoRepository.findTodosCandidatos(any(), anyDouble(), anyInt(), anyInt(), anyInt(), anyDouble()))
+                .thenReturn(List.of());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                porteService.asignarConductorManualmente(1L, 1L)
+        );
+
+        assertEquals("El conductor seleccionado no tiene un vehículo compatible con las medidas del porte", exception.getMessage());
+        verify(porteRepository, never()).save(any(Porte.class));
+    }
+
+    @Test
+    void testListarPendientesRevision_ExcludesWaitingMessage() {
+        when(porteRepository.findPendientesAdminReview(eq(PorteService.MSG_ESPERANDO_ACEPTACION_CONDUCTOR), anyString()))
+                .thenReturn(List.of(porte));
+
+        List<Porte> result = porteService.listarPendientesRevision();
+
+        assertEquals(1, result.size());
+        verify(porteRepository).findPendientesAdminReview(eq(PorteService.MSG_ESPERANDO_ACEPTACION_CONDUCTOR), anyString());
     }
 }

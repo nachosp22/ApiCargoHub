@@ -10,6 +10,7 @@ public class ConductorProfileResponse {
     private String telefono;
     private String dni;
     private String ciudadBase;
+    private Integer radioAccionKm;
 
     @SerializedName("usuario")
     private UsuarioProfile usuarioProfile;
@@ -51,6 +52,10 @@ public class ConductorProfileResponse {
 
     public String getCiudadBase() {
         return ciudadBase;
+    }
+
+    public Integer getRadioAccionKm() {
+        return radioAccionKm;
     }
 
     public String getEmail() {

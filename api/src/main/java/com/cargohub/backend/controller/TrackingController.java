@@ -2,10 +2,8 @@ package com.cargohub.backend.controller;
 
 import com.cargohub.backend.dto.tracking.DriverLocationUpsertRequest;
 import com.cargohub.backend.observability.FleetRealtimeMetrics;
-import com.cargohub.backend.service.ConductorService;
+import com.cargohub.backend.service.TrackingLocationIngestionService;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +24,12 @@ public class TrackingController {
 
     private static final Logger log = LoggerFactory.getLogger(TrackingController.class);
 
-    private final ConductorService conductorService;
+    private final TrackingLocationIngestionService trackingLocationIngestionService;
     private final FleetRealtimeMetrics metrics;
 
-    public TrackingController(ConductorService conductorService,
+    public TrackingController(TrackingLocationIngestionService trackingLocationIngestionService,
                               FleetRealtimeMetrics metrics) {
-        this.conductorService = conductorService;
+        this.trackingLocationIngestionService = trackingLocationIngestionService;
         this.metrics = metrics;
     }
 
@@ -41,16 +39,8 @@ public class TrackingController {
                                             @Valid @RequestBody DriverLocationUpsertRequest request) {
         String requestId = ensureRequestId();
         long startedAt = System.currentTimeMillis();
-        LocalDateTime recordedAt = toLocalDateTime(request.getRecordedAt());
         try {
-            conductorService.actualizarUbicacion(
-                    driverId,
-                    request.getLat(),
-                    request.getLon(),
-                    recordedAt,
-                    request.getSpeedKph(),
-                    request.getHeadingDeg()
-            );
+            trackingLocationIngestionService.ingest(driverId, request);
             metrics.incrementTrackingWrites();
             long durationMs = System.currentTimeMillis() - startedAt;
             log.info("fleet.tracking.endpoint requestId={} driverId={} durationMs={} trackingWrites={}",
@@ -62,13 +52,6 @@ public class TrackingController {
         } finally {
             MDC.remove("requestId");
         }
-    }
-
-    private LocalDateTime toLocalDateTime(OffsetDateTime value) {
-        if (value == null) {
-            return null;
-        }
-        return value.toLocalDateTime();
     }
 
     private String ensureRequestId() {

@@ -7,7 +7,6 @@ import Select from 'primevue/select'
 import Button from 'primevue/button'
 import IncidenciaStatusBadge from './IncidenciaStatusBadge.vue'
 import SeveridadBadge from './SeveridadBadge.vue'
-import SlaIndicator from './SlaIndicator.vue'
 import type { Incidencia, EstadoIncidencia, SeveridadIncidencia } from '@/stores/incidencias'
 
 interface Props {
@@ -20,15 +19,18 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   (e: 'view', incidencia: Incidencia): void
   (e: 'resolve', incidencia: Incidencia): void
+  (e: 'open-porte', porteId: number): void
 }>()
 
 // --- Filters ---
 const globalFilter = ref('')
-const estadoFilter = ref<EstadoIncidencia | ''>('')
-const severidadFilter = ref<SeveridadIncidencia | ''>('')
+const ALL_ESTADOS_VALUE = '__ALL_ESTADOS__'
+const ALL_SEVERIDADES_VALUE = '__ALL_SEVERIDADES__'
+const estadoFilter = ref<EstadoIncidencia | typeof ALL_ESTADOS_VALUE>(ALL_ESTADOS_VALUE)
+const severidadFilter = ref<SeveridadIncidencia | typeof ALL_SEVERIDADES_VALUE>(ALL_SEVERIDADES_VALUE)
 
 const estadoFilterOptions = [
-  { label: 'Todos los estados', value: '' },
+  { label: 'Todos los estados', value: ALL_ESTADOS_VALUE },
   { label: 'Abierta', value: 'ABIERTA' },
   { label: 'En Revisión', value: 'EN_REVISION' },
   { label: 'Resuelta', value: 'RESUELTA' },
@@ -36,7 +38,7 @@ const estadoFilterOptions = [
 ]
 
 const severidadFilterOptions = [
-  { label: 'Todas las severidades', value: '' },
+  { label: 'Todas las severidades', value: ALL_SEVERIDADES_VALUE },
   { label: 'Alta', value: 'ALTA' },
   { label: 'Media', value: 'MEDIA' },
   { label: 'Baja', value: 'BAJA' },
@@ -46,12 +48,12 @@ const filteredIncidencias = computed(() => {
   let result = props.incidencias
 
   // Status filter
-  if (estadoFilter.value) {
+  if (estadoFilter.value !== ALL_ESTADOS_VALUE) {
     result = result.filter((i) => i.estado === estadoFilter.value)
   }
 
   // Severity filter
-  if (severidadFilter.value) {
+  if (severidadFilter.value !== ALL_SEVERIDADES_VALUE) {
     result = result.filter((i) => i.severidad === severidadFilter.value)
   }
 
@@ -141,11 +143,11 @@ function getPrioridadConfig(prioridad: string): { bg: string; text: string; ring
 
           <!-- Global Search -->
           <div class="relative">
-            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <i class="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             <InputText
               v-model="globalFilter"
               placeholder="Buscar incidencias..."
-              class="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
+              class="pl-4 pr-9 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
             />
           </div>
         </div>
@@ -164,6 +166,8 @@ function getPrioridadConfig(prioridad: string): { bg: string; text: string; ring
       class="incidencias-table"
       responsiveLayout="scroll"
       :rowHover="true"
+      sortField="fechaReporte"
+      :sortOrder="-1"
     >
       <!-- ID -->
       <Column field="id" header="ID" :sortable="true" style="min-width: 70px">
@@ -175,9 +179,13 @@ function getPrioridadConfig(prioridad: string): { bg: string; text: string; ring
       <!-- Porte ID -->
       <Column field="porteId" header="Porte" :sortable="true" style="min-width: 90px">
         <template #body="slotProps">
-          <span class="text-blue-600 font-medium cursor-pointer hover:underline">
+          <button
+            type="button"
+            class="text-blue-600 font-medium cursor-pointer hover:underline"
+            @click="emit('open-porte', slotProps.data.porteId)"
+          >
             #{{ slotProps.data.porteId }}
-          </span>
+          </button>
         </template>
       </Column>
 
@@ -228,13 +236,6 @@ function getPrioridadConfig(prioridad: string): { bg: string; text: string; ring
         </template>
       </Column>
 
-      <!-- SLA -->
-      <Column field="fechaLimiteSla" header="SLA" :sortable="true" style="min-width: 140px">
-        <template #body="slotProps">
-          <SlaIndicator :fecha-limite-sla="slotProps.data.fechaLimiteSla" :estado="slotProps.data.estado" />
-        </template>
-      </Column>
-
       <!-- Acciones -->
       <Column header="Acciones" style="min-width: 100px; text-align: center" :exportable="false">
         <template #body="slotProps">
@@ -250,12 +251,12 @@ function getPrioridadConfig(prioridad: string): { bg: string; text: string; ring
             />
             <Button
               v-if="!isTerminalState(slotProps.data.estado)"
-              icon="pi pi-check"
-              severity="success"
+              icon="pi pi-pencil"
+              severity="warning"
               text
               rounded
               size="small"
-              v-tooltip.top="'Resolver'"
+              v-tooltip.top="'Editar incidencia'"
               @click="emit('resolve', slotProps.data)"
             />
           </div>

@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cargohub.mobile.R;
 import com.cargohub.mobile.data.model.EstadoPorte;
 import com.cargohub.mobile.data.model.Porte;
-import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +23,6 @@ public class PorteCardAdapter extends RecyclerView.Adapter<PorteCardAdapter.Port
 
     private final List<Porte> portes = new ArrayList<>();
     private final OnPorteClickListener listener;
-    private String ctaLabel;
 
     public PorteCardAdapter(@NonNull OnPorteClickListener listener) {
         this.listener = listener;
@@ -34,10 +32,6 @@ public class PorteCardAdapter extends RecyclerView.Adapter<PorteCardAdapter.Port
         portes.clear();
         portes.addAll(items);
         notifyDataSetChanged();
-    }
-
-    public void setCtaLabel(String ctaLabel) {
-        this.ctaLabel = ctaLabel;
     }
 
     @NonNull
@@ -62,33 +56,43 @@ public class PorteCardAdapter extends RecyclerView.Adapter<PorteCardAdapter.Port
 
         private final TextView titleText;
         private final TextView stateText;
-        private final TextView scheduleText;
-        private final TextView cargoText;
+        private final TextView routeText;
+        private final TextView dateText;
+        private final TextView kmText;
         private final TextView priceText;
-        private final MaterialButton actionButton;
 
         private PorteViewHolder(@NonNull View itemView) {
             super(itemView);
             titleText = itemView.findViewById(R.id.porteCardTitleText);
             stateText = itemView.findViewById(R.id.porteCardStateText);
-            scheduleText = itemView.findViewById(R.id.porteCardScheduleText);
-            cargoText = itemView.findViewById(R.id.porteCardCargoText);
+            routeText = itemView.findViewById(R.id.porteCardRouteText);
+            dateText = itemView.findViewById(R.id.porteCardDateText);
+            kmText = itemView.findViewById(R.id.porteCardKmText);
             priceText = itemView.findViewById(R.id.porteCardPriceText);
-            actionButton = itemView.findViewById(R.id.porteCardActionButton);
         }
 
         private void bind(@NonNull Porte porte) {
-            titleText.setText(UiFormatters.formatPorteTitle(porte));
-            stateText.setText(UiFormatters.formatPorteState(porte));
-            scheduleText.setText(UiFormatters.formatPorteSchedule(porte));
-            cargoText.setText(UiFormatters.formatPorteCargo(porte));
-            priceText.setText(UiFormatters.formatPortePrice(porte));
-            applyStateColor(stateText, porte.getEstadoPorte());
+            titleText.setText(UiFormatters.formatPorteShortTitle(porte));
+            stateText.setVisibility(View.GONE);
+            routeText.setText(UiFormatters.formatPorteRoute(porte));
+            dateText.setText(itemView.getContext().getString(
+                    R.string.offer_card_date_value,
+                    UiFormatters.formatDateTime(porte.getFechaRecogida())
+            ));
+            kmText.setText(itemView.getContext().getString(
+                    R.string.offer_card_km_value,
+                    UiFormatters.formatPorteDistance(porte)
+            ));
+            priceText.setText(itemView.getContext().getString(
+                    R.string.offer_card_price_value,
+                    UiFormatters.formatPortePrice(porte)
+            ));
 
-            // Progressive disclosure: hide cargo and action button in list view.
-            // Tapping the card navigates to detail where full info is shown.
-            cargoText.setVisibility(View.GONE);
-            actionButton.setVisibility(View.GONE);
+            itemView.setContentDescription(itemView.getContext().getString(
+                    R.string.offer_card_content_description,
+                    UiFormatters.formatPorteShortTitle(porte),
+                    UiFormatters.formatPorteRoute(porte)
+            ));
 
             itemView.setOnClickListener(view -> listener.onPorteSelected(porte));
         }

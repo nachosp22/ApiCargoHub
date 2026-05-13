@@ -7,6 +7,7 @@ import com.cargohub.mobile.data.model.AgendaBloqueoRequest;
 import com.cargohub.mobile.data.model.BloqueoRecurrente;
 import com.cargohub.mobile.network.ApiClient;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -92,48 +93,184 @@ public class AgendaRepository {
                 });
     }
 
-    public void getBloqueoRecurrentes(long conductorId,
-                                       @NonNull RepositoryCallback<List<BloqueoRecurrente>> callback) {
+    public void getDiasLaborables(long conductorId,
+                                  @NonNull RepositoryCallback<List<Integer>> callback) {
+        apiService
+                .getDiasLaborables(conductorId)
+                .enqueue(new Callback<List<Integer>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<Integer>> call,
+                                           @NonNull Response<List<Integer>> response) {
+                        if (response.isSuccessful()) {
+                            callback.onResult(RepositorySupport.fromResponse(response, "No se pudieron cargar los días laborables."));
+                            return;
+                        }
+                        if (isLegacyRecurringFallbackCandidate(response.code())) {
+                            getDiasLaborablesLegacy(conductorId, callback);
+                            return;
+                        }
+                        callback.onResult(RepositorySupport.fromResponse(response, "No se pudieron cargar los días laborables."));
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<Integer>> call, @NonNull Throwable t) {
+                        callback.onResult(RepositorySupport.fromFailure(
+                                t,
+                                "Tiempo de espera agotado al cargar días laborables.",
+                                "Error de red al cargar días laborables."
+                        ));
+                    }
+                });
+    }
+
+    public void setDiasLaborables(long conductorId,
+                                  @NonNull List<Integer> diasLaborables,
+                                  @NonNull RepositoryCallback<List<Integer>> callback) {
+        List<Integer> normalizedWorkingDays = normalizeWorkingDays(diasLaborables);
+        apiService
+                .setDiasLaborables(conductorId, normalizedWorkingDays)
+                .enqueue(new Callback<List<Integer>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<Integer>> call,
+                                           @NonNull Response<List<Integer>> response) {
+                        if (response.isSuccessful()) {
+                            callback.onResult(RepositorySupport.fromResponse(response, "No se pudieron guardar los días laborables."));
+                            return;
+                        }
+                        if (isLegacyRecurringFallbackCandidate(response.code())) {
+                            setDiasLaborablesLegacy(conductorId, normalizedWorkingDays, callback);
+                            return;
+                        }
+                        callback.onResult(RepositorySupport.fromResponse(response, "No se pudieron guardar los días laborables."));
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<Integer>> call, @NonNull Throwable t) {
+                        callback.onResult(RepositorySupport.fromFailure(
+                                t,
+                                "Tiempo de espera agotado al guardar días laborables.",
+                                "Error de red al guardar días laborables."
+                        ));
+                    }
+                });
+    }
+
+    private void getDiasLaborablesLegacy(long conductorId,
+                                         @NonNull RepositoryCallback<List<Integer>> callback) {
         apiService
                 .getBloqueoRecurrentes(conductorId)
                 .enqueue(new Callback<List<BloqueoRecurrente>>() {
                     @Override
                     public void onResponse(@NonNull Call<List<BloqueoRecurrente>> call,
                                            @NonNull Response<List<BloqueoRecurrente>> response) {
-                        callback.onResult(RepositorySupport.fromResponse(response, "No se pudieron cargar los bloqueos recurrentes."));
+                        if (!response.isSuccessful()) {
+                            callback.onResult(RepositoryResult.error(
+                                    "No se pudieron cargar los días laborables.",
+                                    response.code(),
+                                    RepositorySupport.isUnauthorized(response.code())
+                            ));
+                            return;
+                        }
+                        List<Integer> workingDays = toWorkingDays(response.body());
+                        callback.onResult(RepositoryResult.success(workingDays));
                     }
 
                     @Override
-                    public void onFailure(@NonNull Call<List<BloqueoRecurrente>> call, @NonNull Throwable t) {
+                    public void onFailure(@NonNull Call<List<BloqueoRecurrente>> call,
+                                          @NonNull Throwable t) {
                         callback.onResult(RepositorySupport.fromFailure(
                                 t,
-                                "Tiempo de espera agotado al cargar bloqueos recurrentes.",
-                                "Error de red al cargar bloqueos recurrentes."
+                                "Tiempo de espera agotado al cargar días laborables.",
+                                "Error de red al cargar días laborables."
                         ));
                     }
                 });
     }
 
-    public void setBloqueoRecurrentes(long conductorId,
-                                       @NonNull List<Integer> diasBloqueados,
-                                       @NonNull RepositoryCallback<List<BloqueoRecurrente>> callback) {
+    private void setDiasLaborablesLegacy(long conductorId,
+                                         @NonNull List<Integer> workingDays,
+                                         @NonNull RepositoryCallback<List<Integer>> callback) {
         apiService
-                .setBloqueoRecurrentes(conductorId, diasBloqueados)
+                .setBloqueoRecurrentes(conductorId, toBlockedDays(workingDays))
                 .enqueue(new Callback<List<BloqueoRecurrente>>() {
                     @Override
                     public void onResponse(@NonNull Call<List<BloqueoRecurrente>> call,
                                            @NonNull Response<List<BloqueoRecurrente>> response) {
-                        callback.onResult(RepositorySupport.fromResponse(response, "No se pudieron guardar los bloqueos recurrentes."));
+                        if (!response.isSuccessful()) {
+                            callback.onResult(RepositoryResult.error(
+                                    "No se pudieron guardar los días laborables.",
+                                    response.code(),
+                                    RepositorySupport.isUnauthorized(response.code())
+                            ));
+                            return;
+                        }
+                        List<Integer> persistedWorkingDays = toWorkingDays(response.body());
+                        callback.onResult(RepositoryResult.success(persistedWorkingDays));
                     }
 
                     @Override
-                    public void onFailure(@NonNull Call<List<BloqueoRecurrente>> call, @NonNull Throwable t) {
+                    public void onFailure(@NonNull Call<List<BloqueoRecurrente>> call,
+                                          @NonNull Throwable t) {
                         callback.onResult(RepositorySupport.fromFailure(
                                 t,
-                                "Tiempo de espera agotado al guardar bloqueos recurrentes.",
-                                "Error de red al guardar bloqueos recurrentes."
+                                "Tiempo de espera agotado al guardar días laborables.",
+                                "Error de red al guardar días laborables."
                         ));
                     }
                 });
+    }
+
+    private boolean isLegacyRecurringFallbackCandidate(int code) {
+        return code == 404 || code == 405;
+    }
+
+    @NonNull
+    private List<Integer> normalizeWorkingDays(@NonNull List<Integer> days) {
+        List<Integer> normalized = new ArrayList<>();
+        for (Integer day : days) {
+            if (day != null && day >= 1 && day <= 7 && !normalized.contains(day)) {
+                normalized.add(day);
+            }
+        }
+        normalized.sort(Integer::compareTo);
+        return normalized;
+    }
+
+    @NonNull
+    private List<Integer> toBlockedDays(@NonNull List<Integer> workingDays) {
+        List<Integer> blocked = new ArrayList<>();
+        for (int day = 1; day <= 7; day++) {
+            if (!workingDays.contains(day)) {
+                blocked.add(day);
+            }
+        }
+        return blocked;
+    }
+
+    @NonNull
+    private List<Integer> toWorkingDays(List<BloqueoRecurrente> bloqueos) {
+        List<Integer> blocked = new ArrayList<>();
+        if (bloqueos != null) {
+            for (BloqueoRecurrente bloqueo : bloqueos) {
+                if (bloqueo == null) {
+                    continue;
+                }
+                int day = bloqueo.getDiaSemana();
+                if (day < 1 || day > 7) {
+                    continue;
+                }
+                if (bloqueo.isActivo() && !blocked.contains(day)) {
+                    blocked.add(day);
+                }
+            }
+        }
+
+        List<Integer> working = new ArrayList<>();
+        for (int day = 1; day <= 7; day++) {
+            if (!blocked.contains(day)) {
+                working.add(day);
+            }
+        }
+        return working;
     }
 }

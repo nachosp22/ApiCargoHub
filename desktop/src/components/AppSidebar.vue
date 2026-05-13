@@ -19,6 +19,7 @@ const fleetRealtimeEnabled = import.meta.env.VITE_FEATURE_FLEET_REALTIME === 'tr
 
 const navItems: NavItem[] = [
   { label: 'Dashboard', icon: 'pi-chart-bar', route: '/dashboard' },
+  { label: 'Estadísticas', icon: 'pi-chart-line', route: '/estadisticas' },
   { label: 'Portes', icon: 'pi-truck', route: '/portes' },
   { label: 'Revisión Portes', icon: 'pi-eye', route: '/revision-portes' },
   { label: 'Conductores', icon: 'pi-users', route: '/conductores' },
@@ -47,9 +48,11 @@ async function handleLogout(): Promise<void> {
   <aside class="fixed top-0 left-0 h-screen w-60 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col z-30">
     <!-- Logo -->
     <div class="h-16 flex items-center gap-3 px-5 border-b border-gray-200 dark:border-gray-700 shrink-0">
-      <div class="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
-        <svg viewBox="0 0 512 512" fill="none" class="w-5 h-5"><path d="M256 296L88 199v148l168 97V296z" fill="#1E40AF"/><path d="M256 296l168-97v148l-168 97V296z" fill="#2563EB"/><path d="M256 102L88 199l168 97 168-97L256 102z" fill="#3B82F6"/><path d="M216 199l40-28 40 28-16 11v34h-48v-34L216 199z" fill="white" opacity=".92"/></svg>
-      </div>
+      <img
+        src="/assets/brand/logo.png"
+        alt="CargoHub"
+        class="w-9 h-9 object-contain"
+      />
       <span class="text-lg font-semibold text-gray-800 dark:text-white">CargoHub</span>
     </div>
 

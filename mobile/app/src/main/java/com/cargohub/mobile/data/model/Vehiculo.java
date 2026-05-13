@@ -13,7 +13,6 @@ public class Vehiculo {
     private Integer anchoUtilMm;
     private Integer altoUtilMm;
     private Double volumenM3;
-    private boolean trampillaElevadora;
 
     public Long getId() {
         return id;
@@ -57,9 +56,5 @@ public class Vehiculo {
 
     public Double getVolumenM3() {
         return volumenM3;
-    }
-
-    public boolean isTrampillaElevadora() {
-        return trampillaElevadora;
     }
 }

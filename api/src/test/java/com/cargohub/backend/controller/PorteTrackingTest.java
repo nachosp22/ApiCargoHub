@@ -11,6 +11,7 @@ import com.cargohub.backend.repository.ClienteRepository;
 import com.cargohub.backend.repository.ConductorRepository;
 import com.cargohub.backend.repository.IncidenciaRepository;
 import com.cargohub.backend.repository.PorteRepository;
+import com.cargohub.backend.repository.TrackingSessionRepository;
 import com.cargohub.backend.repository.UsuarioRepository;
 import com.cargohub.backend.security.OwnershipSecurityService;
 import com.cargohub.backend.service.PorteService;
@@ -77,6 +78,9 @@ class PorteTrackingTest {
 
     @MockitoBean
     private IncidenciaRepository incidenciaRepository;
+
+    @MockitoBean
+    private TrackingSessionRepository trackingSessionRepository;
 
     @BeforeEach
     void setup() throws Exception {

@@ -45,6 +45,7 @@ const errors = computed(() => ({
   nombre: submitted.value && !form.value.nombre.trim(),
   apellidos: submitted.value && !form.value.apellidos.trim(),
   email: submitted.value && !form.value.email.trim(),
+  dni: submitted.value && !form.value.dni.trim(),
   password: submitted.value && !isEditing.value && !form.value.password.trim(),
 }))
 
@@ -53,6 +54,7 @@ const isValid = computed(
     form.value.nombre.trim() &&
     form.value.apellidos.trim() &&
     form.value.email.trim() &&
+    form.value.dni.trim() &&
     (isEditing.value || form.value.password.trim())
 )
 
@@ -96,12 +98,9 @@ function onSubmit(): void {
     apellidos: form.value.apellidos.trim(),
     email: form.value.email.trim(),
     telefono: form.value.telefono.trim() || undefined,
-    dni: form.value.dni.trim() || undefined,
+    dni: form.value.dni.trim(),
+    password: form.value.password.trim(),
     ciudadBase: form.value.ciudadBase.trim() || undefined,
-  }
-
-  if (!isEditing.value && form.value.password.trim()) {
-    data.password = form.value.password.trim()
   }
 
   emit('save', data)
@@ -177,12 +176,16 @@ function onClose(): void {
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">DNI / Licencia</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            DNI / Licencia <span class="text-red-500">*</span>
+          </label>
           <InputText
             v-model="form.dni"
             placeholder="12345678A"
             class="w-full"
+            :invalid="errors.dni"
           />
+          <small v-if="errors.dni" class="text-red-500 text-xs mt-1">Campo requerido</small>
         </div>
       </div>
 

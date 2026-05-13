@@ -154,7 +154,7 @@ function onSubmit(): void {
     longitudOrigen: form.value.longitudOrigen,
     latitudDestino: form.value.latitudDestino,
     longitudDestino: form.value.longitudDestino,
-    clienteId: form.value.clienteId,
+    clienteId: form.value.clienteId!,
     descripcionCliente: form.value.descripcionCliente.trim() || undefined,
     fechaRecogida: form.value.fechaRecogida ? form.value.fechaRecogida.toISOString() : undefined,
     fechaEntrega: form.value.fechaEntrega ? form.value.fechaEntrega.toISOString() : undefined,

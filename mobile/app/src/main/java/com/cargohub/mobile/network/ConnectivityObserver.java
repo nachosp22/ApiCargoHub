@@ -10,6 +10,10 @@ import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 /**
  * Observes network connectivity changes and notifies listeners on the main thread.
  * Uses ConnectivityManager.NetworkCallback (API 24+, our min is 26).
@@ -25,14 +29,15 @@ public final class ConnectivityObserver {
     private final ConnectivityManager connectivityManager;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private Listener listener;
-    private boolean online = true;
+    private boolean online = false;
     private boolean registered = false;
+    private Call<Void> healthCall;
 
     private final ConnectivityManager.NetworkCallback networkCallback =
             new ConnectivityManager.NetworkCallback() {
                 @Override
                 public void onAvailable(@NonNull Network network) {
-                    updateState(true);
+                    refreshState();
                 }
 
                 @Override
@@ -47,14 +52,20 @@ public final class ConnectivityObserver {
                             NetworkCapabilities.NET_CAPABILITY_INTERNET)
                             && capabilities.hasCapability(
                             NetworkCapabilities.NET_CAPABILITY_VALIDATED);
-                    updateState(hasInternet);
+                    if (hasInternet) {
+                        checkBackendReachable();
+                    } else {
+                        cancelHealthCall();
+                        updateState(false);
+                    }
                 }
             };
 
     private ConnectivityObserver(@NonNull Context context) {
         connectivityManager = (ConnectivityManager)
                 context.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        online = checkCurrentState();
+        online = false;
+        refreshState();
     }
 
     public static ConnectivityObserver getInstance(@NonNull Context context) {
@@ -74,6 +85,7 @@ public final class ConnectivityObserver {
 
     public void start() {
         if (registered) return;
+        refreshState();
         NetworkRequest request = new NetworkRequest.Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build();
@@ -88,6 +100,7 @@ public final class ConnectivityObserver {
         } catch (IllegalArgumentException ignored) {
             // Already unregistered
         }
+        cancelHealthCall();
         registered = false;
     }
 
@@ -95,13 +108,52 @@ public final class ConnectivityObserver {
         return online;
     }
 
-    private boolean checkCurrentState() {
+    public void refreshState() {
+        if (!hasValidatedInternet()) {
+            cancelHealthCall();
+            updateState(false);
+            return;
+        }
+        checkBackendReachable();
+    }
+
+    private boolean hasValidatedInternet() {
         Network active = connectivityManager.getActiveNetwork();
         if (active == null) return false;
         NetworkCapabilities caps = connectivityManager.getNetworkCapabilities(active);
         if (caps == null) return false;
         return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+    }
+
+    private boolean checkCurrentState() {
+        return hasValidatedInternet();
+    }
+
+    private void checkBackendReachable() {
+        cancelHealthCall();
+        Call<Void> call = ApiClient.getInstance().health();
+        healthCall = call;
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (call != healthCall) return;
+                updateState(response.isSuccessful());
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                if (call.isCanceled() || call != healthCall) return;
+                updateState(false);
+            }
+        });
+    }
+
+    private void cancelHealthCall() {
+        if (healthCall != null) {
+            healthCall.cancel();
+            healthCall = null;
+        }
     }
 
     private void updateState(boolean newState) {

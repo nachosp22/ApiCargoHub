@@ -6,6 +6,8 @@ import android.util.Base64;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
 
 import com.cargohub.mobile.data.model.LoginResponse;
 
@@ -35,10 +37,29 @@ public final class SessionManager {
         if (prefs == null) {
             synchronized (SessionManager.class) {
                 if (prefs == null) {
-                    prefs = context.getApplicationContext()
-                            .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+                    prefs = createSecurePreferences(context.getApplicationContext());
                 }
             }
+        }
+    }
+
+    @NonNull
+    private static SharedPreferences createSecurePreferences(@NonNull Context appContext) {
+        try {
+            MasterKey masterKey = new MasterKey.Builder(appContext)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build();
+            return EncryptedSharedPreferences.create(
+                    appContext,
+                    PREFS_NAME,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+        } catch (Exception secureStorageError) {
+            // Fallback defensivo para evitar bloqueo de login en dispositivos/problemáticas puntuales.
+            // TODO(security): eliminar fallback plano cuando monitoreemos compatibilidad completa.
+            return appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         }
     }
 

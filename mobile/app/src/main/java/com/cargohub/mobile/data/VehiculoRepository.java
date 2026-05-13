@@ -98,4 +98,24 @@ public class VehiculoRepository {
             }
         });
     }
+
+    public void updateVehiculo(long conductorId, long vehiculoId,
+                               @NonNull VehiculoUpsertRequest request,
+                               @NonNull RepositoryCallback<Vehiculo> callback) {
+        apiService.updateVehiculo(conductorId, vehiculoId, request).enqueue(new Callback<Vehiculo>() {
+            @Override
+            public void onResponse(@NonNull Call<Vehiculo> call, @NonNull Response<Vehiculo> response) {
+                callback.onResult(RepositorySupport.fromResponse(response, "No se pudo actualizar el vehiculo."));
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Vehiculo> call, @NonNull Throwable t) {
+                callback.onResult(RepositorySupport.fromFailure(
+                        t,
+                        "Tiempo de espera agotado al actualizar el vehiculo.",
+                        "Error de red al actualizar el vehiculo."
+                ));
+            }
+        });
+    }
 }

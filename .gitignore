@@ -27,6 +27,9 @@ secrets/
 ### Logs and temporary files ###
 *.log
 nul
+**/runtime-*.pid
+**/runtime-webflow-*.json
+window_dump*.xml
 
 ### Android / mobile ###
 mobile/.gradle/

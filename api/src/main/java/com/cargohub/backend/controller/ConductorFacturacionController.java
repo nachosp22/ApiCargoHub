@@ -18,7 +18,6 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/conductores/{conductorId}")
-@CrossOrigin(origins = "*")
 public class ConductorFacturacionController {
 
     @Autowired

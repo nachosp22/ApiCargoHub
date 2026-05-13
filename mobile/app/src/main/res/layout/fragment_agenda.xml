@@ -1,71 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/ch_background"
-    android:fillViewport="true">
+    android:background="@color/ch_primary"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingHorizontal="@dimen/ch_space_md"
-        android:paddingTop="@dimen/ch_space_lg"
-        android:paddingBottom="@dimen/ch_space_md">
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/home_menu_section_agenda"
-            android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
-            android:textColor="@color/ch_text_primary"
-            android:textStyle="bold" />
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:alpha="0.24"
+            android:scaleType="centerCrop"
+            android:src="@drawable/login_bg" />
 
-        <TextView
-            android:id="@+id/agendaRangeText"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/ch_space_xs"
-            android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
-            android:textColor="@color/ch_text_secondary" />
+            android:gravity="bottom"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/ch_space_sm"
+            android:paddingTop="16dp"
+            android:paddingBottom="10dp">
 
-        <!-- Recurring weekly blocks section -->
-        <com.google.android.material.card.MaterialCardView
+            <TextView
+                android:id="@+id/agendaTitleText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/home_menu_section_agenda"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/ch_space_md"
-            app:cardBackgroundColor="@color/ch_surface_card"
-            app:cardCornerRadius="@dimen/radius_md"
-            app:cardElevation="2dp"
-            app:strokeColor="@android:color/transparent"
-            app:strokeWidth="0dp">
+            android:background="@drawable/bg_section_panel"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/ch_space_sm"
+            android:paddingTop="8dp"
+            android:paddingBottom="@dimen/ch_space_md">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="@dimen/ch_space_md">
+                android:padding="@dimen/ch_space_sm">
+
+                <TextView
+                    android:id="@+id/agendaModeText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/agenda_options_subtitle"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+                    android:textColor="@color/ch_text_secondary"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/agendaRangeText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_xs"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
+                    android:textColor="@color/ch_text_secondary"
+                    android:visibility="gone" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_md"
                     android:text="@string/agenda_recurring_title"
                     android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
                     android:textColor="@color/ch_text_primary"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/agenda_recurring_subtitle"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
+                    android:textColor="@color/ch_text_secondary"
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:id="@+id/recurringDaysContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/ch_space_sm"
-                    android:gravity="center"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <!-- New block form -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/agendaRecurringSaveButton"
+                    style="@style/Widget.ApiCargoHub.Button.Primary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:text="@string/agenda_recurring_update_action"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -125,7 +171,7 @@
                         android:clickable="true"
                         android:cursorVisible="false"
                         android:inputType="none"
-                        android:hint="@string/agenda_datetime_placeholder" />
+                        android:hint="@string/agenda_date_placeholder" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -148,7 +194,7 @@
                         android:clickable="true"
                         android:cursorVisible="false"
                         android:inputType="none"
-                        android:hint="@string/agenda_datetime_placeholder" />
+                        android:hint="@string/agenda_date_placeholder" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
@@ -220,5 +266,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/ch_space_md"
             android:nestedScrollingEnabled="false" />
-    </LinearLayout>
-</ScrollView>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

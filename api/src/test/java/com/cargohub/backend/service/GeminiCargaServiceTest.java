@@ -29,7 +29,7 @@ import org.mockito.quality.Strictness;
 class GeminiCargaServiceTest {
 
     private static final String USER_FACING_FALLBACK_REASON =
-            "No se pudo analizar la carga automaticamente. Tu solicitud se creo correctamente y quedo pendiente de revision manual.";
+            "No se ha podido analizar la carga. El porte sera revisado manualmente por uno de nuestros agentes.";
 
     @Mock
     private CargoAnalysisLogRepository cargoAnalysisLogRepository;
@@ -124,7 +124,7 @@ class GeminiCargaServiceTest {
                   "candidates": [{
                     "content": {
                       "parts": [{
-                        "text": "{\\"pesoTotalKg\\": 500.0, \\"volumenTotalM3\\": 2.5, \\"largoMaxPaquete\\": 1.2, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
+                        "text": "{\\"pesoTotalKg\\": 500.0, \\"volumenTotalM3\\": 2.5, \\"largoMaxPaquete\\": 1.2, \\"anchoMaxPaquete\\": 0.8, \\"altoMaxPaquete\\": 0.6, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
                       }]
                     }
                   }]
@@ -144,8 +144,8 @@ class GeminiCargaServiceTest {
         assertEquals(500.0, response.getPesoTotalKg());
         assertEquals(2.5, response.getVolumenTotalM3());
         assertEquals(1.2, response.getLargoMaxPaquete());
-        assertEquals(0.0, response.getAnchoMaxPaquete());
-        assertEquals(0.0, response.getAltoMaxPaquete());
+        assertEquals(0.8, response.getAnchoMaxPaquete());
+        assertEquals(0.6, response.getAltoMaxPaquete());
         assertEquals("FURGONETA", response.getTipoVehiculoRequerido());
         assertFalse(response.getRevisionManual());
         assertNull(response.getMotivoRevision());
@@ -169,7 +169,7 @@ class GeminiCargaServiceTest {
                   "candidates": [{
                     "content": {
                       "parts": [{
-                        "text": "{\\"pesoTotalKg\\": 200.0, \\"volumenTotalM3\\": 1.0, \\"largoMaxPaquete\\": 2.0, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
+                        "text": "{\\"pesoTotalKg\\": 200.0, \\"volumenTotalM3\\": 1.0, \\"largoMaxPaquete\\": 2.0, \\"anchoMaxPaquete\\": 1.0, \\"altoMaxPaquete\\": 1.0, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
                       }]
                     }
                   }]
@@ -192,13 +192,14 @@ class GeminiCargaServiceTest {
         Map<String, Object> requestBody = (Map<String, Object>) bodyCaptor.getValue();
         Map<String, Object> generationConfig = (Map<String, Object>) requestBody.get("generationConfig");
         assertEquals("application/json", generationConfig.get("responseMimeType"));
+        assertTrue(generationConfig.containsKey("responseSchema"));
         assertEquals(0, generationConfig.get("temperature"));
     }
 
-    // --- calcularDimensiones: markdown is rejected in strict JSON mode ---
+    // --- calcularDimensiones: markdown is tolerated defensively ---
 
     @Test
-    void calcularDimensiones_returnsDefault_whenGeminiReturnsMarkdown() {
+    void calcularDimensiones_parsesJsonObject_whenGeminiReturnsMarkdownFence() {
         ReflectionTestUtils.setField(geminiCargaService, "apiKey", "test-key");
         ReflectionTestUtils.setField(geminiCargaService, "modelId", "gemini-2.0-flash");
 
@@ -207,7 +208,7 @@ class GeminiCargaServiceTest {
                   "candidates": [{
                     "content": {
                       "parts": [{
-                        "text": "```json\\n{\\"pesoTotalKg\\": 100, \\"volumenTotalM3\\": 1.0, \\"largoMaxPaquete\\": 0.5, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}\\n```"
+                        "text": "```json\\n{\\"pesoTotalKg\\": 100, \\"volumenTotalM3\\": 1.0, \\"largoMaxPaquete\\": 0.5, \\"anchoMaxPaquete\\": 0.4, \\"altoMaxPaquete\\": 0.3, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}\\n```"
                       }]
                     }
                   }]
@@ -223,9 +224,9 @@ class GeminiCargaServiceTest {
 
         CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("5 palets", null);
 
-        assertEquals(0.0, response.getPesoTotalKg());
-        assertTrue(response.getRevisionManual());
-        assertEquals(USER_FACING_FALLBACK_REASON, response.getMotivoRevision());
+        assertEquals(100.0, response.getPesoTotalKg());
+        assertFalse(response.getRevisionManual());
+        assertNull(response.getMotivoRevision());
     }
 
     @Test
@@ -238,7 +239,7 @@ class GeminiCargaServiceTest {
                   "candidates": [{
                     "content": {
                       "parts": [{
-                        "text": "{\\"pesoTotalKg\\": 300.0, \\"volumenTotalM3\\": 0.0, \\"largoMaxPaquete\\": 2.4, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
+                        "text": "{\\"pesoTotalKg\\": 300.0, \\"volumenTotalM3\\": 0.0, \\"largoMaxPaquete\\": 2.4, \\"anchoMaxPaquete\\": 1.0, \\"altoMaxPaquete\\": 1.0, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
                       }]
                     }
                   }]
@@ -256,11 +257,11 @@ class GeminiCargaServiceTest {
 
         assertEquals("FURGONETA", response.getTipoVehiculoRequerido());
         assertTrue(response.getRevisionManual());
-        assertEquals("Falta volumen total (m3), se requiere revision manual.", response.getMotivoRevision());
+        assertEquals(USER_FACING_FALLBACK_REASON, response.getMotivoRevision());
     }
 
     @Test
-    void calcularDimensiones_resolvesVehicleTypeUsingWeightAndLengthRules() {
+    void calcularDimensiones_preservesGeminiTrailer_whenHighWeight() {
         ReflectionTestUtils.setField(geminiCargaService, "apiKey", "test-key");
         ReflectionTestUtils.setField(geminiCargaService, "modelId", "gemini-2.0-flash");
 
@@ -269,7 +270,7 @@ class GeminiCargaServiceTest {
                   "candidates": [{
                     "content": {
                       "parts": [{
-                        "text": "{\\"pesoTotalKg\\": 9500.0, \\"volumenTotalM3\\": 12.0, \\"largoMaxPaquete\\": 2.5, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
+                        "text": "{\\"pesoTotalKg\\": 9500.0, \\"volumenTotalM3\\": 12.0, \\"largoMaxPaquete\\": 2.5, \\"anchoMaxPaquete\\": 2.45, \\"altoMaxPaquete\\": 2.7, \\"tipoVehiculoRequerido\\": \\"TRAILER\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
                       }]
                     }
                   }]
@@ -286,6 +287,102 @@ class GeminiCargaServiceTest {
         CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("carga pesada", null);
 
         assertEquals("TRAILER", response.getTipoVehiculoRequerido());
+        assertFalse(response.getRevisionManual());
+    }
+
+    @Test
+    void calcularDimensiones_preservesGeminiRigid_whenHighVolumeLowWeight() {
+        // Edge case: muchos palets livianos → alto volumen, bajo peso
+        // Gemini infiere RIGIDO por volumen; el sistema debe respetarlo
+        ReflectionTestUtils.setField(geminiCargaService, "apiKey", "test-key");
+        ReflectionTestUtils.setField(geminiCargaService, "modelId", "gemini-2.0-flash");
+
+        String geminiResponse = """
+                {
+                  "candidates": [{
+                    "content": {
+                      "parts": [{
+                        "text": "{\\"pesoTotalKg\\": 800.0, \\"volumenTotalM3\\": 25.0, \\"largoMaxPaquete\\": 1.2, \\"anchoMaxPaquete\\": 2.45, \\"altoMaxPaquete\\": 2.5, \\"tipoVehiculoRequerido\\": \\"RIGIDO\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
+                      }]
+                    }
+                  }]
+                }
+                """;
+
+        when(restClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(anyString(), anyString())).thenReturn(requestBodySpec);
+        doReturn(requestBodySpec).when(requestBodySpec).body(any(Object.class));
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(String.class)).thenReturn(geminiResponse);
+
+        CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("20 palets de zapatos", null);
+
+        assertEquals("RIGIDO", response.getTipoVehiculoRequerido());
+        assertFalse(response.getRevisionManual());
+    }
+
+    @Test
+    void calcularDimensiones_preservesGeminiTrailer_whenManyPallets() {
+        // Edge case: muchos palets → Gemini infiere TRAILER por cantidad/volumen
+        ReflectionTestUtils.setField(geminiCargaService, "apiKey", "test-key");
+        ReflectionTestUtils.setField(geminiCargaService, "modelId", "gemini-2.0-flash");
+
+        String geminiResponse = """
+                {
+                  "candidates": [{
+                    "content": {
+                      "parts": [{
+                        "text": "{\\"pesoTotalKg\\": 2000.0, \\"volumenTotalM3\\": 50.0, \\"largoMaxPaquete\\": 1.2, \\"anchoMaxPaquete\\": 2.45, \\"altoMaxPaquete\\": 2.7, \\"tipoVehiculoRequerido\\": \\"TRAILER\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
+                      }]
+                    }
+                  }]
+                }
+                """;
+
+        when(restClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(anyString(), anyString())).thenReturn(requestBodySpec);
+        doReturn(requestBodySpec).when(requestBodySpec).body(any(Object.class));
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(String.class)).thenReturn(geminiResponse);
+
+        CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("40 palets de ropa", null);
+
+        assertEquals("TRAILER", response.getTipoVehiculoRequerido());
+        assertFalse(response.getRevisionManual());
+    }
+
+    @Test
+    void calcularDimensiones_preservesGeminiType_whenDataIncomplete() {
+        // Edge case: Gemini sugiere tipo válido pero faltan datos → revisión manual true, tipo preservado
+        ReflectionTestUtils.setField(geminiCargaService, "apiKey", "test-key");
+        ReflectionTestUtils.setField(geminiCargaService, "modelId", "gemini-2.0-flash");
+
+        String geminiResponse = """
+                {
+                  "candidates": [{
+                    "content": {
+                      "parts": [{
+                        "text": "{\\"pesoTotalKg\\": 500.0, \\"volumenTotalM3\\": 0.0, \\"largoMaxPaquete\\": 1.0, \\"anchoMaxPaquete\\": 1.0, \\"altoMaxPaquete\\": 1.0, \\"tipoVehiculoRequerido\\": \\"FURGONETA\\", \\"revisionManual\\": false, \\"motivoRevision\\": null}"
+                      }]
+                    }
+                  }]
+                }
+                """;
+
+        when(restClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(anyString(), anyString())).thenReturn(requestBodySpec);
+        doReturn(requestBodySpec).when(requestBodySpec).body(any(Object.class));
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(String.class)).thenReturn(geminiResponse);
+
+        CargoAnalysisResponse response = geminiCargaService.calcularDimensiones("carga sin volumen claro", null);
+
+        assertEquals("FURGONETA", response.getTipoVehiculoRequerido());
+        assertTrue(response.getRevisionManual());
+        assertEquals(USER_FACING_FALLBACK_REASON, response.getMotivoRevision());
     }
 
     // --- calcularDimensiones: Gemini API error ---

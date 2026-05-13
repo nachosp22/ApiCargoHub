@@ -401,7 +401,8 @@ public class RepositoryIntegrationTest {
                 -3.7038,
                 "2026-03-27T20:30:00Z",
                 52.5,
-                180
+                180,
+                null
         ), capture);
 
         RepositoryResult<Void> result = capture.await();
@@ -430,7 +431,8 @@ public class RepositoryIntegrationTest {
                 -3.7038,
                 "2026-03-27T20:30:00Z",
                 52.5,
-                180
+                180,
+                null
         ), capture);
 
         RepositoryResult<Void> result = capture.await();

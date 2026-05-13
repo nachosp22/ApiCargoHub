@@ -56,11 +56,12 @@ public class RouteInfo {
         return "~" + hours + " h " + mins + " min";
     }
 
-    /** Arrival time formatted as HH:mm. */
+    /** Arrival time formatted as HH:mm in Europe/Madrid timezone. */
     @NonNull
     public String getArrivalTimeFormatted() {
         long arrivalMs = System.currentTimeMillis() + (long) (durationSeconds * 1000);
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.US);
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone("Europe/Madrid"));
         return sdf.format(new java.util.Date(arrivalMs));
     }
 }

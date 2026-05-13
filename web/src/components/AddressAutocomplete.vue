@@ -62,8 +62,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
-import { useAddressAutocomplete } from '@/composables/useAddressAutocomplete'
+import { ref, watch } from 'vue'
+import { formatFeatureMain, useAddressAutocomplete } from '@/composables/useAddressAutocomplete'
 
 interface Props {
   modelValue?: string
@@ -164,11 +164,7 @@ function onClear(): void {
 
 // Helpers for display
 function getSuggestionMain(feature: (typeof suggestions.value)[0]): string {
-  const p = feature.properties
-  const parts: string[] = []
-  if (p.street) parts.push(p.street)
-  if (p.housenumber) parts.push(p.housenumber)
-  return parts.length > 0 ? parts.join(' ') : (p.name ?? '')
+  return formatFeatureMain(feature.properties, query.value)
 }
 
 function getSuggestionSub(feature: (typeof suggestions.value)[0]): string {

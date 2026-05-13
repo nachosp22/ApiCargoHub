@@ -1,6 +1,7 @@
 package com.cargohub.mobile.data;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.cargohub.mobile.data.model.LoginResponse;
 import com.cargohub.mobile.network.ApiClient;
@@ -41,8 +42,13 @@ public class AuthRepository {
                     LoginResponse body = response.body();
                     callback.onSuccess(body);
                 } else {
+                    String errorBody = parseErrorBody(response);
                     if (response.code() == 401) {
-                        callback.onError("Email o contrasena incorrectos");
+                        if (errorBody != null && errorBody.toLowerCase().contains("inactivo")) {
+                            callback.onError("Usuario inactivo");
+                        } else {
+                            callback.onError("Email o contrasena incorrectos");
+                        }
                     } else {
                         callback.onError("No se pudo iniciar sesion. Intenta nuevamente");
                     }
@@ -58,5 +64,16 @@ public class AuthRepository {
                 }
             }
         });
+    }
+
+    @Nullable
+    private String parseErrorBody(@NonNull Response<?> response) {
+        try {
+            if (response.errorBody() != null) {
+                return response.errorBody().string();
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 }

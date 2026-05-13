@@ -64,5 +64,11 @@
     <color name="ch_dark_on_surface_variant">#94A3B8</color>
     <color name="ch_dark_outline">#475569</color>
 
+    <!-- ── Overlays ── -->
+    <color name="ch_overlay_strong">#B3000000</color>
+    <color name="ch_overlay_medium">#99000000</color>
+    <color name="ch_success_chip_tint">#4016A34A</color>
+    <color name="ch_warning_chip_tint">#40D97706</color>
+
     <color name="white">#FFFFFF</color>
 </resources>

@@ -14,7 +14,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios/me/foto")
-@CrossOrigin(origins = "*")
 public class FotoPerfilController {
 
     @Autowired

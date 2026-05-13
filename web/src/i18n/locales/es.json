@@ -125,6 +125,7 @@
       "passwordPlaceholder": "••••••••",
       "submit": "Iniciar Sesión",
       "noAccount": "¿No tienes cuenta? Regístrate",
+      "passwordRecoveryUnavailable": "Recuperación de contraseña no disponible desde web por el momento. Contactá soporte.",
       "unexpectedError": "Error inesperado al iniciar sesión."
     },
     "register": {
@@ -206,6 +207,8 @@
       "requestPorte": "Solicitar Porte",
       "myPortes": "Mis Portes",
       "myInvoices": "Mis Facturas",
+      "profile": "Mi Perfil",
+      "openMenu": "Abrir menú",
       "logout": "Cerrar Sesión",
       "clientPortal": "Portal Cliente",
       "portal": "Portal"
@@ -244,8 +247,12 @@
       "unassigned": "Sin asignar",
       "weight": "Peso",
       "requiredVehicle": "Vehículo Requerido",
-      "manualReview": "Revisión manual requerida: {reason}",
-      "manualReviewNoReason": "Sin motivo especificado"
+      "pendingReview": "Pendiente revisión",
+      "pendingDriver": "Pendiente conductor",
+      "pendingDriverAwaitingAcceptance": "La carga se ha analizado correctamente. Le asignaremos un conductor lo antes posible.",
+      "manualReview": "No se ha podido analizar la carga. El porte será revisado manualmente por uno de nuestros agentes.",
+      "manualReviewNoReason": "Sin motivo especificado",
+      "assignmentPending": "La carga se ha analizado correctamente. Le asignaremos un conductor lo antes posible."
     },
     "facturas": {
       "filterStatus": "Estado:",
@@ -287,9 +294,13 @@
       "cargoPlaceholder": "Ej: 10 palés de productos electrónicos, cada uno de 1.2m x 0.8m x 1.5m, peso aprox 200kg cada uno. Requiere furgoneta cerrada.",
       "aiNote": "Nuestra IA analizará la descripción para calcular dimensiones, peso y tipo de vehículo necesario.",
       "pickupDate": "Fecha Deseada de Recogida",
-      "pickupDatePlaceholder": "Selecciona una fecha",
+      "pickupDatePlaceholder": "Selecciona fecha y hora",
+      "pickupDateRequired": "La fecha y hora de recogida es obligatoria.",
+      "originSelectionRequired": "Seleccioná un origen real de la lista de sugerencias.",
+      "destinationSelectionRequired": "Seleccioná un destino real de la lista de sugerencias.",
+      "invalidLocationsError": "Origen y destino deben seleccionarse desde sugerencias reales.",
       "submit": "Enviar Solicitud",
-      "successMessage": "¡Solicitud enviada correctamente! Estamos procesando tu carga.",
+      "successMessage": "La carga se ha analizado correctamente. Le asignaremos un conductor lo antes posible.",
       "viewMyPortes": "Ver mis portes →"
     },
     "tracking": {
@@ -308,6 +319,15 @@
       "retry": "Reintentar",
       "mapOrigin": "Origen",
       "mapDestination": "Destino"
+    },
+    "accessUnavailable": {
+      "title": "Portal no disponible para esta cuenta",
+      "description": "Tu sesión está activa, pero este portal está habilitado solo para cuentas cliente con perfil completo.",
+      "reasonRole": "Si tu cuenta es de transportista (conductor), usá la app móvil del conductor.",
+      "reasonMissingClient": "Si sos cliente y todavía no tenés clienteId asignado, tu alta puede estar pendiente de activación.",
+      "goHome": "Volver al inicio",
+      "mobileAppHint": "Si sos conductor, usá la app móvil.",
+      "downloadMobileApp": "Descargar app móvil"
     }
   },
   "common": {

@@ -7,7 +7,7 @@
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
-    app:cardBackgroundColor="@color/ch_surface"
+    app:cardBackgroundColor="@color/ch_surface_card"
     app:cardCornerRadius="@dimen/radius_sm"
     app:cardElevation="0dp"
     app:strokeColor="@color/ch_outline"
@@ -22,9 +22,11 @@
 
         <TextView
             android:id="@+id/pauseReasonEmoji"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="24sp" />
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_state_chip"
+            android:gravity="center"
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/pauseReasonLabel"
@@ -32,7 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_sm"
             android:layout_weight="1"
-            android:textColor="@color/ch_on_surface"
-            android:textSize="@dimen/ch_text_size_body_large" />
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyLarge"
+            android:textColor="@color/ch_text_primary" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -133,14 +133,14 @@ public class DevDataSeeder implements ApplicationRunner {
 
     private List<Conductor> seedConductores() {
         List<ConductorSeed> seeds = List.of(
-                new ConductorSeed("juan.perez@cargohub.local", "Juan", "Pérez", "11111111A", "612000001", "Madrid", 40.4168, -3.7038, 300, "1,2,3,4,5", true, 4.5, 28, 126.0),
-                new ConductorSeed("maria.lopez@cargohub.local", "María", "López", "22222222B", "612000002", "Barcelona", 41.3874, 2.1686, 260, "1,2,3,4,5", true, 4.8, 35, 168.0),
-                new ConductorSeed("carlos.ruiz@cargohub.local", "Carlos", "Ruiz", "33333333C", "612000003", "Valencia", 39.4699, -0.3763, 220, "1,2,3,4,5,6", true, 4.2, 19, 84.0),
-                new ConductorSeed("ana.garcia@cargohub.local", "Ana", "García", "44444444D", "612000004", "Sevilla", 37.3891, -5.9845, 180, "1,2,3,4,5", false, 3.9, 14, 55.0),
-                new ConductorSeed("pedro.martin@cargohub.local", "Pedro", "Martín", "55555555E", "612000005", "Bilbao", 43.2630, -2.9350, 200, "1,2,3,4,5", false, 4.0, 10, 40.0),
-                new ConductorSeed("laura.hernandez@cargohub.local", "Laura", "Hernández", "66666666F", "612000006", "Zaragoza", 41.6488, -0.8891, 320, "1,2,3,4,5", true, 4.6, 22, 101.0),
-                new ConductorSeed("diego.navarro@cargohub.local", "Diego", "Navarro", "77777777G", "612000007", "Málaga", 36.7213, -4.4214, 170, "1,2,3,4,5,6", true, 4.3, 17, 73.0),
-                new ConductorSeed("elena.morales@cargohub.local", "Elena", "Morales", "88888888H", "612000008", "Murcia", 37.9922, -1.1307, 210, "1,2,3,4,5", true, 4.4, 25, 110.0)
+                new ConductorSeed("juan.perez@cargohub.local", "Juan", "Pérez", "11111111A", "612000001", "Madrid", 40.4168, -3.7038, 300, "1,2,3,4,5", true),
+                new ConductorSeed("maria.lopez@cargohub.local", "María", "López", "22222222B", "612000002", "Barcelona", 41.3874, 2.1686, 260, "1,2,3,4,5", true),
+                new ConductorSeed("carlos.ruiz@cargohub.local", "Carlos", "Ruiz", "33333333C", "612000003", "Valencia", 39.4699, -0.3763, 220, "1,2,3,4,5,6", true),
+                new ConductorSeed("ana.garcia@cargohub.local", "Ana", "García", "44444444D", "612000004", "Sevilla", 37.3891, -5.9845, 180, "1,2,3,4,5", false),
+                new ConductorSeed("pedro.martin@cargohub.local", "Pedro", "Martín", "55555555E", "612000005", "Bilbao", 43.2630, -2.9350, 200, "1,2,3,4,5", false),
+                new ConductorSeed("laura.hernandez@cargohub.local", "Laura", "Hernández", "66666666F", "612000006", "Zaragoza", 41.6488, -0.8891, 320, "1,2,3,4,5", true),
+                new ConductorSeed("diego.navarro@cargohub.local", "Diego", "Navarro", "77777777G", "612000007", "Málaga", 36.7213, -4.4214, 170, "1,2,3,4,5,6", true),
+                new ConductorSeed("elena.morales@cargohub.local", "Elena", "Morales", "88888888H", "612000008", "Murcia", 37.9922, -1.1307, 210, "1,2,3,4,5", true)
         );
 
         List<Conductor> out = new ArrayList<>();
@@ -165,9 +165,6 @@ public class DevDataSeeder implements ApplicationRunner {
             conductor.setDiasLaborables(seed.diasLaborables());
             conductor.setDisponible(seed.disponible());
             conductor.setBuscarRetorno(true);
-            conductor.setRating(seed.rating());
-            conductor.setNumeroValoraciones(seed.numeroValoraciones());
-            conductor.setSumaPuntuaciones(seed.sumaPuntuaciones());
 
             out.add(conductorRepository.save(conductor));
         }
@@ -176,16 +173,16 @@ public class DevDataSeeder implements ApplicationRunner {
 
     private List<Vehiculo> seedVehiculos(List<Conductor> conductores) {
         List<VehiculoSeed> seeds = List.of(
-                new VehiculoSeed("1234ABC", "Iveco", "Daily 35S14", TipoVehiculo.FURGONETA, EstadoVehiculo.DISPONIBLE, 1500, 4200, 1800, 1900, false, "11111111A"),
-                new VehiculoSeed("5678DEF", "Mercedes-Benz", "Atego 1224", TipoVehiculo.RIGIDO, EstadoVehiculo.DISPONIBLE, 6000, 7200, 2400, 2500, true, "22222222B"),
-                new VehiculoSeed("9012GHI", "Volvo", "FH 500", TipoVehiculo.TRAILER, EstadoVehiculo.DISPONIBLE, 24000, 13600, 2480, 2700, true, "33333333C"),
-                new VehiculoSeed("3456JKL", "Renault", "Master L3H2", TipoVehiculo.FURGONETA, EstadoVehiculo.EN_MANTENIMIENTO, 1200, 3700, 1765, 1880, false, "66666666F"),
-                new VehiculoSeed("7890MNO", "MAN", "TGX 18.510", TipoVehiculo.TRAILER, EstadoVehiculo.DISPONIBLE, 25000, 13600, 2480, 2700, true, "77777777G"),
-                new VehiculoSeed("2345PQR", "DAF", "XF 480", TipoVehiculo.TRAILER, EstadoVehiculo.BAJA, 24000, 13600, 2480, 2700, false, "55555555E"),
-                new VehiculoSeed("6789STU", "Iveco", "Eurocargo 120E25", TipoVehiculo.RIGIDO, EstadoVehiculo.DISPONIBLE, 7500, 8000, 2400, 2500, true, "88888888H"),
-                new VehiculoSeed("0123VWX", "Peugeot", "Boxer L4H3", TipoVehiculo.FURGONETA, EstadoVehiculo.DISPONIBLE, 1400, 4070, 1870, 2172, false, "11111111A"),
-                new VehiculoSeed("4567YZA", "Scania", "R 450", TipoVehiculo.ESPECIAL, EstadoVehiculo.EN_MANTENIMIENTO, 20000, 12000, 2500, 2800, true, "22222222B"),
-                new VehiculoSeed("8901BCD", "Ford", "Transit L3H2", TipoVehiculo.FURGONETA, EstadoVehiculo.DISPONIBLE, 1100, 3494, 1784, 1886, false, "33333333C")
+                new VehiculoSeed("1234ABC", "Iveco", "Daily 35S14", TipoVehiculo.FURGONETA, EstadoVehiculo.DISPONIBLE, 1500, 4200, 1800, 1900, "11111111A"),
+                new VehiculoSeed("5678DEF", "Mercedes-Benz", "Atego 1224", TipoVehiculo.RIGIDO, EstadoVehiculo.DISPONIBLE, 6000, 7200, 2400, 2500, "22222222B"),
+                new VehiculoSeed("9012GHI", "Volvo", "FH 500", TipoVehiculo.TRAILER, EstadoVehiculo.DISPONIBLE, 24000, 13600, 2480, 2700, "33333333C"),
+                new VehiculoSeed("3456JKL", "Renault", "Master L3H2", TipoVehiculo.FURGONETA, EstadoVehiculo.EN_MANTENIMIENTO, 1200, 3700, 1765, 1880, "66666666F"),
+                new VehiculoSeed("7890MNO", "MAN", "TGX 18.510", TipoVehiculo.TRAILER, EstadoVehiculo.DISPONIBLE, 25000, 13600, 2480, 2700, "77777777G"),
+                new VehiculoSeed("2345PQR", "DAF", "XF 480", TipoVehiculo.TRAILER, EstadoVehiculo.BAJA, 24000, 13600, 2480, 2700, "55555555E"),
+                new VehiculoSeed("6789STU", "Iveco", "Eurocargo 120E25", TipoVehiculo.RIGIDO, EstadoVehiculo.DISPONIBLE, 7500, 8000, 2400, 2500, "88888888H"),
+                new VehiculoSeed("0123VWX", "Peugeot", "Boxer L4H3", TipoVehiculo.FURGONETA, EstadoVehiculo.DISPONIBLE, 1400, 4070, 1870, 2172, "11111111A"),
+                new VehiculoSeed("4567YZA", "Scania", "R 450", TipoVehiculo.ESPECIAL, EstadoVehiculo.EN_MANTENIMIENTO, 20000, 12000, 2500, 2800, "22222222B"),
+                new VehiculoSeed("8901BCD", "Ford", "Transit L3H2", TipoVehiculo.FURGONETA, EstadoVehiculo.DISPONIBLE, 1100, 3494, 1784, 1886, "33333333C")
         );
 
         List<Vehiculo> out = new ArrayList<>();
@@ -203,7 +200,6 @@ public class DevDataSeeder implements ApplicationRunner {
             vehiculo.setLargoUtilMm(seed.largoUtilMm());
             vehiculo.setAnchoUtilMm(seed.anchoUtilMm());
             vehiculo.setAltoUtilMm(seed.altoUtilMm());
-            vehiculo.setTrampillaElevadora(seed.trampillaElevadora());
             vehiculo.setConductor(conductor);
 
             out.add(vehiculoRepository.save(vehiculo));
@@ -213,18 +209,18 @@ public class DevDataSeeder implements ApplicationRunner {
 
     private List<Porte> seedPortes(List<Cliente> clientes, List<Conductor> conductores) {
         List<PorteSeed> seeds = List.of(
-                new PorteSeed("Madrid", "Barcelona", 40.4168, -3.7038, 41.3874, 2.1686, 621.0, 850.0, 0.0, "Palés de electrónica", 2200.0, 10.5, 2.2, TipoVehiculo.RIGIDO, false, EstadoPorte.EN_TRANSITO, 0, 0),
-                new PorteSeed("Valencia", "Sevilla", 39.4699, -0.3763, 37.3891, -5.9845, 654.0, 720.0, 20.0, "Carga alimentaria", 1800.0, 9.2, 2.0, TipoVehiculo.RIGIDO, false, EstadoPorte.ENTREGADO, 1, 1),
-                new PorteSeed("Bilbao", "Zaragoza", 43.2630, -2.9350, 41.6488, -0.8891, 305.0, 480.0, 0.0, "Materiales de construcción", 3500.0, 14.0, 3.0, TipoVehiculo.TRAILER, false, EstadoPorte.PENDIENTE, 2, null),
-                new PorteSeed("Málaga", "Granada", 36.7213, -4.4214, 37.1773, -3.5986, 126.0, 280.0, 0.0, "Mobiliario de oficina", 1200.0, 6.0, 1.8, TipoVehiculo.FURGONETA, false, EstadoPorte.ASIGNADO, 3, 6),
-                new PorteSeed("Alicante", "Murcia", 38.3452, -0.4810, 37.9922, -1.1307, 82.0, 180.0, -10.0, "Paquetería variada", 900.0, 4.0, 1.2, TipoVehiculo.FURGONETA, false, EstadoPorte.CANCELADO, 4, null),
-                new PorteSeed("Valladolid", "Salamanca", 41.6523, -4.7245, 40.9701, -5.6635, 115.0, 220.0, 0.0, "Documentación urgente", 300.0, 1.2, 0.5, TipoVehiculo.FURGONETA, false, EstadoPorte.EN_TRANSITO, 5, 2),
-                new PorteSeed("Córdoba", "Jaén", 37.8882, -4.7794, 37.7796, -3.7849, 107.0, 190.0, 5.0, "Aceite de oliva", 1700.0, 8.5, 2.1, TipoVehiculo.RIGIDO, false, EstadoPorte.FACTURADO, 6, 4),
-                new PorteSeed("Santander", "Oviedo", 43.4623, -3.8099, 43.3614, -5.8494, 203.0, 350.0, 0.0, "Productos refrigerados", 2600.0, 11.0, 2.4, TipoVehiculo.RIGIDO, true, EstadoPorte.ENTREGADO, 7, 1),
-                new PorteSeed("Pamplona", "San Sebastián", 42.8125, -1.6458, 43.3183, -1.9812, 79.0, 240.0, 0.0, "Vinos y licores", 1300.0, 5.8, 1.7, TipoVehiculo.FURGONETA, false, EstadoPorte.PENDIENTE, 0, null),
-                new PorteSeed("Toledo", "Ciudad Real", 39.8628, -4.0273, 38.9848, -3.9274, 119.0, 300.0, 0.0, "Recambios industriales", 1450.0, 7.0, 1.9, TipoVehiculo.RIGIDO, false, EstadoPorte.ASIGNADO, 1, 0),
-                new PorteSeed("Cáceres", "Badajoz", 39.4763, -6.3722, 38.8794, -6.9707, 90.0, 260.0, 0.0, "Maquinaria agrícola", 5000.0, 20.0, 3.4, TipoVehiculo.TRAILER, false, EstadoPorte.EN_TRANSITO, 2, 5),
-                new PorteSeed("Tarragona", "Lleida", 41.1189, 1.2445, 41.6176, 0.6200, 98.0, 310.0, 0.0, "Textiles", 1600.0, 6.5, 1.6, TipoVehiculo.RIGIDO, false, EstadoPorte.FACTURADO, 3, 7)
+                new PorteSeed("Madrid", "Barcelona", 40.4168, -3.7038, 41.3874, 2.1686, 621.0, 850.0, 0.0, "Palés de electrónica", 2200.0, 10.5, 2.2, TipoVehiculo.RIGIDO, EstadoPorte.EN_TRANSITO, 0, 0),
+                new PorteSeed("Valencia", "Sevilla", 39.4699, -0.3763, 37.3891, -5.9845, 654.0, 720.0, 20.0, "Carga alimentaria", 1800.0, 9.2, 2.0, TipoVehiculo.RIGIDO, EstadoPorte.ENTREGADO, 1, 1),
+                new PorteSeed("Bilbao", "Zaragoza", 43.2630, -2.9350, 41.6488, -0.8891, 305.0, 480.0, 0.0, "Materiales de construcción", 3500.0, 14.0, 3.0, TipoVehiculo.TRAILER, EstadoPorte.PENDIENTE, 2, null),
+                new PorteSeed("Málaga", "Granada", 36.7213, -4.4214, 37.1773, -3.5986, 126.0, 280.0, 0.0, "Mobiliario de oficina", 1200.0, 6.0, 1.8, TipoVehiculo.FURGONETA, EstadoPorte.ASIGNADO, 3, 6),
+                new PorteSeed("Alicante", "Murcia", 38.3452, -0.4810, 37.9922, -1.1307, 82.0, 180.0, -10.0, "Paquetería variada", 900.0, 4.0, 1.2, TipoVehiculo.FURGONETA, EstadoPorte.CANCELADO, 4, null),
+                new PorteSeed("Valladolid", "Salamanca", 41.6523, -4.7245, 40.9701, -5.6635, 115.0, 220.0, 0.0, "Documentación urgente", 300.0, 1.2, 0.5, TipoVehiculo.FURGONETA, EstadoPorte.EN_TRANSITO, 5, 2),
+                new PorteSeed("Córdoba", "Jaén", 37.8882, -4.7794, 37.7796, -3.7849, 107.0, 190.0, 5.0, "Aceite de oliva", 1700.0, 8.5, 2.1, TipoVehiculo.RIGIDO, EstadoPorte.FACTURADO, 6, 4),
+                new PorteSeed("Santander", "Oviedo", 43.4623, -3.8099, 43.3614, -5.8494, 203.0, 350.0, 0.0, "Productos refrigerados", 2600.0, 11.0, 2.4, TipoVehiculo.RIGIDO, EstadoPorte.ENTREGADO, 7, 1),
+                new PorteSeed("Pamplona", "San Sebastián", 42.8125, -1.6458, 43.3183, -1.9812, 79.0, 240.0, 0.0, "Vinos y licores", 1300.0, 5.8, 1.7, TipoVehiculo.FURGONETA, EstadoPorte.PENDIENTE, 0, null),
+                new PorteSeed("Toledo", "Ciudad Real", 39.8628, -4.0273, 38.9848, -3.9274, 119.0, 300.0, 0.0, "Recambios industriales", 1450.0, 7.0, 1.9, TipoVehiculo.RIGIDO, EstadoPorte.ASIGNADO, 1, 0),
+                new PorteSeed("Cáceres", "Badajoz", 39.4763, -6.3722, 38.8794, -6.9707, 90.0, 260.0, 0.0, "Maquinaria agrícola", 5000.0, 20.0, 3.4, TipoVehiculo.TRAILER, EstadoPorte.EN_TRANSITO, 2, 5),
+                new PorteSeed("Tarragona", "Lleida", 41.1189, 1.2445, 41.6176, 0.6200, 98.0, 310.0, 0.0, "Textiles", 1600.0, 6.5, 1.6, TipoVehiculo.RIGIDO, EstadoPorte.FACTURADO, 3, 7)
         );
 
         List<Porte> out = new ArrayList<>();
@@ -248,7 +244,6 @@ public class DevDataSeeder implements ApplicationRunner {
             porte.setVolumenTotalM3(seed.volumenTotalM3());
             porte.setLargoMaxPaquete(seed.largoMaxPaquete());
             porte.setTipoVehiculoRequerido(seed.tipoVehiculoRequerido());
-            porte.setRequiereFrio(seed.requiereFrio());
             porte.setRevisionManual(false);
             porte.setMotivoRevision(null);
             porte.setEstado(seed.estado());
@@ -397,10 +392,7 @@ public class DevDataSeeder implements ApplicationRunner {
             Double longitudBase,
             Integer radioAccionKm,
             String diasLaborables,
-            boolean disponible,
-            Double rating,
-            Integer numeroValoraciones,
-            Double sumaPuntuaciones
+            boolean disponible
     ) {}
 
     private record VehiculoSeed(
@@ -413,7 +405,6 @@ public class DevDataSeeder implements ApplicationRunner {
             Integer largoUtilMm,
             Integer anchoUtilMm,
             Integer altoUtilMm,
-            boolean trampillaElevadora,
             String conductorDni
     ) {}
 
@@ -432,7 +423,6 @@ public class DevDataSeeder implements ApplicationRunner {
             Double volumenTotalM3,
             Double largoMaxPaquete,
             TipoVehiculo tipoVehiculoRequerido,
-            boolean requiereFrio,
             EstadoPorte estado,
             int clienteIdx,
             Integer conductorIdx

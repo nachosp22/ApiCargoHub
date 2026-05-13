@@ -5,43 +5,11 @@
     android:background="@color/ch_background"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingHorizontal="@dimen/ch_space_md"
-        android:paddingTop="@dimen/ch_space_lg">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/offer_section_label"
-            android:textAppearance="@style/TextAppearance.ApiCargoHub.SectionLabel"
-            android:textColor="@color/ch_text_secondary" />
-
-        <TextView
-            android:id="@+id/tripHeadingText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/ch_space_xs"
-            android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
-            android:textColor="@color/ch_text_primary"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tripSubtitleText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/ch_space_xs"
-            android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
-            android:textColor="@color/ch_text_secondary" />
-    </LinearLayout>
-
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/tripSwipeRefresh"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="@dimen/ch_space_md"
+        android:layout_marginTop="2dp"
         android:layout_weight="1">
 
         <FrameLayout
@@ -142,8 +110,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:paddingHorizontal="@dimen/ch_space_md"
-                android:paddingBottom="@dimen/ch_space_sm"
+                android:paddingHorizontal="@dimen/ch_space_sm"
+                android:paddingBottom="2dp"
                 android:visibility="gone" />
         </FrameLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

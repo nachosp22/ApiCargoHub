@@ -13,6 +13,7 @@ import com.cargohub.mobile.data.local.dao.PorteDao;
 import com.cargohub.mobile.data.local.entity.PorteEntity;
 import com.cargohub.mobile.data.model.EstadoPorte;
 import com.cargohub.mobile.data.model.Porte;
+import com.cargohub.mobile.data.model.PorteTrackingResponse;
 import com.cargohub.mobile.network.ApiClient;
 import com.cargohub.mobile.network.ConnectivityObserver;
 
@@ -127,6 +128,24 @@ public class PorteRepository {
         });
     }
 
+    public void getPorteTracking(long porteId, @NonNull RepositoryCallback<PorteTrackingResponse> callback) {
+        apiService.getPorteTracking(porteId).enqueue(new Callback<PorteTrackingResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<PorteTrackingResponse> call, @NonNull Response<PorteTrackingResponse> response) {
+                callback.onResult(RepositorySupport.fromResponse(response, "No se pudo cargar el tracking del porte."));
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<PorteTrackingResponse> call, @NonNull Throwable t) {
+                callback.onResult(RepositorySupport.fromFailure(
+                        t,
+                        "Tiempo de espera agotado al cargar el tracking del porte.",
+                        "Error de red al cargar el tracking del porte."
+                ));
+            }
+        });
+    }
+
     public void getPorteDetail(long porteId, @NonNull RepositoryCallback<Porte> callback) {
         // Serve from cache if offline
         if (context != null && porteDao != null) {
@@ -157,6 +176,29 @@ public class PorteRepository {
                         "Error de red al cargar el detalle del porte."
                 ));
             }
+        });
+    }
+
+    public void getOfferDetailForConductor(long porteId,
+                                           long conductorId,
+                                           @NonNull RepositoryCallback<Porte> callback) {
+        getPorteDetail(porteId, detailResult -> {
+            if (detailResult.isSuccessful() || detailResult.getCode() != 403) {
+                callback.onResult(detailResult);
+                return;
+            }
+            getOffers(conductorId, offersResult -> {
+                if (!offersResult.isSuccessful()) {
+                    callback.onResult(RepositoryResult.error(
+                            offersResult.getMessage(),
+                            offersResult.getCode(),
+                            offersResult.isUnauthorized()
+                    ));
+                    return;
+                }
+                Porte offer = findPorteById(offersResult.getData(), porteId);
+                callback.onResult(RepositoryResult.successNullable(offer, offer == null ? 404 : 200));
+            });
         });
     }
 
@@ -331,5 +373,18 @@ public class PorteRepository {
                 ));
             }
         });
+    }
+
+    @Nullable
+    private Porte findPorteById(@Nullable List<Porte> portes, long porteId) {
+        if (portes == null || portes.isEmpty()) {
+            return null;
+        }
+        for (Porte porte : portes) {
+            if (porte != null && porte.getId() != null && porte.getId() == porteId) {
+                return porte;
+            }
+        }
+        return null;
     }
 }

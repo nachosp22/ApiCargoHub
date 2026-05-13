@@ -15,6 +15,8 @@ public interface ConductorRepository extends JpaRepository<Conductor, Long> {
 
     interface DriverSnapshotProjection {
         Long getId();
+        String getNombre();
+        String getApellidos();
         Double getLatitudActual();
         Double getLongitudActual();
         java.time.LocalDateTime getUltimaActualizacionUbicacion();
@@ -40,9 +42,11 @@ public interface ConductorRepository extends JpaRepository<Conductor, Long> {
     @Query("SELECT c FROM Conductor c WHERE c.usuario.activo = false")
     List<Conductor> findPendientesAprobacion();
 
-    @Query("SELECT c.id as id, c.latitudActual as latitudActual, c.longitudActual as longitudActual, " +
+    @Query("SELECT c.id as id, c.nombre as nombre, c.apellidos as apellidos, " +
+            "c.latitudActual as latitudActual, c.longitudActual as longitudActual, " +
             "c.ultimaActualizacionUbicacion as ultimaActualizacionUbicacion, " +
             "c.velocidadKphActual as velocidadKphActual, c.rumboActualDeg as rumboActualDeg " +
-            "FROM Conductor c WHERE c.disponible = true ORDER BY c.ultimaActualizacionUbicacion DESC NULLS LAST")
+            "FROM Conductor c " +
+            "WHERE c.disponible = true ORDER BY c.ultimaActualizacionUbicacion DESC NULLS LAST")
     List<DriverSnapshotProjection> findFleetSnapshot(Pageable pageable);
 }

@@ -6,6 +6,7 @@ import com.cargohub.backend.dto.tracking.EtaEstimateResponse;
 import com.cargohub.backend.dto.tracking.EtaMethod;
 import com.cargohub.backend.entity.Conductor;
 import com.cargohub.backend.entity.Porte;
+import com.cargohub.backend.entity.enums.EstadoPorte;
 import com.cargohub.backend.observability.FleetRealtimeMetrics;
 import com.cargohub.backend.repository.ConductorRepository;
 import com.cargohub.backend.repository.PorteRepository;
@@ -63,19 +64,26 @@ public class EtaService {
         Porte porte = porteRepository.findById(jobId)
                 .orElseThrow(() -> new IllegalArgumentException("Porte no encontrado"));
 
-        if (conductor.getLatitudActual() == null || conductor.getLongitudActual() == null
-                || porte.getLatitudOrigen() == null || porte.getLongitudOrigen() == null) {
-            throw new IllegalArgumentException("Coordenadas insuficientes para calcular ETA");
-        }
-
         EtaEstimateResponse response = new EtaEstimateResponse();
         response.setEstimatedAt(OffsetDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
+
+        if (isClosedState(porte.getEstado())) {
+            return response;
+        }
+
+        Double targetLat = resolveTargetLat(porte);
+        Double targetLon = resolveTargetLon(porte);
+
+        if (conductor.getLatitudActual() == null || conductor.getLongitudActual() == null
+                || targetLat == null || targetLon == null) {
+            throw new IllegalArgumentException("Coordenadas insuficientes para calcular ETA");
+        }
 
         Double providerDistanceM = mapaService.obtenerDistanciaMetros(
                 conductor.getLatitudActual(),
                 conductor.getLongitudActual(),
-                porte.getLatitudOrigen(),
-                porte.getLongitudOrigen()
+                targetLat,
+                targetLon
         );
 
         if (providerDistanceM != null && providerDistanceM > 0) {
@@ -99,8 +107,8 @@ public class EtaService {
         double fallbackKm = CalculadoraDistancia.calcularKm(
                 conductor.getLatitudActual(),
                 conductor.getLongitudActual(),
-                porte.getLatitudOrigen(),
-                porte.getLongitudOrigen()
+                targetLat,
+                targetLon
         );
         response.setEtaMinutes(Math.max(1, (int) Math.ceil((fallbackKm / FALLBACK_SPEED_KPH) * 60.0)));
         response.setMethod(EtaMethod.HAVERSINE_FALLBACK);
@@ -128,5 +136,25 @@ public class EtaService {
 
     private String currentRequestId() {
         return org.slf4j.MDC.get("requestId");
+    }
+
+    private boolean isClosedState(EstadoPorte estado) {
+        return estado == EstadoPorte.ENTREGADO
+                || estado == EstadoPorte.FACTURADO
+                || estado == EstadoPorte.CANCELADO;
+    }
+
+    private Double resolveTargetLat(Porte porte) {
+        if (porte.getEstado() == EstadoPorte.EN_TRANSITO) {
+            return porte.getLatitudDestino();
+        }
+        return porte.getLatitudOrigen();
+    }
+
+    private Double resolveTargetLon(Porte porte) {
+        if (porte.getEstado() == EstadoPorte.EN_TRANSITO) {
+            return porte.getLongitudDestino();
+        }
+        return porte.getLongitudOrigen();
     }
 }

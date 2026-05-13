@@ -5,8 +5,11 @@ import com.cargohub.backend.dto.tracking.DriverLocationPoint;
 import com.cargohub.backend.dto.tracking.DriverState;
 import com.cargohub.backend.dto.tracking.FleetSnapshotMeta;
 import com.cargohub.backend.dto.tracking.FleetSnapshotResponse;
+import com.cargohub.backend.entity.Porte;
+import com.cargohub.backend.entity.enums.EstadoPorte;
 import com.cargohub.backend.observability.FleetRealtimeMetrics;
 import com.cargohub.backend.repository.ConductorRepository;
+import com.cargohub.backend.repository.PorteRepository;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,6 +18,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,7 @@ public class FleetTrackingService {
     private static final Logger log = LoggerFactory.getLogger(FleetTrackingService.class);
 
     private final ConductorRepository conductorRepository;
+    private final PorteRepository porteRepository;
     private final FleetRealtimeProperties properties;
     private final FleetRealtimeMetrics metrics;
     private final Clock clock;
@@ -36,16 +41,19 @@ public class FleetTrackingService {
 
     @Autowired
     public FleetTrackingService(ConductorRepository conductorRepository,
-                                FleetRealtimeProperties properties,
-                                FleetRealtimeMetrics metrics) {
-        this(conductorRepository, properties, metrics, Clock.systemUTC());
+                                PorteRepository porteRepository,
+                                 FleetRealtimeProperties properties,
+                                 FleetRealtimeMetrics metrics) {
+        this(conductorRepository, porteRepository, properties, metrics, Clock.systemUTC());
     }
 
     FleetTrackingService(ConductorRepository conductorRepository,
+                         PorteRepository porteRepository,
                          FleetRealtimeProperties properties,
                          FleetRealtimeMetrics metrics,
                          Clock clock) {
         this.conductorRepository = conductorRepository;
+        this.porteRepository = porteRepository;
         this.properties = properties;
         this.metrics = metrics;
         this.clock = clock;
@@ -82,12 +90,15 @@ public class FleetTrackingService {
 
                 DriverLocationPoint point = new DriverLocationPoint();
                 point.setDriverId(String.valueOf(raw.getId()));
+                point.setDriverName(raw.getNombre());
+                point.setDriverLastName(raw.getApellidos());
                 point.setLat(raw.getLatitudActual());
                 point.setLon(raw.getLongitudActual());
                 point.setRecordedAt(OffsetDateTime.ofInstant(recorded, ZoneOffset.UTC));
                 point.setSpeedKph(raw.getVelocidadKphActual());
                 point.setHeadingDeg(raw.getRumboActualDeg());
                 point.setState(classifyState(now, recorded));
+                resolveActivePorte(raw.getId(), point);
                 points.add(point);
             }
 
@@ -194,5 +205,19 @@ public class FleetTrackingService {
             return false;
         }
         return lat >= -90.0 && lat <= 90.0 && lon >= -180.0 && lon <= 180.0;
+    }
+
+    private void resolveActivePorte(Long conductorId, DriverLocationPoint point) {
+        porteRepository.findFirstByConductorIdAndEstadoInOrderByFechaCreacionDesc(
+                        conductorId,
+                        Arrays.asList(EstadoPorte.EN_TRANSITO, EstadoPorte.ASIGNADO)
+                )
+                .ifPresent(porte -> applyActivePorte(point, porte));
+    }
+
+    private void applyActivePorte(DriverLocationPoint point, Porte porte) {
+        point.setActivePorteId(porte.getId());
+        point.setActivePorteDestination(porte.getDestino());
+        point.setActivePorteStatus(porte.getEstado() != null ? porte.getEstado().name() : null);
     }
 }

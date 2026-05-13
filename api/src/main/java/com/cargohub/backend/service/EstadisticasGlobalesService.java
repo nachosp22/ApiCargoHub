@@ -117,8 +117,7 @@ public class EstadisticasGlobalesService {
                 .limit(5)
                 .map(e -> new TopConductor(
                         e.getKey().getNombre() + " " + (e.getKey().getApellidos() != null ? e.getKey().getApellidos() : ""),
-                        e.getValue(),
-                        e.getKey().getRating() != null ? e.getKey().getRating() : 0.0
+                        e.getValue()
                 ))
                 .collect(Collectors.toList());
         resp.setTopConductores(topConductores);

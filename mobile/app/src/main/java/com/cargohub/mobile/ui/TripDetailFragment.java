@@ -141,6 +141,7 @@ public class TripDetailFragment extends Fragment {
     }
 
     private void renderTrip(@NonNull Porte porte) {
+        boolean readOnly = porte.getEstadoPorte() == EstadoPorte.ENTREGADO;
         titleText.setText(UiFormatters.formatPorteTitle(porte));
         stateText.setText(UiFormatters.formatPorteState(porte));
         scheduleText.setText(UiFormatters.formatPorteSchedule(porte));
@@ -149,6 +150,9 @@ public class TripDetailFragment extends Fragment {
         trackingHintText.setText(isTrackable(porte)
                 ? getString(R.string.trip_tracking_ready_hint)
                 : getString(R.string.trip_tracking_idle_hint));
+        reportIncidentButton.setVisibility(readOnly ? View.GONE : View.VISIBLE);
+        openFotosButton.setVisibility(readOnly ? View.GONE : View.VISIBLE);
+        openTrackingButton.setEnabled(isTrackable(porte));
         renderActions(porte);
     }
 
@@ -184,11 +188,22 @@ public class TripDetailFragment extends Fragment {
         if (action == PorteRepository.PorteAction.ACCEPT_OFFER) {
             Long conductorId = SessionManager.resolveConductorId();
             if (conductorId == null || conductorId <= 0) {
-                Snackbar.make(requireView(), R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG).show();
+                showSnackbar(R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG);
                 return;
             }
             setActionsEnabled(false);
             porteRepository.acceptOffer(currentPorte.getId(), conductorId, this::handleTripMutationResult);
+            return;
+        }
+
+        if (action == PorteRepository.PorteAction.REJECT_OFFER) {
+            Long conductorId = SessionManager.resolveConductorId();
+            if (conductorId == null || conductorId <= 0) {
+                showSnackbar(R.string.incidencia_error_sesion, Snackbar.LENGTH_LONG);
+                return;
+            }
+            setActionsEnabled(false);
+            porteRepository.rejectOffer(currentPorte.getId(), conductorId, this::handleOfferRejectionResult);
             return;
         }
 
@@ -207,14 +222,55 @@ public class TripDetailFragment extends Fragment {
         if (!isAdded()) {
             return;
         }
+        View view = getView();
+        if (view == null) {
+            return;
+        }
         setActionsEnabled(true);
         if (!result.isSuccessful() || result.getData() == null) {
-            Snackbar.make(requireView(), result.getMessage(), Snackbar.LENGTH_LONG).show();
+            String safeMessage = (result.getMessage() == null || result.getMessage().trim().isEmpty())
+                    ? getString(R.string.generic_api_error_short)
+                    : result.getMessage();
+            Snackbar.make(view, safeMessage, Snackbar.LENGTH_LONG).show();
             return;
         }
         currentPorte = result.getData();
         renderTrip(currentPorte);
-        Snackbar.make(requireView(), R.string.trip_action_success, Snackbar.LENGTH_LONG).show();
+        Snackbar.make(view, R.string.trip_action_success, Snackbar.LENGTH_LONG).show();
+        if (actionJustStartedTrip()) {
+            openTracking();
+        }
+    }
+
+    private boolean actionJustStartedTrip() {
+        return currentPorte != null && currentPorte.getEstadoPorte() == EstadoPorte.EN_TRANSITO;
+    }
+
+    private void handleOfferRejectionResult(@NonNull RepositoryResult<Void> result) {
+        if (!isAdded()) {
+            return;
+        }
+        View view = getView();
+        if (view == null) {
+            return;
+        }
+        setActionsEnabled(true);
+        if (!result.isSuccessful()) {
+            String safeMessage = (result.getMessage() == null || result.getMessage().trim().isEmpty())
+                    ? getString(R.string.generic_api_error_short)
+                    : result.getMessage();
+            Snackbar.make(view, safeMessage, Snackbar.LENGTH_LONG).show();
+            return;
+        }
+        Snackbar.make(view, R.string.offer_reject_success, Snackbar.LENGTH_LONG).show();
+        getParentFragmentManager().popBackStack();
+    }
+
+    private void showSnackbar(int messageResId, int duration) {
+        View view = getView();
+        if (isAdded() && view != null) {
+            Snackbar.make(view, messageResId, duration).show();
+        }
     }
 
     private void loadTripIncidents() {
@@ -358,6 +414,8 @@ public class TripDetailFragment extends Fragment {
         switch (action) {
             case ACCEPT_OFFER:
                 return R.string.offer_accept_action;
+            case REJECT_OFFER:
+                return R.string.offer_reject_action;
             case START_TRIP:
                 return R.string.trip_action_start;
             case COMPLETE_TRIP:
@@ -370,6 +428,8 @@ public class TripDetailFragment extends Fragment {
         switch (action) {
             case ACCEPT_OFFER:
                 return R.string.trip_action_hint_accept;
+            case REJECT_OFFER:
+                return R.string.trip_action_hint_reject;
             case START_TRIP:
                 return R.string.trip_action_hint_start;
             case COMPLETE_TRIP:

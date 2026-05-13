@@ -1,28 +1,30 @@
 package com.cargohub.backend.service;
 
-import com.cargohub. backend.dto.CrearPorteRequest;
+import com.cargohub.backend.dto.CrearPorteRequest;
 import com.cargohub.backend.dto.CargoAnalysisResponse;
 import com.cargohub.backend.dto.SolicitudPorteRequest;
 import com.cargohub.backend.entity.Cliente;
 import com.cargohub.backend.entity.Factura;
 import com.cargohub.backend.entity.Conductor;
-import com.cargohub.backend.entity. Porte;
-import com.cargohub.backend.entity. Vehiculo;
-import com.cargohub.backend.entity. enums.EstadoPorte;
+import com.cargohub.backend.entity.Porte;
+import com.cargohub.backend.entity.Vehiculo;
+import com.cargohub.backend.entity.enums.EstadoPorte;
 import com.cargohub.backend.entity.enums.EstadoVehiculo;
 import com.cargohub.backend.entity.enums.TipoVehiculo;
 import com.cargohub.backend.repository.ClienteRepository;
 import com.cargohub.backend.repository.ConductorRepository;
-import com. cargohub.backend.repository.PorteRepository;
-import com.cargohub.backend.repository. VehiculoRepository;
+import com.cargohub.backend.repository.PorteRepository;
+import com.cargohub.backend.repository.VehiculoRepository;
 import com.cargohub.backend.util.CalculadoraDistancia;
-import lombok.extern.slf4j. Slf4j;
-import org. springframework.beans.factory.annotation. Autowired;
-import org. springframework.stereotype.Service;
-import org.springframework.transaction.annotation. Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.cargohub.backend.dto.ActualizarDimensionesRequest;
+import com.cargohub.backend.dto.ActualizarPorteRequest;
 import com.cargohub.backend.dto.ConductorCandidatoResponse;
+import com.cargohub.backend.dto.FirmaEntregaRequest;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,6 +37,12 @@ import java.util.Set;
 @Slf4j
 @Service
 public class PorteService {
+
+    public static final String MSG_ESPERANDO_ACEPTACION_CONDUCTOR = "La carga se ha analizado correctamente. Le asignaremos un conductor lo antes posible.";
+    public static final String MSG_REVISION_MANUAL_CLIENTE = "No se ha podido analizar la carga. El porte sera revisado manualmente por uno de nuestros agentes.";
+    public static final String MSG_SIN_CONDUCTORES_DISPONIBLES = "Porte validado correctamente, pero no hay conductores disponibles que se ajusten a los requisitos en este momento";
+    public static final String MSG_SIN_MATCH_VEHICULO_CONDUCTOR = "Porte validado correctamente, pero no hay vehículos o conductores compatibles para estos requisitos en este momento";
+    public static final String MSG_REMATCHING_EXITO = "Rematching completado. Se ha enviado oferta a %d conductores.";
 
     @Autowired private PorteRepository porteRepository;
     @Autowired private VehiculoRepository vehiculoRepository;
@@ -60,7 +68,7 @@ public class PorteService {
         porte.setOrigen(request.getOrigen());
         porte.setDestino(request.getDestino());
         porte.setLatitudOrigen(request.getLatitudOrigen());
-        porte.setLongitudOrigen(request. getLongitudOrigen());
+        porte.setLongitudOrigen(request.getLongitudOrigen());
         porte.setLatitudDestino(request.getLatitudDestino());
         porte.setLongitudDestino(request.getLongitudDestino());
         porte.setDescripcionCliente(request.getDescripcionCliente());
@@ -117,7 +125,7 @@ public class PorteService {
                 if (cargoAnalysisResponse.getVolumenTotalM3() != null && cargoAnalysisResponse.getVolumenTotalM3() > 0) {
                     porte.setVolumenTotalM3(cargoAnalysisResponse.getVolumenTotalM3());
                 }
-                if (cargoAnalysisResponse. getLargoMaxPaquete() != null && cargoAnalysisResponse.getLargoMaxPaquete() > 0) {
+                if (cargoAnalysisResponse.getLargoMaxPaquete() != null && cargoAnalysisResponse.getLargoMaxPaquete() > 0) {
                     porte.setLargoMaxPaquete(cargoAnalysisResponse.getLargoMaxPaquete());
                 }
                 if (cargoAnalysisResponse.getAnchoMaxPaquete() != null && cargoAnalysisResponse.getAnchoMaxPaquete() > 0) {
@@ -128,14 +136,14 @@ public class PorteService {
                 }
 
                 // Aplicar tipo de vehículo si fue calculado
-                if (cargoAnalysisResponse.getTipoVehiculoRequerido() != null && ! cargoAnalysisResponse.getTipoVehiculoRequerido().isEmpty()) {
+                if (cargoAnalysisResponse.getTipoVehiculoRequerido() != null && !cargoAnalysisResponse.getTipoVehiculoRequerido().isEmpty()) {
                     TipoVehiculo tipoCalculado = cargoAnalysisService.convertirTipoVehiculo(cargoAnalysisResponse.getTipoVehiculoRequerido());
                     if (tipoCalculado != null) {
                         porte.setTipoVehiculoRequerido(tipoCalculado);
                     }
                 }
 
-                // Aplicar flags de revisión manual
+                // Aplicar flags de revisión manual desde Gemini
                 if (cargoAnalysisResponse.getRevisionManual() != null && cargoAnalysisResponse.getRevisionManual()) {
                     porte.setRevisionManual(true);
                     porte.setMotivoRevision(cargoAnalysisResponse.getMotivoRevision());
@@ -143,19 +151,32 @@ public class PorteService {
             }
         }
 
-        // 1. Distancia
-        if (!hasValidCoordinates(porte)) {
-            throw new RuntimeException("Origen y destino deben incluir coordenadas válidas");
+        // Inferir ancho/alto faltantes desde el tipo de vehículo antes de validación MVP
+        if (porte.getTipoVehiculoRequerido() != null) {
+            if (porte.getAnchoMaxPaquete() == null || porte.getAnchoMaxPaquete() <= 0) {
+                porte.setAnchoMaxPaquete(inferAnchoFromVehicleType(porte.getTipoVehiculoRequerido().name()));
+            }
+            if (porte.getAltoMaxPaquete() == null || porte.getAltoMaxPaquete() <= 0) {
+                porte.setAltoMaxPaquete(inferAltoFromVehicleType(porte.getTipoVehiculoRequerido().name()));
+            }
         }
 
-        double km = CalculadoraDistancia. calcularKm(
-                porte.getLatitudOrigen(), porte.getLongitudOrigen(),
-                porte. getLatitudDestino(), porte.getLongitudDestino());
-        porte.setDistanciaKm(km * 1.2);
-        porte.setDistanciaEstimada(true);
+        validarDatosCriticosParaMatching(porte);
+
+        // 1. Distancia
+        if (hasValidCoordinates(porte)) {
+            double km = CalculadoraDistancia.calcularKm(
+                    porte.getLatitudOrigen(), porte.getLongitudOrigen(),
+                    porte.getLatitudDestino(), porte.getLongitudDestino());
+            porte.setDistanciaKm(km * 1.2);
+            porte.setDistanciaEstimada(true);
+        } else {
+            porte.setDistanciaKm(0.0);
+            porte.setDistanciaEstimada(true);
+        }
 
         // 2. Precio
-        porte.setPrecio(calculadoraPrecio. calcularPrecioTotal(porte));
+        porte.setPrecio(calculadoraPrecio.calcularPrecioTotal(porte));
         porte.setFechaCreacion(LocalDateTime.now());
         porte.setEstado(EstadoPorte.PENDIENTE);
 
@@ -163,31 +184,96 @@ public class PorteService {
             return porteRepository.save(porte);
         }
 
-        // 3. LOGICA DE ASIGNACIÓN CON SCORING Y CONDUCTOR MATCHING
-        Integer largoMm = (porte.getLargoMaxPaquete() != null) ? (int)(porte.getLargoMaxPaquete() * 1000) : 0;
-        Integer anchoMm = (porte.getAnchoMaxPaquete() != null) ? (int)(porte.getAnchoMaxPaquete() * 1000) : 0;
-        Integer altoMm = (porte.getAltoMaxPaquete() != null) ? (int)(porte.getAltoMaxPaquete() * 1000) : 0;
-        Double volumenRequerido = (porte.getVolumenTotalM3() != null) ? porte.getVolumenTotalM3() : 0.0;
+        aplicarResultadoMatchingAutomatico(porte);
 
-        // Buscamos vehículos que cumplan TODAS las dimensiones (peso, largo, ancho, alto, volumen)
-        List<Vehiculo> candidatos = vehiculoRepository.findCandidatos(
-                porte.getTipoVehiculoRequerido(),
-                porte.getPesoTotalKg(),
-                largoMm,
-                anchoMm,
-                altoMm,
-                volumenRequerido
-        );
+        return porteRepository.save(porte);
+    }
+
+    @Transactional
+    public Porte retryMatching(Long porteId) {
+        Porte porte = obtenerPorId(porteId);
+
+        porte.setConductor(null);
+        porte.setEstado(EstadoPorte.PENDIENTE);
+        porte.setRevisionManual(false);
+        porte.setMotivoRevision(null);
+
+        validarDatosCriticosParaMatching(porte);
+
+        if (porte.isRevisionManual()) {
+            return porteRepository.save(porte);
+        }
+
+        // Admin retry: solo comprueba compatibilidad de vehículo.
+        // Ignora disponibilidad, agenda, radio y distancia intencionalmente.
+        List<Vehiculo> candidatos = buscarVehiculosCompatiblesAdmin(porte);
+
+        if (!candidatos.isEmpty()) {
+            long numConductores = candidatos.stream()
+                    .map(Vehiculo::getConductor)
+                    .filter(c -> c != null && c.getId() != null)
+                    .map(Conductor::getId)
+                    .distinct()
+                    .count();
+
+            porte.setConductor(null);
+            porte.setEstado(EstadoPorte.PENDIENTE);
+            porte.setRevisionManual(false);
+            porte.setMotivoRevision(String.format(MSG_REMATCHING_EXITO, numConductores));
+            log.info("Admin retry-matching porte {}: {} vehículos compatibles, {} conductores notificados",
+                    porte.getId(), candidatos.size(), numConductores);
+        } else {
+            porte.setRevisionManual(false);
+            porte.setConductor(null);
+            porte.setEstado(EstadoPorte.PENDIENTE);
+            porte.setMotivoRevision(MSG_SIN_MATCH_VEHICULO_CONDUCTOR);
+            log.info("Admin retry-matching porte {}: ningún vehículo compatible", porte.getId());
+        }
+
+        return porteRepository.save(porte);
+    }
+
+    private void validarDatosCriticosParaMatching(Porte porte) {
+        if (porte.isRevisionManual()) {
+            return;
+        }
+
+        List<String> motivos = new ArrayList<>();
+        if (porte.getTipoVehiculoRequerido() == null) {
+            motivos.add("Tipo de vehículo requerido no determinado");
+        }
+        if (porte.getLatitudOrigen() == null || porte.getLongitudOrigen() == null) {
+            motivos.add("Coordenadas de origen faltantes");
+        }
+        if (porte.getLatitudDestino() == null || porte.getLongitudDestino() == null) {
+            motivos.add("Coordenadas de destino faltantes");
+        }
+
+        if (!motivos.isEmpty()) {
+            porte.setRevisionManual(true);
+            porte.setMotivoRevision(MSG_REVISION_MANUAL_CLIENTE);
+        }
+    }
+
+    private void aplicarResultadoMatchingAutomatico(Porte porte) {
+        // 3. LOGICA DE ASIGNACIÓN CON SCORING Y CONDUCTOR MATCHING
+        List<Vehiculo> candidatos = buscarVehiculosCompatibles(porte);
 
         if (!candidatos.isEmpty()) {
             // Usar ConductorMatchingService para filtrar conductores disponibles
             LocalDateTime fechaRecogida = porte.getFechaRecogida() != null ? porte.getFechaRecogida() : LocalDateTime.now();
-            String ciudadOrigen = porte.getOrigen();
+            LocalDateTime fechaEntrega = porte.getFechaEntrega() != null ? porte.getFechaEntrega() : fechaRecogida;
+            String ciudadOrigen = (porte.getCiudadOrigen() != null && !porte.getCiudadOrigen().isBlank())
+                    ? porte.getCiudadOrigen()
+                    : porte.getOrigen();
 
             List<Conductor> conductoresDisponibles = conductorMatchingService.buscarDisponibles(
                     fechaRecogida,
+                    fechaEntrega,
                     porte.getTipoVehiculoRequerido(),
-                    ciudadOrigen
+                    ciudadOrigen,
+                    porte.getLatitudOrigen(),
+                    porte.getLongitudOrigen()
             );
 
             // Filtrar: solo conductores que tengan uno de los vehículos candidatos
@@ -203,35 +289,91 @@ public class PorteService {
             if (!conductoresValidos.isEmpty()) {
                 porte.setConductor(null);
                 porte.setEstado(EstadoPorte.PENDIENTE);
+                porte.setRevisionManual(false);
+                porte.setMotivoRevision(MSG_ESPERANDO_ACEPTACION_CONDUCTOR);
                 log.info("Porte {} publicado en ofertas para {} conductores elegibles", porte.getId(), conductoresValidos.size());
             } else {
-                // Hay vehículos pero no conductores disponibles
-                if (!porte.isRevisionManual()) {
-                    porte.setRevisionManual(true);
-                    porte.setMotivoRevision("Vehículos compatibles encontrados pero sin conductores disponibles");
-                }
+                porte.setRevisionManual(false);
+                porte.setConductor(null);
+                porte.setEstado(EstadoPorte.PENDIENTE);
+                porte.setMotivoRevision(MSG_SIN_CONDUCTORES_DISPONIBLES);
             }
         } else {
-            // NO MATCH: Se queda pendiente y marcamos revisión (solo si no está ya marcado)
-            if (!porte.isRevisionManual()) {
-                porte. setRevisionManual(true);
-                porte.setMotivoRevision("No hay vehículo compatible (Peso/Volumen/Dimensiones)");
-            }
+            porte.setRevisionManual(false);
+            porte.setConductor(null);
+            porte.setEstado(EstadoPorte.PENDIENTE);
+            porte.setMotivoRevision(MSG_SIN_MATCH_VEHICULO_CONDUCTOR);
+        }
+    }
+
+    private List<Vehiculo> buscarVehiculosCompatibles(Porte porte) {
+        if (porte.getTipoVehiculoRequerido() == null) {
+            return List.of();
         }
 
-        return porteRepository.save(porte);
+        Integer largoMm = (porte.getLargoMaxPaquete() != null) ? (int)(porte.getLargoMaxPaquete() * 1000) : 0;
+        Integer anchoMm = (porte.getAnchoMaxPaquete() != null) ? (int)(porte.getAnchoMaxPaquete() * 1000) : 0;
+        Integer altoMm = (porte.getAltoMaxPaquete() != null) ? (int)(porte.getAltoMaxPaquete() * 1000) : 0;
+        Double volumenRequerido = (porte.getVolumenTotalM3() != null) ? porte.getVolumenTotalM3() : 0.0;
+        Double pesoRequerido = porte.getPesoTotalKg() != null ? porte.getPesoTotalKg() : 0.0;
+
+        return vehiculoRepository.findCandidatos(
+                porte.getTipoVehiculoRequerido(),
+                pesoRequerido,
+                largoMm,
+                anchoMm,
+                altoMm,
+                volumenRequerido
+        );
+    }
+
+    /**
+     * Admin / manual review: busca vehículos compatibles SIN filtrar por estado DISPONIBLE
+     * y aceptando el tipo solicitado o cualquier tipo superior (FURGONETA < RIGIDO < TRAILER).
+     * Solo comprueba dimensiones/volumen/peso.
+     */
+    private List<Vehiculo> buscarVehiculosCompatiblesAdmin(Porte porte) {
+        if (porte.getTipoVehiculoRequerido() == null) {
+            return List.of();
+        }
+
+        List<TipoVehiculo> tiposCompatibles = getTiposSuperioresOIguales(porte.getTipoVehiculoRequerido());
+
+        Integer largoMm = (porte.getLargoMaxPaquete() != null) ? (int)(porte.getLargoMaxPaquete() * 1000) : 0;
+        Integer anchoMm = (porte.getAnchoMaxPaquete() != null) ? (int)(porte.getAnchoMaxPaquete() * 1000) : 0;
+        Integer altoMm = (porte.getAltoMaxPaquete() != null) ? (int)(porte.getAltoMaxPaquete() * 1000) : 0;
+        Double volumenRequerido = (porte.getVolumenTotalM3() != null) ? porte.getVolumenTotalM3() : 0.0;
+        Double pesoRequerido = porte.getPesoTotalKg() != null ? porte.getPesoTotalKg() : 0.0;
+
+        return vehiculoRepository.findTodosCandidatos(
+                tiposCompatibles,
+                pesoRequerido,
+                largoMm,
+                anchoMm,
+                altoMm,
+                volumenRequerido
+        );
+    }
+
+    /**
+     * Devuelve el tipo solicitado más todos los superiores.
+     * Jerarquía: FURGONETA < RIGIDO < TRAILER. ESPECIAL solo se empareja consigo mismo.
+     */
+    private List<TipoVehiculo> getTiposSuperioresOIguales(TipoVehiculo tipo) {
+        return switch (tipo) {
+            case FURGONETA -> List.of(TipoVehiculo.FURGONETA, TipoVehiculo.RIGIDO, TipoVehiculo.TRAILER);
+            case RIGIDO    -> List.of(TipoVehiculo.RIGIDO, TipoVehiculo.TRAILER);
+            case TRAILER   -> List.of(TipoVehiculo.TRAILER);
+            default        -> List.of(tipo);
+        };
     }
 
     /**
      * Scores a conductor for assignment. Higher is better.
-     * Factors: rating (0-5 normalized to 0-50) + capacity efficiency (0-50).
      * Capacity efficiency prefers vehicles closest to the required load (avoids waste).
      */
     private double scoreConductor(Conductor conductor, List<Vehiculo> candidatos, double pesoRequerido) {
-        // Rating score: 0-50 points
-        double ratingScore = (conductor.getRating() != null ? conductor.getRating() : 0.0) * 10.0;
-
-        // Capacity efficiency: prefer smallest vehicle that fits (0-50 points)
+        // Capacity efficiency: prefer smallest vehicle that fits (0-100 points)
         double efficiencyScore = candidatos.stream()
                 .filter(v -> v.getConductor() != null && v.getConductor().getId().equals(conductor.getId()))
                 .mapToDouble(v -> {
@@ -239,12 +381,12 @@ public class PorteService {
                     if (capacidad <= 0) capacidad = 1.0;
                     // Ratio of how well the vehicle is utilized (1.0 = perfect fit)
                     double ratio = pesoRequerido / capacidad;
-                    return Math.min(ratio, 1.0) * 50.0;
+                    return Math.min(ratio, 1.0) * 100.0;
                 })
                 .max()
                 .orElse(0.0);
 
-        return ratingScore + efficiencyScore;
+        return efficiencyScore;
     }
 
     private boolean hasValidCoordinates(Porte porte) {
@@ -260,6 +402,24 @@ public class PorteService {
 
     private boolean isValidLongitude(Double longitude) {
         return longitude != null && longitude >= -180 && longitude <= 180;
+    }
+
+    private double inferAnchoFromVehicleType(String tipo) {
+        return switch (tipo) {
+            case "FURGONETA" -> 1.7;
+            case "RIGIDO" -> 2.45;
+            case "TRAILER" -> 2.45;
+            default -> 1.7;
+        };
+    }
+
+    private double inferAltoFromVehicleType(String tipo) {
+        return switch (tipo) {
+            case "FURGONETA" -> 1.8;
+            case "RIGIDO" -> 2.5;
+            case "TRAILER" -> 2.7;
+            default -> 1.8;
+        };
     }
 
     // ...  resto de métodos sin cambios ...
@@ -358,7 +518,7 @@ public class PorteService {
         Porte porte = porteRepository.findById(porteId)
                 .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
 
-        if (porte.getEstado() != EstadoPorte. ENTREGADO) {
+        if (porte.getEstado() != EstadoPorte.ENTREGADO) {
             throw new RuntimeException("Solo se pueden facturar portes que ya han sido ENTREGADOS.");
         }
 
@@ -372,8 +532,41 @@ public class PorteService {
 
     // 7. Obtener Porte por ID
     public Porte obtenerPorId(Long porteId) {
-        return porteRepository. findById(porteId)
+        return porteRepository.findById(porteId)
                 .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
+    }
+
+    @Transactional
+    public Porte actualizarPorte(Long porteId, ActualizarPorteRequest request) {
+        Porte porte = obtenerPorId(porteId);
+
+        if (request.getOrigen() != null) porte.setOrigen(request.getOrigen());
+        if (request.getDestino() != null) porte.setDestino(request.getDestino());
+        if (request.getDescripcionCliente() != null) porte.setDescripcionCliente(request.getDescripcionCliente());
+        if (request.getFechaRecogida() != null) porte.setFechaRecogida(request.getFechaRecogida());
+        if (request.getFechaEntrega() != null) porte.setFechaEntrega(request.getFechaEntrega());
+        if (request.getEstado() != null) porte.setEstado(request.getEstado());
+
+        return porteRepository.save(porte);
+    }
+
+    @Transactional
+    public boolean eliminarOCancelarPorte(Long porteId) {
+        Porte porte = obtenerPorId(porteId);
+
+        EstadoPorte estado = porte.getEstado();
+        if (estado == EstadoPorte.PENDIENTE || estado == EstadoPorte.CANCELADO) {
+            porteRepository.delete(porte);
+            return true;
+        }
+
+        if (estado == EstadoPorte.ASIGNADO || estado == EstadoPorte.EN_TRANSITO) {
+            porte.setEstado(EstadoPorte.CANCELADO);
+            porteRepository.save(porte);
+            return false;
+        }
+
+        throw new RuntimeException("No se puede borrar/cancelar un porte en estado " + estado + " sin comprometer historial");
     }
 
     // 8. Listar Portes por Conductor
@@ -405,10 +598,11 @@ public class PorteService {
     // --- REVISION MANUAL ENDPOINTS ---
 
     /**
-     * List portes pending manual review.
+     * List portes that need admin attention: either manual data review
+     * or operational follow-up because they could not be assigned.
      */
     public List<Porte> listarPendientesRevision() {
-        return porteRepository.findByRevisionManualTrueOrderByFechaCreacionDesc();
+        return porteRepository.findPendientesAdminReview(MSG_ESPERANDO_ACEPTACION_CONDUCTOR, "Rematching completado");
     }
 
     /**
@@ -436,80 +630,46 @@ public class PorteService {
     }
 
     /**
-     * Search matching conductors for a porte based on its current dimensions.
-     * Returns ranked list with scores.
+     * Search manual-assignment candidates for a porte.
+     * Manual review only filters by vehicle compatibility (type, dimensions, weight, volume).
+     * It intentionally ignores radius, route distance, agenda availability and date overlap;
+     * those constraints belong to the automatic matching path.
      */
     public List<ConductorCandidatoResponse> buscarConductoresParaPorte(Long porteId) {
         Porte porte = porteRepository.findById(porteId)
                 .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
 
-        // Find candidate vehicles
-        Integer largoMm = (porte.getLargoMaxPaquete() != null) ? (int)(porte.getLargoMaxPaquete() * 1000) : 0;
-        Integer anchoMm = (porte.getAnchoMaxPaquete() != null) ? (int)(porte.getAnchoMaxPaquete() * 1000) : 0;
-        Integer altoMm = (porte.getAltoMaxPaquete() != null) ? (int)(porte.getAltoMaxPaquete() * 1000) : 0;
-        Double volumenRequerido = (porte.getVolumenTotalM3() != null) ? porte.getVolumenTotalM3() : 0.0;
-
-        List<Vehiculo> candidatos = vehiculoRepository.findCandidatos(
-                porte.getTipoVehiculoRequerido(),
-                porte.getPesoTotalKg() != null ? porte.getPesoTotalKg() : 0.0,
-                largoMm, anchoMm, altoMm, volumenRequerido
-        );
-
-        // Find available conductors
-        LocalDateTime fechaRecogida = porte.getFechaRecogida() != null ? porte.getFechaRecogida() : LocalDateTime.now();
-        List<Conductor> conductoresDisponibles = conductorMatchingService.buscarDisponibles(
-                fechaRecogida, porte.getTipoVehiculoRequerido(), porte.getOrigen()
-        );
-
-        // Filter: only conductors that have one of the candidate vehicles
-        Set<Long> conductorIdsConVehiculo = candidatos.stream()
-                .filter(v -> v.getConductor() != null)
-                .map(v -> v.getConductor().getId())
-                .collect(java.util.stream.Collectors.toSet());
-
-        List<Conductor> conductoresValidos = conductoresDisponibles.stream()
-                .filter(c -> conductorIdsConVehiculo.contains(c.getId()))
-                .collect(java.util.stream.Collectors.toList());
-
-        // Also include conductores disponibles that don't have matching vehicles but are available
-        // (admin might want to see all available even without perfect vehicle match)
-        List<Conductor> sinVehiculo = conductoresDisponibles.stream()
-                .filter(c -> !conductorIdsConVehiculo.contains(c.getId()))
-                .collect(java.util.stream.Collectors.toList());
-
+        List<Vehiculo> candidatos = buscarVehiculosCompatiblesAdmin(porte);
         double pesoRequerido = porte.getPesoTotalKg() != null ? porte.getPesoTotalKg() : 0.0;
+        Map<Long, ConductorCandidatoResponse> resultByConductor = new HashMap<>();
 
-        // Build response with scores
-        List<ConductorCandidatoResponse> result = new ArrayList<>();
+        for (Vehiculo vehiculo : candidatos) {
+            Conductor c = vehiculo.getConductor();
+            if (c == null || c.getId() == null || resultByConductor.containsKey(c.getId())) {
+                continue;
+            }
 
-        for (Conductor c : conductoresValidos) {
             double score = scoreConductor(c, candidatos, pesoRequerido);
-            String vehiculoInfo = candidatos.stream()
-                    .filter(v -> v.getConductor() != null && v.getConductor().getId().equals(c.getId()))
-                    .findFirst()
-                    .map(v -> v.getMarca() + " " + v.getModelo() + " (" + v.getMatricula() + ") - " + v.getCapacidadCargaKg() + "kg")
-                    .orElse("—");
+            String vehiculoInfo = formatVehiculoInfo(vehiculo);
 
-            result.add(new ConductorCandidatoResponse(
+            resultByConductor.put(c.getId(), new ConductorCandidatoResponse(
                     c.getId(), c.getNombre(), c.getApellidos(), c.getTelefono(),
-                    c.getCiudadBase(), c.getRating(), c.getNumeroValoraciones(),
-                    vehiculoInfo, Math.round(score * 100.0) / 100.0
+                    c.getCiudadBase(), vehiculoInfo, Math.round(score * 100.0) / 100.0
             ));
         }
 
-        // Add conductors without matching vehicles with score 0
-        for (Conductor c : sinVehiculo) {
-            result.add(new ConductorCandidatoResponse(
-                    c.getId(), c.getNombre(), c.getApellidos(), c.getTelefono(),
-                    c.getCiudadBase(), c.getRating(), c.getNumeroValoraciones(),
-                    "Sin vehículo compatible", 0.0
-            ));
-        }
-
-        // Sort by score descending
+        List<ConductorCandidatoResponse> result = new ArrayList<>(resultByConductor.values());
         result.sort((a, b) -> Double.compare(b.getScore(), a.getScore()));
 
         return result;
+    }
+
+    private String formatVehiculoInfo(Vehiculo v) {
+        String marca = v.getMarca() != null ? v.getMarca() : "";
+        String modelo = v.getModelo() != null ? v.getModelo() : "";
+        String matricula = v.getMatricula() != null ? v.getMatricula() : "sin matrícula";
+        String capacidad = v.getCapacidadCargaKg() != null ? v.getCapacidadCargaKg() + "kg" : "capacidad no informada";
+        return (marca + " " + modelo).trim() + " (" + matricula + ") - " + capacidad;
     }
 
     /**
@@ -523,12 +683,40 @@ public class PorteService {
         Conductor conductor = conductorRepository.findById(conductorId)
                 .orElseThrow(() -> new RuntimeException("Conductor no encontrado"));
 
+        boolean tieneVehiculoCompatible = buscarVehiculosCompatiblesAdmin(porte).stream()
+                .anyMatch(v -> v.getConductor() != null && conductorId.equals(v.getConductor().getId()));
+        if (!tieneVehiculoCompatible) {
+            throw new RuntimeException("El conductor seleccionado no tiene un vehículo compatible con las medidas del porte");
+        }
+
         porte.setConductor(conductor);
         porte.setEstado(EstadoPorte.ASIGNADO);
         porte.setRevisionManual(false);
         porte.setMotivoRevision(null);
 
         log.info("Admin asignó conductor {} al porte {}", conductorId, porteId);
+
+        return porteRepository.save(porte);
+    }
+
+    @Transactional
+    public Porte registrarFirmaEntrega(Long porteId, FirmaEntregaRequest request) {
+        Porte porte = porteRepository.findById(porteId)
+                .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
+
+        EstadoPorte estadoActual = porte.getEstado();
+        if (estadoActual == EstadoPorte.EN_TRANSITO) {
+            porte = cambiarEstado(porteId, EstadoPorte.ENTREGADO);
+        } else if (estadoActual != EstadoPorte.ENTREGADO && estadoActual != EstadoPorte.FACTURADO) {
+            throw new RuntimeException(
+                    "No se puede registrar firma de entrega para un porte en estado " + estadoActual
+                            + ". Estados válidos: EN_TRANSITO, ENTREGADO o FACTURADO."
+            );
+        }
+
+        porte.setFirmaEntregaBase64(request.getFirmaBase64());
+        porte.setFirmaEntregaFirmadoPor(request.getFirmadoPor());
+        porte.setFirmaEntregaFecha(LocalDateTime.now());
 
         return porteRepository.save(porte);
     }

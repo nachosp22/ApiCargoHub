@@ -57,7 +57,7 @@ public class IncidenciaDetailFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        incidenciaId = requireArguments().getLong(ARG_INCIDENCIA_ID);
+        Bundle args = getArguments();
 
         loadingContainer = view.findViewById(R.id.incidenciaDetailLoadingContainer);
         errorContainer = view.findViewById(R.id.incidenciaDetailErrorContainer);
@@ -71,6 +71,16 @@ public class IncidenciaDetailFragment extends Fragment {
         historyText = view.findViewById(R.id.incidenciaDetailHistoryText);
         MaterialButton retryButton = view.findViewById(R.id.incidenciaDetailRetryButton);
         retryButton.setOnClickListener(v -> loadData());
+
+        if (args == null || !args.containsKey(ARG_INCIDENCIA_ID)) {
+            showError(getString(R.string.incidencia_detail_error_default));
+            return;
+        }
+        incidenciaId = args.getLong(ARG_INCIDENCIA_ID);
+        if (incidenciaId <= 0L) {
+            showError(getString(R.string.incidencia_detail_error_default));
+            return;
+        }
 
         loadData();
     }
@@ -113,7 +123,7 @@ public class IncidenciaDetailFragment extends Fragment {
                 if (!isAdded()) {
                     return;
                 }
-                historyEmptyText.setText(message);
+                historyEmptyText.setText(message != null ? message : getString(R.string.incidencia_detail_error_default));
                 historyEmptyText.setVisibility(View.VISIBLE);
                 historyText.setVisibility(View.GONE);
             }
@@ -128,12 +138,12 @@ public class IncidenciaDetailFragment extends Fragment {
         titleText.setText(title);
 
         String estado = incidencia.getEstado() != null
-                ? incidencia.getEstado().name().replace("_", " ")
+                ? incidencia.getEstado().getDisplayName()
                 : getString(R.string.incidencia_detail_state_unknown);
         stateText.setText(estado);
 
-        String severidad = incidencia.getSeveridad() != null ? incidencia.getSeveridad().name() : "-";
-        String prioridad = incidencia.getPrioridad() != null ? incidencia.getPrioridad().name() : "-";
+        String severidad = incidencia.getSeveridad() != null ? incidencia.getSeveridad().getDisplayName() : "-";
+        String prioridad = incidencia.getPrioridad() != null ? incidencia.getPrioridad().getDisplayName() : "-";
         String fecha = UiFormatters.formatDateTime(incidencia.getFechaReporte());
         metadataText.setText(getString(R.string.incidencia_detail_metadata, severidad, prioridad, fecha));
 
@@ -157,15 +167,21 @@ public class IncidenciaDetailFragment extends Fragment {
                 builder.append("\n\n");
             }
             String fecha = UiFormatters.formatDateTime(evento.getFecha());
-            String accion = evento.getAccion() != null ? evento.getAccion() : getString(R.string.incidencia_detail_history_action_default);
+            String accion = evento.getAccion() != null
+                    ? UiFormatters.formatIncidenciaRawLabel(evento.getAccion())
+                    : getString(R.string.incidencia_detail_history_action_default);
             String estadoNuevo = evento.getEstadoNuevo() != null
-                    ? evento.getEstadoNuevo().name().replace("_", " ")
+                    ? evento.getEstadoNuevo().getDisplayName()
                     : getString(R.string.incidencia_detail_state_unknown);
             String comentario = evento.getComentario();
             if (comentario == null || comentario.trim().isEmpty()) {
                 comentario = getString(R.string.incidencia_detail_history_comment_empty);
             }
-            builder.append(String.format(Locale.getDefault(), "%s - %s (%s)\n%s", fecha, accion, estadoNuevo, comentario));
+            try {
+                builder.append(String.format(Locale.getDefault(), "%s - %s (%s)\n%s", fecha, accion, estadoNuevo, comentario));
+            } catch (Exception e) {
+                builder.append(fecha).append(" - ").append(accion).append(" (").append(estadoNuevo).append(")\n").append(comentario);
+            }
         }
         historyText.setText(builder.toString());
         historyEmptyText.setVisibility(View.GONE);

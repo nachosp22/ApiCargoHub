@@ -21,18 +21,20 @@ const emit = defineEmits<{
 
 // --- Filters ---
 const globalFilter = ref('')
-const estadoFilter = ref<EstadoVehiculo | ''>('')
-const tipoFilter = ref<TipoVehiculo | ''>('')
+const ALL_ESTADOS_VALUE = '__ALL_ESTADOS__'
+const ALL_TIPOS_VALUE = '__ALL_TIPOS__'
+const estadoFilter = ref<EstadoVehiculo | typeof ALL_ESTADOS_VALUE>(ALL_ESTADOS_VALUE)
+const tipoFilter = ref<TipoVehiculo | typeof ALL_TIPOS_VALUE>(ALL_TIPOS_VALUE)
 
 const estadoFilterOptions = [
-  { label: 'Todos los estados', value: '' },
+  { label: 'Todos los estados', value: ALL_ESTADOS_VALUE },
   { label: 'Disponible', value: 'DISPONIBLE' },
   { label: 'En Mantenimiento', value: 'EN_MANTENIMIENTO' },
   { label: 'Baja', value: 'BAJA' },
 ]
 
 const tipoFilterOptions = [
-  { label: 'Todos los tipos', value: '' },
+  { label: 'Todos los tipos', value: ALL_TIPOS_VALUE },
   { label: 'Furgoneta', value: 'FURGONETA' },
   { label: 'Rígido', value: 'RIGIDO' },
   { label: 'Tráiler', value: 'TRAILER' },
@@ -43,12 +45,12 @@ const filteredVehiculos = computed(() => {
   let result = props.vehiculos
 
   // Status filter
-  if (estadoFilter.value) {
+  if (estadoFilter.value !== ALL_ESTADOS_VALUE) {
     result = result.filter((v) => v.estado === estadoFilter.value)
   }
 
   // Type filter
-  if (tipoFilter.value) {
+  if (tipoFilter.value !== ALL_TIPOS_VALUE) {
     result = result.filter((v) => v.tipo === tipoFilter.value)
   }
 
@@ -174,11 +176,11 @@ function getTipoConfig(tipo: string): StyleConfig {
 
           <!-- Global Search -->
           <div class="relative">
-            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <i class="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             <InputText
               v-model="globalFilter"
               placeholder="Buscar vehículos..."
-              class="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
+              class="pl-4 pr-9 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary w-64"
             />
           </div>
         </div>

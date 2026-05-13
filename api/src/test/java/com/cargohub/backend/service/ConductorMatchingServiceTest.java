@@ -9,6 +9,7 @@ import com.cargohub.backend.entity.BloqueoRecurrente;
 import com.cargohub.backend.repository.BloqueoAgendaRepository;
 import com.cargohub.backend.repository.BloqueoRecurrenteRepository;
 import com.cargohub.backend.repository.ConductorRepository;
+import com.cargohub.backend.repository.PorteRepository;
 import com.cargohub.backend.repository.VehiculoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,19 +41,21 @@ class ConductorMatchingServiceTest {
     @Mock
     private VehiculoRepository vehiculoRepository;
 
+    @Mock
+    private PorteRepository porteRepository;
+
     private ConductorMatchingService service;
 
     @BeforeEach
     void setUp() {
         service = new ConductorMatchingService(conductorRepository, bloqueoAgendaRepository,
-                bloqueoRecurrenteRepository, vehiculoRepository);
+                bloqueoRecurrenteRepository, vehiculoRepository, porteRepository);
     }
 
-    private Conductor createConductor(Long id, String ciudad, Double rating) {
+    private Conductor createConductor(Long id, String ciudad) {
         Conductor c = new Conductor();
         c.setId(id);
         c.setCiudadBase(ciudad);
-        c.setRating(rating);
         c.setDisponible(true);
         // Active user
         Usuario u = new Usuario();
@@ -76,17 +79,18 @@ class ConductorMatchingServiceTest {
         // Wednesday = day 3
         LocalDateTime fecha = LocalDateTime.of(2026, 4, 15, 10, 0); // Wednesday
 
-        Conductor c1 = createConductor(1L, "Madrid", 4.5);
-        Conductor c2 = createConductor(2L, "Barcelona", 4.0);
+        Conductor c1 = createConductor(1L, "Madrid");
+        Conductor c2 = createConductor(2L, "Barcelona");
 
         when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1, c2)));
         when(bloqueoAgendaRepository.estaBloqueado(anyLong(), any(), any())).thenReturn(false);
         when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(anyLong(), eq(3))).thenReturn(Optional.empty());
+        when(porteRepository.tieneViajeEnFecha(anyLong(), any(), any())).thenReturn(false);
 
         List<Conductor> result = service.buscarDisponibles(fecha, null, null);
 
         assertEquals(2, result.size());
-        // Sorted by rating desc
+        // Deterministic order by id
         assertEquals(1L, result.get(0).getId());
         assertEquals(2L, result.get(1).getId());
     }
@@ -94,20 +98,20 @@ class ConductorMatchingServiceTest {
     // --- ciudad filter ---
 
     @Test
-    void buscarDisponibles_filtersByCiudad() {
+    void buscarDisponibles_noFiltraPorCiudadEnMvpActual() {
         LocalDateTime fecha = LocalDateTime.of(2026, 4, 15, 10, 0);
 
-        Conductor c1 = createConductor(1L, "Madrid", 4.0);
-        Conductor c2 = createConductor(2L, "Barcelona", 4.0);
+        Conductor c1 = createConductor(1L, "Madrid");
+        Conductor c2 = createConductor(2L, "Barcelona");
 
         when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1, c2)));
         when(bloqueoAgendaRepository.estaBloqueado(anyLong(), any(), any())).thenReturn(false);
         when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(anyLong(), eq(3))).thenReturn(Optional.empty());
+        when(porteRepository.tieneViajeEnFecha(anyLong(), any(), any())).thenReturn(false);
 
         List<Conductor> result = service.buscarDisponibles(fecha, null, "Madrid");
 
-        assertEquals(1, result.size());
-        assertEquals("Madrid", result.get(0).getCiudadBase());
+        assertEquals(2, result.size());
     }
 
     // --- bloqueo agenda filter ---
@@ -116,64 +120,18 @@ class ConductorMatchingServiceTest {
     void buscarDisponibles_excludesBlockedByAgenda() {
         LocalDateTime fecha = LocalDateTime.of(2026, 4, 15, 10, 0);
 
-        Conductor c1 = createConductor(1L, "Madrid", 4.0);
-        Conductor c2 = createConductor(2L, "Madrid", 4.5);
-
-        when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1, c2)));
-        // c1 is blocked
-        when(bloqueoAgendaRepository.estaBloqueado(eq(1L), any(), any())).thenReturn(true);
-        when(bloqueoAgendaRepository.estaBloqueado(eq(2L), any(), any())).thenReturn(false);
-        when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(anyLong(), eq(3))).thenReturn(Optional.empty());
-
-        List<Conductor> result = service.buscarDisponibles(fecha, null, null);
-
-        assertEquals(1, result.size());
-        assertEquals(2L, result.get(0).getId());
-    }
-
-    // --- bloqueo recurrente filter ---
-
-    @Test
-    void buscarDisponibles_excludesBlockedByRecurrente() {
-        LocalDateTime fecha = LocalDateTime.of(2026, 4, 15, 10, 0);
-
-        Conductor c1 = createConductor(1L, "Madrid", 4.0);
+        Conductor c1 = createConductor(1L, "Madrid");
 
         when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1)));
         when(bloqueoAgendaRepository.estaBloqueado(anyLong(), any(), any())).thenReturn(false);
-
-        BloqueoRecurrente bloqueo = new BloqueoRecurrente();
-        bloqueo.setActivo(true);
-        when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(1L, 3)).thenReturn(Optional.of(bloqueo));
-
-        List<Conductor> result = service.buscarDisponibles(fecha, null, null);
-
-        assertTrue(result.isEmpty());
-    }
-
-    // --- vehicle type filter ---
-
-    @Test
-    void buscarDisponibles_filtersByVehicleType() {
-        LocalDateTime fecha = LocalDateTime.of(2026, 4, 15, 10, 0);
-
-        Conductor c1 = createConductor(1L, "Madrid", 4.0);
-        Conductor c2 = createConductor(2L, "Madrid", 4.5);
-
-        when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1, c2)));
-        when(bloqueoAgendaRepository.estaBloqueado(anyLong(), any(), any())).thenReturn(false);
         when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(anyLong(), eq(3))).thenReturn(Optional.empty());
+        when(porteRepository.tieneViajeEnFecha(anyLong(), any(), any())).thenReturn(false);
 
         // c1 has FURGONETA, c2 has TRAILER
         Vehiculo v1 = new Vehiculo();
         v1.setTipo(TipoVehiculo.FURGONETA);
         v1.setEstado(EstadoVehiculo.DISPONIBLE);
         when(vehiculoRepository.findByConductorId(1L)).thenReturn(List.of(v1));
-
-        Vehiculo v2 = new Vehiculo();
-        v2.setTipo(TipoVehiculo.TRAILER);
-        v2.setEstado(EstadoVehiculo.DISPONIBLE);
-        when(vehiculoRepository.findByConductorId(2L)).thenReturn(List.of(v2));
 
         List<Conductor> result = service.buscarDisponibles(fecha, TipoVehiculo.FURGONETA, null);
 
@@ -187,7 +145,7 @@ class ConductorMatchingServiceTest {
     void buscarDisponibles_excludesInactiveUsers() {
         LocalDateTime fecha = LocalDateTime.of(2026, 4, 15, 10, 0);
 
-        Conductor c1 = createConductor(1L, "Madrid", 4.0);
+        Conductor c1 = createConductor(1L, "Madrid");
         Usuario inactiveUser = new Usuario();
         inactiveUser.setActivo(false);
         c1.setUsuario(inactiveUser);
@@ -212,25 +170,157 @@ class ConductorMatchingServiceTest {
         assertTrue(result.isEmpty());
     }
 
-    // --- sorting by rating ---
+    // --- sorting ---
 
     @Test
-    void buscarDisponibles_sortsByRatingDescending() {
+    void buscarDisponibles_sortsByIdAscending() {
         LocalDateTime fecha = LocalDateTime.of(2026, 4, 15, 10, 0);
 
-        Conductor c1 = createConductor(1L, "Madrid", 3.0);
-        Conductor c2 = createConductor(2L, "Madrid", 5.0);
-        Conductor c3 = createConductor(3L, "Madrid", 4.0);
+        Conductor c1 = createConductor(1L, "Madrid");
+        Conductor c2 = createConductor(2L, "Madrid");
+        Conductor c3 = createConductor(3L, "Madrid");
 
         when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1, c2, c3)));
         when(bloqueoAgendaRepository.estaBloqueado(anyLong(), any(), any())).thenReturn(false);
         when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(anyLong(), eq(3))).thenReturn(Optional.empty());
+        when(porteRepository.tieneViajeEnFecha(anyLong(), any(), any())).thenReturn(false);
 
         List<Conductor> result = service.buscarDisponibles(fecha, null, null);
 
         assertEquals(3, result.size());
-        assertEquals(2L, result.get(0).getId()); // 5.0
-        assertEquals(3L, result.get(1).getId()); // 4.0
-        assertEquals(1L, result.get(2).getId()); // 3.0
+        assertEquals(1L, result.get(0).getId());
+        assertEquals(2L, result.get(1).getId());
+        assertEquals(3L, result.get(2).getId());
+    }
+
+    // --- MVP strict distance/radio filters ---
+
+    @Test
+    void buscarDisponibles_excludesConductorWithNullRadio() {
+        LocalDateTime fecha = LocalDateTime.of(2026, 4, 15, 10, 0);
+
+        Conductor c1 = createConductor(1L, "Madrid");
+        c1.setRadioAccionKm(null);
+        c1.setLatitudBase(40.0);
+        c1.setLongitudBase(-3.0);
+
+        when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1)));
+        when(bloqueoAgendaRepository.estaBloqueado(anyLong(), any(), any())).thenReturn(false);
+        when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(anyLong(), eq(3))).thenReturn(Optional.empty());
+        when(porteRepository.tieneViajeEnFecha(anyLong(), any(), any())).thenReturn(false);
+
+        List<Conductor> result = service.buscarDisponibles(fecha, null, null, 40.0, -3.0);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void buscarDisponibles_excludesConductorWithZeroRadio() {
+        LocalDateTime fecha = LocalDateTime.of(2026, 4, 15, 10, 0);
+
+        Conductor c1 = createConductor(1L, "Madrid");
+        c1.setRadioAccionKm(0);
+        c1.setLatitudBase(40.0);
+        c1.setLongitudBase(-3.0);
+
+        when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1)));
+        when(bloqueoAgendaRepository.estaBloqueado(anyLong(), any(), any())).thenReturn(false);
+        when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(anyLong(), eq(3))).thenReturn(Optional.empty());
+        when(porteRepository.tieneViajeEnFecha(anyLong(), any(), any())).thenReturn(false);
+
+        List<Conductor> result = service.buscarDisponibles(fecha, null, null, 40.0, -3.0);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void buscarDisponibles_excludesConductorWithMissingBaseCoords() {
+        LocalDateTime fecha = LocalDateTime.of(2026, 4, 15, 10, 0);
+
+        Conductor c1 = createConductor(1L, "Madrid");
+        c1.setRadioAccionKm(50);
+        c1.setLatitudBase(null);
+        c1.setLongitudBase(null);
+
+        when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1)));
+        when(bloqueoAgendaRepository.estaBloqueado(anyLong(), any(), any())).thenReturn(false);
+        when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(anyLong(), eq(3))).thenReturn(Optional.empty());
+        when(porteRepository.tieneViajeEnFecha(anyLong(), any(), any())).thenReturn(false);
+
+        List<Conductor> result = service.buscarDisponibles(fecha, null, null, 40.0, -3.0);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void buscarDisponibles_includesConductorWithinRadio() {
+        LocalDateTime fecha = LocalDateTime.of(2026, 4, 15, 10, 0);
+
+        Conductor c1 = createConductor(1L, "Madrid");
+        c1.setRadioAccionKm(100);
+        c1.setLatitudBase(40.4168);
+        c1.setLongitudBase(-3.7038);
+
+        when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1)));
+        when(bloqueoAgendaRepository.estaBloqueado(anyLong(), any(), any())).thenReturn(false);
+        when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(anyLong(), eq(3))).thenReturn(Optional.empty());
+        when(porteRepository.tieneViajeEnFecha(anyLong(), any(), any())).thenReturn(false);
+
+        // Madrid origin ~0 km from base
+        List<Conductor> result = service.buscarDisponibles(fecha, null, null, 40.4168, -3.7038);
+
+        assertEquals(1, result.size());
+    }
+
+    // --- range-based filters ---
+
+    @Test
+    void buscarDisponibles_excludesBlockedByAgendaInRange() {
+        LocalDateTime inicio = LocalDateTime.of(2026, 4, 15, 10, 0);
+        LocalDateTime fin = LocalDateTime.of(2026, 4, 17, 18, 0);
+
+        Conductor c1 = createConductor(1L, "Madrid");
+
+        when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1)));
+        when(bloqueoAgendaRepository.estaBloqueado(eq(1L), eq(inicio), eq(fin))).thenReturn(true);
+
+        List<Conductor> result = service.buscarDisponibles(inicio, fin, null, null, null, null);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void buscarDisponibles_excludesBlockedByRecurrenteAnyDayInRange() {
+        LocalDateTime inicio = LocalDateTime.of(2026, 4, 15, 10, 0); // Wednesday (3)
+        LocalDateTime fin = LocalDateTime.of(2026, 4, 17, 18, 0);    // Friday (5)
+
+        Conductor c1 = createConductor(1L, "Madrid");
+
+        when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1)));
+        when(bloqueoAgendaRepository.estaBloqueado(anyLong(), any(), any())).thenReturn(false);
+        when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(1L, 3)).thenReturn(Optional.empty());
+        // Thursday (4) has recurrent block
+        when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(1L, 4)).thenReturn(Optional.of(new BloqueoRecurrente() {{ setActivo(true); }}));
+
+        List<Conductor> result = service.buscarDisponibles(inicio, fin, null, null, null, null);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void buscarDisponibles_excludesConductorWithOverlappingPorte() {
+        LocalDateTime inicio = LocalDateTime.of(2026, 4, 15, 10, 0);
+        LocalDateTime fin = LocalDateTime.of(2026, 4, 16, 18, 0);
+
+        Conductor c1 = createConductor(1L, "Madrid");
+
+        when(conductorRepository.findCandidatosDisponibles("3")).thenReturn(new ArrayList<>(List.of(c1)));
+        when(bloqueoAgendaRepository.estaBloqueado(anyLong(), any(), any())).thenReturn(false);
+        when(bloqueoRecurrenteRepository.findByConductorIdAndDiaSemana(anyLong(), anyInt())).thenReturn(Optional.empty());
+        when(porteRepository.tieneViajeEnFecha(1L, inicio, fin)).thenReturn(true);
+
+        List<Conductor> result = service.buscarDisponibles(inicio, fin, null, null, null, null);
+
+        assertTrue(result.isEmpty());
     }
 }

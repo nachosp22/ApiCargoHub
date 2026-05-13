@@ -23,10 +23,10 @@ describe('computeMarkerDiff', () => {
     expect(result.toUpsert).toEqual([])
   })
 
-  it('detects incremental upsert only for changed recordedAt', () => {
+  it('detects incremental upsert when recordedAt changes', () => {
     const previous = new Map<string, string>([
-      ['1', '2026-03-16T10:00:00Z'],
-      ['2', '2026-03-16T10:00:00Z'],
+      ['1', '2026-03-16T10:00:00Z|ONLINE'],
+      ['2', '2026-03-16T10:00:00Z|ONLINE'],
     ])
 
     const result = computeMarkerDiff([
@@ -39,10 +39,24 @@ describe('computeMarkerDiff', () => {
     expect(result.toUpsert[0].driverId).toBe('2')
   })
 
+  it('detects incremental upsert when reporting state changes', () => {
+    const previous = new Map<string, string>([
+      ['1', '2026-03-16T10:00:00Z|ONLINE'],
+    ])
+
+    const result = computeMarkerDiff([
+      driver({ driverId: '1', recordedAt: '2026-03-16T10:00:00Z', state: 'OFFLINE' }),
+    ], previous)
+
+    expect(result.toRemove).toEqual([])
+    expect(result.toUpsert).toHaveLength(1)
+    expect(result.toUpsert[0].driverId).toBe('1')
+  })
+
   it('detects removed markers when driver disappears', () => {
     const previous = new Map<string, string>([
-      ['1', '2026-03-16T10:00:00Z'],
-      ['2', '2026-03-16T10:00:00Z'],
+      ['1', '2026-03-16T10:00:00Z|ONLINE'],
+      ['2', '2026-03-16T10:00:00Z|ONLINE'],
     ])
 
     const result = computeMarkerDiff([driver({ driverId: '1' })], previous)

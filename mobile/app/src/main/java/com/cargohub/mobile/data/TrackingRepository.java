@@ -3,6 +3,10 @@ package com.cargohub.mobile.data;
 import androidx.annotation.NonNull;
 
 import com.cargohub.mobile.data.model.DriverLocationUpdateRequest;
+import com.cargohub.mobile.data.model.RecordTrackingPauseRequest;
+import com.cargohub.mobile.data.model.StartTrackingSessionRequest;
+import com.cargohub.mobile.data.model.TrackingSessionResponse;
+import com.cargohub.mobile.data.model.UpdateTrackingSessionRequest;
 import com.cargohub.mobile.network.ApiClient;
 
 import retrofit2.Call;
@@ -40,6 +44,76 @@ public class TrackingRepository {
                         t,
                         "Tiempo de espera agotado al sincronizar la ubicacion.",
                         "Error de red al sincronizar la ubicacion."
+                ));
+            }
+        });
+    }
+
+    public void startTrackingSession(@NonNull StartTrackingSessionRequest request,
+                                     @NonNull RepositoryCallback<TrackingSessionResponse> callback) {
+        apiService.startTrackingSession(request).enqueue(new Callback<TrackingSessionResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<TrackingSessionResponse> call,
+                                   @NonNull Response<TrackingSessionResponse> response) {
+                callback.onResult(RepositorySupport.fromResponse(
+                        response,
+                        "No se pudo iniciar la sesion de tracking."
+                ));
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<TrackingSessionResponse> call, @NonNull Throwable t) {
+                callback.onResult(RepositorySupport.fromFailure(
+                        t,
+                        "Tiempo de espera agotado al iniciar la sesion de tracking.",
+                        "Error de red al iniciar la sesion de tracking."
+                ));
+            }
+        });
+    }
+
+    public void updateTrackingSession(long sessionId,
+                                      @NonNull UpdateTrackingSessionRequest request,
+                                      @NonNull RepositoryCallback<TrackingSessionResponse> callback) {
+        apiService.updateTrackingSession(sessionId, request).enqueue(new Callback<TrackingSessionResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<TrackingSessionResponse> call,
+                                   @NonNull Response<TrackingSessionResponse> response) {
+                callback.onResult(RepositorySupport.fromResponse(
+                        response,
+                        "No se pudo actualizar la sesion de tracking."
+                ));
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<TrackingSessionResponse> call, @NonNull Throwable t) {
+                callback.onResult(RepositorySupport.fromFailure(
+                        t,
+                        "Tiempo de espera agotado al actualizar la sesion de tracking.",
+                        "Error de red al actualizar la sesion de tracking."
+                ));
+            }
+        });
+    }
+
+    public void recordPause(long sessionId,
+                            @NonNull RecordTrackingPauseRequest request,
+                            @NonNull RepositoryCallback<Void> callback) {
+        apiService.recordTrackingPause(sessionId, request).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                callback.onResult(RepositorySupport.fromResponse(
+                        response,
+                        "No se pudo registrar la pausa."
+                ));
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                callback.onResult(RepositorySupport.fromFailure(
+                        t,
+                        "Tiempo de espera agotado al registrar la pausa.",
+                        "Error de red al registrar la pausa."
                 ));
             }
         });

@@ -1,7 +1,10 @@
 package com.cargohub.backend.controller;
 
+import com.cargohub.backend.dto.VehiculoUpsertRequest;
+import com.cargohub.backend.entity.Conductor;
 import com.cargohub.backend.entity.Vehiculo;
 import com.cargohub.backend.service.VehiculoService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehiculos")
-@CrossOrigin(origins = "*")
 @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
 public class VehiculoController {
 
@@ -26,7 +28,25 @@ public class VehiculoController {
 
     // 2. Dar de alta un camión nuevo
     @PostMapping
-    public ResponseEntity<Vehiculo> guardar(@RequestBody Vehiculo vehiculo) {
+    public ResponseEntity<Vehiculo> guardar(@Valid @RequestBody VehiculoUpsertRequest request) {
+        Vehiculo vehiculo = new Vehiculo();
+        vehiculo.setId(request.getId());
+        vehiculo.setMatricula(request.getMatricula());
+        vehiculo.setMarca(request.getMarca());
+        vehiculo.setModelo(request.getModelo());
+        if (request.getTipo() != null) vehiculo.setTipo(request.getTipo());
+        if (request.getEstado() != null) vehiculo.setEstado(request.getEstado());
+        vehiculo.setCapacidadCargaKg(request.getCapacidadCargaKg());
+        vehiculo.setLargoUtilMm(request.getLargoUtilMm());
+        vehiculo.setAnchoUtilMm(request.getAnchoUtilMm());
+        vehiculo.setAltoUtilMm(request.getAltoUtilMm());
+        if (request.getConductor() != null && request.getConductor().getId() != null) {
+            Conductor conductor = new Conductor();
+            conductor.setId(request.getConductor().getId());
+            vehiculo.setConductor(conductor);
+        } else {
+            vehiculo.setConductor(null);
+        }
         return ResponseEntity.ok(vehiculoService.guardar(vehiculo));
     }
 
