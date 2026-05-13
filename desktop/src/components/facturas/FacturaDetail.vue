@@ -97,7 +97,7 @@ async function handleDownloadPdf() {
         </div>
         <div class="flex items-center gap-3">
           <span
-            class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ring-1 ring-inset"
+            class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ring-1 ring-inset"
             :class="[
               factura.pagada
                 ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
