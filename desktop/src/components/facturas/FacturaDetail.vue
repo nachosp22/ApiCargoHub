@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
-import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import { useFacturasStore, type Factura } from '@/stores/facturas'
@@ -97,14 +96,21 @@ async function handleDownloadPdf() {
           <p class="text-sm text-gray-500 dark:text-gray-400">Emitida el {{ formatDate(factura.fechaEmision) }}</p>
         </div>
         <div class="flex items-center gap-3">
-          <Tag
-            :value="factura.pagada ? 'Pagada' : 'Pendiente'"
-            :severity="factura.pagada ? 'success' : 'warn'"
-          />
+          <span
+            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
+            :class="[
+              factura.pagada
+                ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
+                : 'bg-orange-50 text-orange-700 ring-orange-600/20',
+            ]"
+          >
+            {{ factura.pagada ? 'Pagada' : 'Pendiente' }}
+          </span>
           <Button
             label="Descargar PDF"
             icon="pi pi-file-pdf"
             severity="info"
+            rounded
             size="small"
             @click="handleDownloadPdf"
           />

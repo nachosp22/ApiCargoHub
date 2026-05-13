@@ -5,7 +5,6 @@ import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import DatePicker from 'primevue/datepicker'
 import type { Factura } from '@/stores/facturas'
 
@@ -107,6 +106,12 @@ function formatCurrency(value: number): string {
 
 function getClienteName(factura: Factura): string {
   return factura.porte?.cliente?.nombreEmpresa ?? '—'
+}
+
+function getEstadoConfig(pagada: boolean): { bg: string; text: string; ring: string; label: string } {
+  return pagada
+    ? { bg: 'bg-emerald-50', text: 'text-emerald-700', ring: 'ring-emerald-600/20', label: 'Pagada' }
+    : { bg: 'bg-orange-50', text: 'text-orange-700', ring: 'ring-orange-600/20', label: 'Pendiente' }
 }
 </script>
 
@@ -235,10 +240,16 @@ function getClienteName(factura: Factura): string {
       <!-- Estado -->
       <Column field="pagada" header="Estado" :sortable="true" style="min-width: 120px">
         <template #body="slotProps">
-          <Tag
-            :value="slotProps.data.pagada ? 'Pagada' : 'Pendiente'"
-            :severity="slotProps.data.pagada ? 'success' : 'warn'"
-          />
+          <span
+            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
+            :class="[
+              getEstadoConfig(slotProps.data.pagada).bg,
+              getEstadoConfig(slotProps.data.pagada).text,
+              getEstadoConfig(slotProps.data.pagada).ring,
+            ]"
+          >
+            {{ getEstadoConfig(slotProps.data.pagada).label }}
+          </span>
         </template>
       </Column>
 
