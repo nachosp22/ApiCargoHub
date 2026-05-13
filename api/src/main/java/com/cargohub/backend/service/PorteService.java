@@ -117,12 +117,28 @@ public class PorteService {
     }
 
     /**
-     * Listar portes de un cliente específico.
+     * Lista todos los portes asociados a un cliente específico.
+     *
+     * @param clienteId ID del cliente cuyos portes se desean listar
+     * @return lista de portes pertenecientes al cliente indicado
      */
     public List<Porte> listarPortesPorCliente(Long clienteId) {
         return porteRepository.findByClienteId(clienteId);
     }
 
+    /**
+     * Método principal de creación de un porte. Ejecuta toda la lógica de negocio:
+     * 1. Analiza la descripción de la carga con Gemini para inferir dimensiones y tipo de vehículo.
+     * 2. Infiere ancho/alto faltantes basándose en el tipo de vehículo.
+     * 3. Valida los datos críticos necesarios para el matching automático.
+     * 4. Calcula la distancia en kilómetros entre origen y destino (con factor de corrección del 20%).
+     * 5. Calcula el precio total mediante la calculadora de precios.
+     * 6. Ejecuta el matching automático para buscar vehículos y conductores compatibles.
+     * Si el porte requiere revisión manual, se salta el matching y se persiste directamente.
+     *
+     * @param porte entidad Porte con los datos básicos a completar y persistir
+     * @return la entidad Porte persistida con dimensiones, precio, distancia y estado calculados
+     */
     @Transactional
     public Porte crearPorte(Porte porte) {
         // 0. Analizar carga con Gemini para inferir dimensiones
@@ -201,6 +217,17 @@ public class PorteService {
         return porteRepository.save(porte);
     }
 
+    /**
+     * Reintenta el matching automático de un porte por parte de un administrador.
+     * Resetea el estado del porte a PENDIENTE, limpia el conductor asignado y la bandera
+     * de revisión manual. Valida los datos críticos y busca vehículos compatibles sin
+     * filtrar por disponibilidad, agenda, radio ni distancia (solo compatibilidad de vehículo).
+     * Si encuentra vehículos compatibles, notifica a los conductores correspondientes.
+     *
+     * @param porteId ID del porte cuyo matching se desea reintentar
+     * @return la entidad Porte actualizada con el resultado del re-matching
+     * @throws RuntimeException si el porte no existe
+     */
     @Transactional
     public Porte retryMatching(Long porteId) {
         Porte porte = obtenerPorId(porteId);
@@ -245,6 +272,14 @@ public class PorteService {
         return porteRepository.save(porte);
     }
 
+    /**
+     * Valida que el porte contenga todos los datos críticos necesarios para el matching automático.
+     * Verifica la presencia del tipo de vehículo requerido y las coordenadas de origen y destino.
+     * Si falta algún dato crítico, marca el porte para revisión manual con el mensaje correspondiente.
+     * No realiza ninguna validación si el porte ya está marcado para revisión manual.
+     *
+     * @param porte entidad Porte a validar
+     */
     private void validarDatosCriticosParaMatching(Porte porte) {
         if (porte.isRevisionManual()) {
             return;
@@ -267,6 +302,15 @@ public class PorteService {
         }
     }
 
+    /**
+     * Aplica el resultado del matching automático sobre un porte.
+     * Busca vehículos compatibles y filtra conductores disponibles mediante el servicio
+     * de matching. Cruza ambas listas para encontrar conductores válidos que posean
+     * vehículos compatibles. Si encuentra conductores elegibles, el porte se publica
+     * como oferta pendiente; de lo contrario, se registra el motivo de la falta de match.
+     *
+     * @param porte entidad Porte sobre la cual aplicar el matching automático
+     */
     private void aplicarResultadoMatchingAutomatico(Porte porte) {
         // 3. LOGICA DE ASIGNACIÓN CON SCORING Y CONDUCTOR MATCHING
         List<Vehiculo> candidatos = buscarVehiculosCompatibles(porte);
@@ -318,6 +362,14 @@ public class PorteService {
         }
     }
 
+    /**
+     * Busca vehículos compatibles para un porte según su tipo, dimensiones, peso y volumen.
+     * Convierte las dimensiones de metros a milímetros para la consulta al repositorio.
+     * Retorna una lista vacía si el porte no tiene un tipo de vehículo requerido definido.
+     *
+     * @param porte entidad Porte para la cual buscar vehículos compatibles
+     * @return lista de vehículos que cumplen con los requisitos del porte
+     */
     private List<Vehiculo> buscarVehiculosCompatibles(Porte porte) {
         if (porte.getTipoVehiculoRequerido() == null) {
             return List.of();
@@ -401,6 +453,13 @@ public class PorteService {
         return efficiencyScore;
     }
 
+    /**
+     * Verifica si un porte tiene coordenadas válidas tanto para el origen como para el destino.
+     * Una coordenada es válida si no es null y se encuentra dentro del rango geográfico aceptable.
+     *
+     * @param porte entidad Porte cuyas coordenadas se desean verificar
+     * @return true si todas las coordenadas (latitud/longitud de origen y destino) son válidas
+     */
     private boolean hasValidCoordinates(Porte porte) {
         return isValidLatitude(porte.getLatitudOrigen())
                 && isValidLongitude(porte.getLongitudOrigen())
@@ -408,14 +467,35 @@ public class PorteService {
                 && isValidLongitude(porte.getLongitudDestino());
     }
 
+    /**
+     * Valida que un valor de latitud sea numéricamente válido.
+     * Una latitud válida no es null y se encuentra entre -90 y 90 grados.
+     *
+     * @param latitude valor de latitud a validar
+     * @return true si la latitud es válida
+     */
     private boolean isValidLatitude(Double latitude) {
         return latitude != null && latitude >= -90 && latitude <= 90;
     }
 
+    /**
+     * Valida que un valor de longitud sea numéricamente válido.
+     * Una longitud válida no es null y se encuentra entre -180 y 180 grados.
+     *
+     * @param longitude valor de longitud a validar
+     * @return true si la longitud es válida
+     */
     private boolean isValidLongitude(Double longitude) {
         return longitude != null && longitude >= -180 && longitude <= 180;
     }
 
+    /**
+     * Infiere el ancho máximo del paquete (en metros) basándose en el tipo de vehículo.
+     * Se utiliza como valor por defecto cuando el ancho no fue proporcionado ni inferido por Gemini.
+     *
+     * @param tipo nombre del tipo de vehículo (FURGONETA, RIGIDO, TRAILER)
+     * @return ancho estimado en metros según el tipo de vehículo
+     */
     private double inferAnchoFromVehicleType(String tipo) {
         return switch (tipo) {
             case "FURGONETA" -> 1.7;
@@ -425,6 +505,13 @@ public class PorteService {
         };
     }
 
+    /**
+     * Infiere el alto máximo del paquete (en metros) basándose en el tipo de vehículo.
+     * Se utiliza como valor por defecto cuando el alto no fue proporcionado ni inferido por Gemini.
+     *
+     * @param tipo nombre del tipo de vehículo (FURGONETA, RIGIDO, TRAILER)
+     * @return alto estimado en metros según el tipo de vehículo
+     */
     private double inferAltoFromVehicleType(String tipo) {
         return switch (tipo) {
             case "FURGONETA" -> 1.8;
@@ -434,7 +521,7 @@ public class PorteService {
         };
     }
 
-    // ...  resto de métodos sin cambios ...
+    // --- Métodos de listado y gestión ---
 
     /**
      * Lista todos los portes registrados en el sistema.
@@ -610,6 +697,16 @@ public class PorteService {
                 .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
     }
 
+    /**
+     * Actualiza los campos editables de un porte existente.
+     * Solo modifica los campos que vienen con valor no nulo en el request,
+     * preservando el resto de los datos originales del porte.
+     *
+     * @param porteId ID del porte a actualizar
+     * @param request DTO con los campos a actualizar (solo los no nulos se aplican)
+     * @return la entidad Porte con los campos actualizados
+     * @throws RuntimeException si el porte no existe
+     */
     @Transactional
     public Porte actualizarPorte(Long porteId, ActualizarPorteRequest request) {
         Porte porte = obtenerPorId(porteId);
@@ -624,6 +721,17 @@ public class PorteService {
         return porteRepository.save(porte);
     }
 
+    /**
+     * Elimina o cancela un porte según su estado actual.
+     * Si el porte está PENDIENTE o CANCELADO, se elimina físicamente de la base de datos.
+     * Si está ASIGNADO o EN_TRANSITO, se cancela cambiando su estado a CANCELADO (soft delete).
+     * Para portes en otros estados (ENTREGADO, FACTURADO), se lanza una excepción para
+     * preservar el historial de operaciones completadas.
+     *
+     * @param porteId ID del porte a eliminar o cancelar
+     * @return true si se eliminó físicamente, false si se canceló (soft delete)
+     * @throws RuntimeException si el porte no puede eliminarse/cancelarse por su estado actual
+     */
     @Transactional
     public boolean eliminarOCancelarPorte(Long porteId) {
         Porte porte = obtenerPorId(porteId);
@@ -752,6 +860,13 @@ public class PorteService {
         return result;
     }
 
+    /**
+     * Formatea la información de un vehículo en una cadena legible para presentación.
+     * Incluye marca, modelo, matrícula y capacidad de carga.
+     *
+     * @param v entidad Vehiculo a formatear
+     * @return cadena con la información del vehículo en formato "Marca Modelo (matrícula) - capacidad"
+     */
     private String formatVehiculoInfo(Vehiculo v) {
         String marca = v.getMarca() != null ? v.getMarca() : "";
         String modelo = v.getModelo() != null ? v.getModelo() : "";
@@ -787,6 +902,18 @@ public class PorteService {
         return porteRepository.save(porte);
     }
 
+    /**
+     * Registra la firma digital de entrega de un porte.
+     * Si el porte está en tránsito, primero lo marca como ENTREGADO (lo que dispara
+     * la generación automática de factura). Acepta portes en estados ENTREGADO o FACTURADO
+     * para permitir registrar la firma incluso después de la entrega.
+     * Almacena la firma en formato Base64, el nombre del firmante y la fecha/hora actual.
+     *
+     * @param porteId ID del porte cuya firma de entrega se registra
+     * @param request DTO con la firma en Base64 y el nombre del firmante
+     * @return la entidad Porte actualizada con los datos de la firma de entrega
+     * @throws RuntimeException si el porte no existe o no está en un estado válido para registrar firma
+     */
     @Transactional
     public Porte registrarFirmaEntrega(Long porteId, FirmaEntregaRequest request) {
         Porte porte = porteRepository.findById(porteId)
