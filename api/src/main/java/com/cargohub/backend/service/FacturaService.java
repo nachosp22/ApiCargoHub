@@ -36,6 +36,10 @@ public class FacturaService {
     /**
      * Genera la factura definitiva para un porte entregado.
      * Se llama cuando el Admin pulsa "Facturar" manualmente.
+     *
+     * @param porteId el identificador único del porte a facturar
+     * @return la entidad {@link Factura} recién creada y persistida en base de datos
+     * @throws RuntimeException si el porte no existe o ya tiene una factura asociada
      */
     @Transactional
     public Factura generarFacturaParaPorte(Long porteId) {
@@ -65,8 +69,10 @@ public class FacturaService {
     }
 
     /**
-     * Calcula el siguiente código de factura: F-{AÑO}-{SECUENCIA}
+     * Calcula el siguiente código de factura con formato secuencial por año.
      * Ej: Si la última fue F-2025-0009, devuelve F-2025-0010.
+     *
+     * @return el siguiente número de serie de factura como cadena de texto
      */
     private String generarSiguienteNumeroFactura() {
         int anioActual = LocalDate.now().getYear();
@@ -102,6 +108,12 @@ public class FacturaService {
         return String.format("%s-%d-%s%s", prefijoFactura, anioActual, prefijoSecuencia, secuenciaFormateada);
     }
 
+    /**
+     * Analiza un código de factura y extrae sus componentes estructurales (prefijo, año, prefijo de secuencia, secuencia y longitud).
+     *
+     * @param codigo la cadena de texto con el número de serie a parsear
+     * @return un {@link Optional} con los componentes extraídos, o vacío si el código es nulo, vacío o no coincide con el patrón esperado
+     */
     private Optional<FacturaCodeParts> parseFacturaCode(String codigo) {
         if (codigo == null || codigo.isBlank()) {
             return Optional.empty();
@@ -131,11 +143,29 @@ public class FacturaService {
 
     // ── Métodos para conductor ──
 
+    /**
+     * Busca las facturas asociadas a un conductor aplicando filtros opcionales de fecha y estado de pago.
+     *
+     * @param conductorId el identificador único del conductor cuyas facturas se desean consultar
+     * @param desde la fecha de inicio del rango de búsqueda (inclusive), o {@code null} para sin límite inferior
+     * @param hasta la fecha de fin del rango de búsqueda (inclusive), o {@code null} para sin límite superior
+     * @param pagada filtro por estado de pago: {@code true} para facturas pagadas, {@code false} para pendientes, o {@code null} para sin filtro
+     * @param pageable la configuración de paginación y ordenación
+     * @return una página con las facturas que cumplen los criterios de búsqueda
+     */
     public Page<Factura> findByConductorId(Long conductorId, LocalDate desde, LocalDate hasta,
                                             Boolean pagada, Pageable pageable) {
         return facturaRepository.findByConductorId(conductorId, desde, hasta, pagada, pageable);
     }
 
+    /**
+     * Obtiene un resumen financiero de las facturas de un conductor para un periodo determinado.
+     * El resumen incluye el total facturado, el total pagado, el total pendiente y el número de facturas.
+     *
+     * @param conductorId el identificador único del conductor
+     * @param periodo el rango de tiempo a considerar: "SEMANA" (desde el lunes anterior), "MES" (desde el día 1), "ANIO" (desde el 1 de enero), o {@code null} para sin límite inferior
+     * @return un objeto {@link FacturaResumenResponse} con los totales calculados y redondeados a dos decimales
+     */
     public FacturaResumenResponse getResumenByConductor(Long conductorId, String periodo) {
         LocalDate desde = null;
         LocalDate hasta = LocalDate.now();

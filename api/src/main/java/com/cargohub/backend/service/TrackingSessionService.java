@@ -24,6 +24,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Servicio encargado de gestionar el ciclo de vida de las sesiones de seguimiento (tracking).
+ * Permite iniciar, actualizar, pausar y finalizar sesiones, así como registrar pausas
+ * asociadas a cada sesión.
+ */
 @Service
 public class TrackingSessionService {
 
@@ -32,6 +37,9 @@ public class TrackingSessionService {
     private final ConductorRepository conductorRepository;
     private final PorteRepository porteRepository;
 
+    /**
+     * Construye el servicio con los repositorios necesarios.
+     */
     public TrackingSessionService(TrackingSessionRepository trackingSessionRepository,
                                   TrackingPauseRepository trackingPauseRepository,
                                   ConductorRepository conductorRepository,
@@ -42,6 +50,17 @@ public class TrackingSessionService {
         this.porteRepository = porteRepository;
     }
 
+    /**
+     * Inicia una nueva sesión de seguimiento para un conductor.
+     * Crea la sesión con el estado {@code ACTIVE} y la fase indicada en la solicitud
+     * (o {@code IDLE} por defecto). Si se proporciona un {@code porteId}, se asocia
+     * a la sesión.
+     *
+     * @param request datos de entrada con el identificador del conductor, fase actual
+     *                y opcionalmente el identificador del porte y la fecha de inicio.
+     * @return respuesta con los datos de la sesión recién creada.
+     * @throws ResponseStatusException si el conductor no existe (404).
+     */
     @Transactional
     public TrackingSessionResponse startSession(StartTrackingSessionRequest request) {
         Conductor conductor = conductorRepository.findById(request.getDriverId())
@@ -58,6 +77,19 @@ public class TrackingSessionService {
         return toResponse(saved);
     }
 
+    /**
+     * Actualiza una sesión de seguimiento existente. Permite modificar el estado,
+     * la fase actual, la fecha de finalización y el porte asociado.
+     * Si el estado cambia a {@code ENDED} o se proporciona una fecha de fin,
+     * se establece automáticamente {@code endedAt} y el estado se marca como finalizado.
+     * Valida que la transición de estado sea válida antes de aplicarla.
+     *
+     * @param sessionId identificador de la sesión a actualizar.
+     * @param request   datos con los campos a modificar (estado, fase, fecha de fin, porte).
+     * @return respuesta con los datos actualizados de la sesión.
+     * @throws ResponseStatusException si la sesión no existe (404) o la transición
+     *                                 de estado no es válida (409).
+     */
     @Transactional
     public TrackingSessionResponse updateSession(Long sessionId, UpdateTrackingSessionRequest request) {
         TrackingSession session = getSession(sessionId);
@@ -85,12 +117,32 @@ public class TrackingSessionService {
         return toResponse(trackingSessionRepository.save(session));
     }
 
+    /**
+     * Obtiene una sesión de seguimiento por su identificador.
+     *
+     * @param sessionId identificador de la sesión a buscar.
+     * @return la entidad {@link TrackingSession} encontrada.
+     * @throws ResponseStatusException si la sesión no existe (404).
+     */
     @Transactional(readOnly = true)
     public TrackingSession getSession(Long sessionId) {
         return trackingSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tracking session no encontrada"));
     }
 
+    /**
+     * Registra una pausa en una sesión de seguimiento o finaliza una pausa activa.
+     * Si se proporciona {@code endedAt} sin un identificador de pausa, se cierra la
+     * pausa activa de la sesión. Si no hay pausa activa, retorna una respuesta idempotente.
+     * Si no se proporciona {@code endedAt}, se crea una nueva pausa con el motivo indicado.
+     *
+     * @param sessionId identificador de la sesión a la que pertenece la pausa.
+     * @param request   datos de la pausa: motivo obligatorio, nota opcional y
+     *                  opcionalmente la fecha de inicio o fin.
+     * @return respuesta con los datos de la pausa registrada o finalizada.
+     * @throws ResponseStatusException si la sesión no existe (404) o el motivo
+     *                                 de la pausa está vacío (400).
+     */
     @Transactional
     public TrackingPauseResponse recordPause(Long sessionId, TrackingPauseRequest request) {
         TrackingSession session = getSession(sessionId);
@@ -125,6 +177,9 @@ public class TrackingSessionService {
         return toPauseResponse(saved);
     }
 
+    /**
+     * Convierte una entidad {@link TrackingPause} en su DTO de respuesta.
+     */
     private TrackingPauseResponse toPauseResponse(TrackingPause pause) {
         TrackingPauseResponse resp = new TrackingPauseResponse();
         resp.setId(pause.getId());
@@ -136,6 +191,9 @@ public class TrackingSessionService {
         return resp;
     }
 
+    /**
+     * Resuelve un {@link Porte} a partir de su identificador. Retorna {@code null} si el ID es nulo.
+     */
     private Porte resolvePorte(Long porteId) {
         if (porteId == null) {
             return null;
@@ -144,6 +202,9 @@ public class TrackingSessionService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Porte no encontrado"));
     }
 
+    /**
+     * Convierte un {@link OffsetDateTime} a {@link LocalDateTime}, usando un valor por defecto si es nulo.
+     */
     private LocalDateTime toLocalDateTime(OffsetDateTime value, LocalDateTime fallback) {
         if (value == null) {
             return fallback;
@@ -151,6 +212,9 @@ public class TrackingSessionService {
         return value.toLocalDateTime();
     }
 
+    /**
+     * Convierte una entidad {@link TrackingSession} en su DTO de respuesta.
+     */
     private TrackingSessionResponse toResponse(TrackingSession session) {
         TrackingSessionResponse response = new TrackingSessionResponse();
         response.setId(session.getId());
@@ -164,6 +228,9 @@ public class TrackingSessionService {
         return response;
     }
 
+    /**
+     * Convierte un {@link LocalDateTime} a {@link OffsetDateTime} en zona UTC. Retorna {@code null} si la entrada es nula.
+     */
     private OffsetDateTime toOffset(LocalDateTime value) {
         if (value == null) {
             return null;
@@ -171,6 +238,10 @@ public class TrackingSessionService {
         return value.atOffset(ZoneOffset.UTC);
     }
 
+    /**
+     * Valida que la transición entre estados de una sesión sea permitida.
+     * Una sesión {@code ENDED} no puede volver a un estado activo.
+     */
     private void validateStatusTransition(TrackingSessionStatus current, TrackingSessionStatus target) {
         if (current == null || target == null || current == target) {
             return;

@@ -19,6 +19,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servicio encargado de calcular el Tiempo Estimado de Arribo (ETA) para las entregas.
+ * Utiliza la posición actual del conductor y las coordenadas del porte para estimar
+ * cuánto tiempo falta hasta la entrega, ya sea mediante un proveedor de rutas o
+ * mediante la fórmula de Haversine como fallback.
+ */
 @Service
 public class EtaService {
 
@@ -32,15 +38,36 @@ public class EtaService {
     private final FleetRealtimeMetrics metrics;
     private final Clock clock;
 
+    /**
+     * Constructor público inyectado por Spring. Utiliza el reloj del sistema UTC
+     * como referencia temporal por defecto.
+     *
+     * @param conductorRepository repositorio para acceder a los datos del conductor
+     * @param porteRepository     repositorio para acceder a los datos del porte
+     * @param mapaService         servicio de mapas para obtener distancias reales por ruta
+     * @param properties          configuración de la funcionalidad de fleet realtime
+     * @param metrics             métricas de observabilidad del servicio
+     */
     @Autowired
     public EtaService(ConductorRepository conductorRepository,
-                      PorteRepository porteRepository,
-                      MapaService mapaService,
-                      FleetRealtimeProperties properties,
-                      FleetRealtimeMetrics metrics) {
+                       PorteRepository porteRepository,
+                       MapaService mapaService,
+                       FleetRealtimeProperties properties,
+                       FleetRealtimeMetrics metrics) {
         this(conductorRepository, porteRepository, mapaService, properties, metrics, Clock.systemUTC());
     }
 
+    /**
+     * Constructor de paquete que acepta un {@link Clock} personalizado, útil para
+     * pruebas unitarias donde se necesita controlar el tiempo.
+     *
+     * @param conductorRepository repositorio para acceder a los datos del conductor
+     * @param porteRepository     repositorio para acceder a los datos del porte
+     * @param mapaService         servicio de mapas para obtener distancias reales por ruta
+     * @param properties          configuración de la funcionalidad de fleet realtime
+     * @param metrics             métricas de observabilidad del servicio
+     * @param clock               reloj inyectado para control temporal en tests
+     */
     EtaService(ConductorRepository conductorRepository,
                PorteRepository porteRepository,
                MapaService mapaService,
@@ -55,6 +82,26 @@ public class EtaService {
         this.clock = clock;
     }
 
+    /**
+     * Calcula el Tiempo Estimado de Arribo (ETA) para un conductor y un porte específicos.
+     *
+     * <p>El flujo de cálculo es el siguiente:</p>
+     * <ol>
+     *   <li>Verifica que la funcionalidad de fleet realtime esté habilitada.</li>
+     *   <li>Busca el conductor y el porte en la base de datos.</li>
+     *   <li>Si el porte está en un estado cerrado (entregado, facturado o cancelado),
+     *       retorna una respuesta sin ETA calculado.</li>
+     *   <li>Intenta obtener la distancia real por ruta mediante el proveedor de mapas.</li>
+     *   <li>Si el proveedor no devuelve una distancia válida, utiliza la fórmula de
+     *       Haversine como fallback con una velocidad estimada de 50 km/h.</li>
+     * </ol>
+     *
+     * @param driverId identificador único del conductor
+     * @param jobId    identificador único del porte (trabajo de entrega)
+     * @return respuesta con el ETA estimado en minutos, el método utilizado y el nivel de confianza
+     * @throws IllegalArgumentException si el conductor o porte no existen, o si faltan coordenadas
+     * @throws IllegalStateException    si la funcionalidad de fleet realtime está deshabilitada
+     */
     public EtaEstimateResponse estimate(Long driverId, Long jobId) {
         assertFeatureEnabled();
         long startedAt = System.currentTimeMillis();
@@ -128,22 +175,45 @@ public class EtaService {
         return response;
     }
 
+    /**
+     * Verifica que la funcionalidad de fleet realtime esté habilitada en la configuración.
+     *
+     * @throws IllegalStateException si la funcionalidad está deshabilitada
+     */
     private void assertFeatureEnabled() {
         if (!properties.isEnabled()) {
             throw new IllegalStateException("Fleet realtime feature is disabled");
         }
     }
 
+    /**
+     * Obtiene el identificador de la petición actual desde el contexto MDC de SLF4J.
+     *
+     * @return el requestId asociado a la petición en curso, o null si no está presente
+     */
     private String currentRequestId() {
         return org.slf4j.MDC.get("requestId");
     }
 
+    /**
+     * Determina si el estado del porte corresponde a un estado cerrado donde no se requiere cálculo de ETA.
+     *
+     * @param estado el estado actual del porte
+     * @return true si el porte está entregado, facturado o cancelado
+     */
     private boolean isClosedState(EstadoPorte estado) {
         return estado == EstadoPorte.ENTREGADO
                 || estado == EstadoPorte.FACTURADO
                 || estado == EstadoPorte.CANCELADO;
     }
 
+    /**
+     * Resuelve la latitud de destino según el estado del porte.
+     * Si el porte está en tránsito, retorna la latitud de destino; de lo contrario, la de origen.
+     *
+     * @param porte el porte del cual obtener la coordenada
+     * @return la latitud de destino o de origen según corresponda
+     */
     private Double resolveTargetLat(Porte porte) {
         if (porte.getEstado() == EstadoPorte.EN_TRANSITO) {
             return porte.getLatitudDestino();
@@ -151,6 +221,13 @@ public class EtaService {
         return porte.getLatitudOrigen();
     }
 
+    /**
+     * Resuelve la longitud de destino según el estado del porte.
+     * Si el porte está en tránsito, retorna la longitud de destino; de lo contrario, la de origen.
+     *
+     * @param porte el porte del cual obtener la coordenada
+     * @return la longitud de destino o de origen según corresponda
+     */
     private Double resolveTargetLon(Porte porte) {
         if (porte.getEstado() == EstadoPorte.EN_TRANSITO) {
             return porte.getLongitudDestino();

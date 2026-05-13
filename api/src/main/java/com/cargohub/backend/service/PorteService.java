@@ -54,7 +54,13 @@ public class PorteService {
     @Autowired private ConductorMatchingService conductorMatchingService;
 
     /**
-     * NUEVO MÉTODO: Crear Porte desde DTO simplificado
+     * Crea un porte a partir de un DTO simplificado (CrearPorteRequest).
+     * Busca el cliente por ID, construye la entidad Porte con los datos básicos
+     * y delega en {@link #crearPorte(Porte)} para ejecutar toda la lógica de negocio:
+     * análisis de carga con Gemini, cálculo de distancia, precio y matching automático.
+     *
+     * @param request DTO con los datos necesarios para crear el porte
+     * @return la entidad Porte persistida con toda la lógica de creación aplicada
      */
     @Transactional
     public Porte crearPorteDesdeRequest(CrearPorteRequest request) {
@@ -80,8 +86,14 @@ public class PorteService {
     }
 
     /**
-     * Crear Porte desde solicitud de cliente (portal web).
-     * El clienteId se resuelve desde la autenticación JWT.
+     * Crea un porte a partir de una solicitud del cliente desde el portal web.
+     * El clienteId se resuelve desde la autenticación JWT. Construye la entidad Porte
+     * con los datos de la solicitud (origen, destino, coordenadas, descripción, fechas)
+     * y delega en {@link #crearPorte(Porte)} para ejecutar la lógica completa de creación.
+     *
+     * @param request DTO con los datos de la solicitud de porte
+     * @param clienteId ID del cliente autenticado que realiza la solicitud
+     * @return la entidad Porte persistida con toda la lógica de creación aplicada
      */
     @Transactional
     public Porte crearPorteDesdeSolicitud(SolicitudPorteRequest request, Long clienteId) {
@@ -424,17 +436,38 @@ public class PorteService {
 
     // ...  resto de métodos sin cambios ...
 
-    // Listado general para panel administrativo
+    /**
+     * Lista todos los portes registrados en el sistema.
+     * Utilizado por el panel administrativo para visualizar la totalidad de operaciones.
+     *
+     * @return lista de todas las entidades Porte existentes
+     */
     public List<Porte> listarTodos() {
         return porteRepository.findAll();
     }
 
-    // 2. Ver Ofertas (Para que el conductor vea viajes disponibles)
+    /**
+     * Lista las ofertas de portes disponibles para un conductor específico.
+     * Retorna únicamente los portes en estado PENDIENTE que el conductor aún no ha rechazado,
+     * para que pueda visualizarlos y decidir si acepta alguno.
+     *
+     * @param conductorId ID del conductor que consulta las ofertas disponibles
+     * @return lista de portes pendientes disponibles para el conductor
+     */
     public List<Porte> listarOfertasParaConductor(Long conductorId) {
         return porteRepository.findDriverOffers(EstadoPorte.PENDIENTE, conductorId);
     }
 
-    // 3. Aceptar Porte (El conductor acepta manualmente)
+    /**
+     * Permite a un conductor aceptar un porte disponible.
+     * Valida que el porte esté en estado PENDIENTE y que el conductor no lo haya
+     * rechazado previamente. Asigna el conductor al porte y cambia su estado a ASIGNADO.
+     *
+     * @param porteId ID del porte que el conductor desea aceptar
+     * @param conductorId ID del conductor que acepta el porte
+     * @return la entidad Porte actualizada con el conductor asignado y estado ASIGNADO
+     * @throws RuntimeException si el porte no existe, ya no está disponible o el conductor lo había rechazado
+     */
     @Transactional
     public Porte aceptarPorte(Long porteId, Long conductorId) {
         Porte porte = porteRepository.findById(porteId)
@@ -456,6 +489,15 @@ public class PorteService {
         return porteRepository.save(porte);
     }
 
+    /**
+     * Registra el rechazo de un porte por parte de un conductor.
+     * El conductor queda anotado en la lista de rechazados para que no vuelva
+     * a ver esta oferta. Si el porte ya no está en estado PENDIENTE, se rechaza la operación.
+     *
+     * @param porteId ID del porte que se rechaza
+     * @param conductorId ID del conductor que rechaza la oferta
+     * @throws RuntimeException si el porte no existe, ya no admite rechazo o el conductor no existe
+     */
     @Transactional
     public void rechazarPorte(Long porteId, Long conductorId) {
         Porte porte = porteRepository.findById(porteId)
@@ -476,7 +518,17 @@ public class PorteService {
         porteRepository.save(porte);
     }
 
-    // 4. Cambiar Estado (En Tránsito, Entregado...)
+    /**
+     * Cambia el estado de un porte a un nuevo estado proporcionado.
+     * Cuando el nuevo estado es ENTREGADO, registra la fecha de entrega actual
+     * e intenta generar automáticamente la factura asociada. Si la generación
+     * de factura es exitosa, el porte pasa a estado FACTURADO.
+     *
+     * @param porteId ID del porte cuyo estado se desea cambiar
+     * @param nuevoEstado el nuevo estado al que se transiciona el porte
+     * @return la entidad Porte actualizada con el nuevo estado
+     * @throws RuntimeException si el porte no existe
+     */
     @Transactional
     public Porte cambiarEstado(Long porteId, EstadoPorte nuevoEstado) {
         Porte porte = porteRepository.findById(porteId)
@@ -500,7 +552,16 @@ public class PorteService {
         return porteRepository.save(porte);
     }
 
-    // 5. Ajuste Manual de Precio (Admin añade extras/penalizaciones)
+    /**
+     * Aplica un ajuste manual de precio a un porte, típicamente por parte de un administrador.
+     * Permite registrar extras, penalizaciones o correcciones sobre el precio original del porte.
+     *
+     * @param porteId ID del porte al que se le aplica el ajuste
+     * @param cantidad monto del ajuste (positivo para extra, negativo para descuento)
+     * @param concepto descripción del motivo del ajuste
+     * @return la entidad Porte actualizada con el ajuste de precio registrado
+     * @throws RuntimeException si el porte no existe
+     */
     @Transactional
     public Porte agregarAjusteManual(Long porteId, Double cantidad, String concepto) {
         Porte porte = porteRepository.findById(porteId)
@@ -512,7 +573,14 @@ public class PorteService {
         return porteRepository.save(porte);
     }
 
-    // 6. Facturar Manualmente (Genera la factura y cierra el porte)
+    /**
+     * Genera manualmente la factura de un porte y lo marca como FACTURADO.
+     * Solo permite facturar portes que ya se encuentran en estado ENTREGADO.
+     *
+     * @param porteId ID del porte que se desea facturar
+     * @return la nueva entidad Factura generada para el porte
+     * @throws RuntimeException si el porte no existe o no está en estado ENTREGADO
+     */
     @Transactional
     public Factura facturarManualmente(Long porteId) {
         Porte porte = porteRepository.findById(porteId)
@@ -530,7 +598,13 @@ public class PorteService {
         return nuevaFactura;
     }
 
-    // 7. Obtener Porte por ID
+    /**
+     * Obtiene un porte por su identificador único.
+     *
+     * @param porteId ID del porte a buscar
+     * @return la entidad Porte encontrada
+     * @throws RuntimeException si no existe un porte con el ID proporcionado
+     */
     public Porte obtenerPorId(Long porteId) {
         return porteRepository.findById(porteId)
                 .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
@@ -569,12 +643,26 @@ public class PorteService {
         throw new RuntimeException("No se puede borrar/cancelar un porte en estado " + estado + " sin comprometer historial");
     }
 
-    // 8. Listar Portes por Conductor
+    /**
+     * Lista todos los portes asignados a un conductor específico.
+     * Incluye portes en cualquier estado (ASIGNADO, EN_TRANSITO, ENTREGADO, FACTURADO, etc.).
+     *
+     * @param conductorId ID del conductor cuyos portes se desean listar
+     * @return lista de portes asociados al conductor
+     */
     public List<Porte> listarPortesPorConductor(Long conductorId) {
         return porteRepository.findByConductorId(conductorId);
     }
 
-    // 9. Resumen de portes para dashboard
+    /**
+     * Obtiene un resumen estadístico de portes para el dashboard administrativo.
+     * Incluye el total de portes del mes, portes activos (pendientes, asignados o en tránsito)
+     * y portes programados para el día siguiente.
+     *
+     * @param anio año de consulta (si es null, se usa el año actual)
+     * @param mes mes de consulta (si es null, se usa el mes actual)
+     * @return mapa con las claves "portesMes", "portesActivos" y "portesManana"
+     */
     public Map<String, Object> getResumen(Integer anio, Integer mes) {
         int year = anio != null ? anio : LocalDateTime.now().getYear();
         int month = mes != null ? mes : LocalDateTime.now().getMonthValue();

@@ -15,6 +15,10 @@ import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.Map;
 
+/**
+ * Servicio encargado de gestionar la subida y eliminación de fotos de perfil
+ * de los usuarios mediante Cloudinary.
+ */
 @Service
 public class FotoPerfilService {
 
@@ -35,6 +39,17 @@ public class FotoPerfilService {
     @Value("${cloudinary.api-secret:}")
     private String apiSecret;
 
+    /**
+     * Sube la foto de perfil de un usuario a Cloudinary y persiste la URL en la base de datos.
+     * Valida el tamaño (máximo 2MB) y el formato (JPG, PNG, GIF o WEBP) antes de la subida.
+     * Si el usuario ya tenía una foto, esta se sobrescribe en Cloudinary.
+     *
+     * @param usuarioId  identificador del usuario al que se le asigna la foto
+     * @param base64Image imagen codificada en base64, con o sin prefijo {@code data:image/...}
+     * @return la URL segura (HTTPS) de la imagen subida a Cloudinary
+     * @throws RuntimeException si el usuario no existe, Cloudinary no está configurado,
+     *                          la imagen supera el tamaño máximo o el formato no es soportado
+     */
     @Transactional
     public String subirFoto(Long usuarioId, String base64Image) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -75,6 +90,14 @@ public class FotoPerfilService {
         }
     }
 
+    /**
+     * Elimina la foto de perfil de un usuario tanto de Cloudinary como de la base de datos.
+     * Si la URL almacenada es un data URL heredado ({@code data:image/...}), solo se limpia
+     * el campo en la base de datos sin intentar contactar a Cloudinary.
+     *
+     * @param usuarioId identificador del usuario cuya foto se desea eliminar
+     * @throws RuntimeException si ocurre un error de comunicación con Cloudinary
+     */
     @Transactional
     public void eliminarFoto(Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -105,12 +128,23 @@ public class FotoPerfilService {
         usuarioRepository.save(usuario);
     }
 
+    /**
+     * Obtiene la URL de la foto de perfil almacenada para un usuario.
+     *
+     * @param usuarioId identificador del usuario
+     * @return la URL de la foto de perfil, o {@code null} si el usuario no tiene foto asignada
+     * @throws RuntimeException si el usuario no existe
+     */
     public String obtenerFotoUrl(Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         return usuario.getFotoUrl();
     }
 
+    /**
+     * Normaliza la cadena base64 eliminando espacios y el prefijo {@code data:image/...}
+     * si estuviera presente.
+     */
     private String normalizeBase64Payload(String base64Image) {
         if (base64Image == null) {
             throw new RuntimeException("La imagen base64 es obligatoria");
@@ -129,16 +163,25 @@ public class FotoPerfilService {
         return trimmed;
     }
 
+    /**
+     * Verifica que las credenciales de Cloudinary estén configuradas y no estén vacías.
+     */
     private boolean isCloudinaryConfigured() {
         return !cloudName.isBlank() && !apiKey.isBlank() && !apiSecret.isBlank();
     }
 
+    /**
+     * Valida que el tamaño de la imagen no supere el límite de 2MB.
+     */
     private void validateSize(byte[] imageBytes) {
         if (imageBytes.length > MAX_IMAGE_SIZE_BYTES) {
             throw new RuntimeException("La imagen supera el tamaño máximo permitido de 2MB");
         }
     }
 
+    /**
+     * Valida que los bytes correspondan a un formato soportado: JPG, PNG, GIF o WEBP.
+     */
     private void validateSupportedFormat(byte[] imageBytes) {
         if (isJpeg(imageBytes) || isPng(imageBytes) || isGif(imageBytes) || isWebp(imageBytes)) {
             return;
@@ -146,6 +189,9 @@ public class FotoPerfilService {
         throw new RuntimeException("Formato de imagen no soportado. Usá JPG, PNG, GIF o WEBP");
     }
 
+    /**
+     * Detecta si los bytes corresponden a una imagen JPEG mediante su firma binaria (FF D8 FF).
+     */
     private boolean isJpeg(byte[] imageBytes) {
         return imageBytes.length >= 3
                 && (imageBytes[0] & 0xFF) == 0xFF
@@ -153,6 +199,9 @@ public class FotoPerfilService {
                 && (imageBytes[2] & 0xFF) == 0xFF;
     }
 
+    /**
+     * Detecta si los bytes corresponden a una imagen PNG mediante su firma binaria (89 50 4E 47 0D 0A 1A 0A).
+     */
     private boolean isPng(byte[] imageBytes) {
         return imageBytes.length >= 8
                 && (imageBytes[0] & 0xFF) == 0x89
@@ -165,6 +214,9 @@ public class FotoPerfilService {
                 && imageBytes[7] == 0x0A;
     }
 
+    /**
+     * Detecta si los bytes corresponden a una imagen GIF mediante su firma binaria (GIF87a o GIF89a).
+     */
     private boolean isGif(byte[] imageBytes) {
         return imageBytes.length >= 6
                 && imageBytes[0] == 0x47
@@ -175,6 +227,9 @@ public class FotoPerfilService {
                 && imageBytes[5] == 0x61;
     }
 
+    /**
+     * Detecta si los bytes corresponden a una imagen WEBP mediante su firma binaria (RIFF....WEBP).
+     */
     private boolean isWebp(byte[] imageBytes) {
         return imageBytes.length >= 12
                 && imageBytes[0] == 0x52
@@ -187,6 +242,11 @@ public class FotoPerfilService {
                 && imageBytes[11] == 0x50;
     }
 
+    /**
+     * Extrae el {@code public_id} de una URL de Cloudinary para poder eliminar la imagen.
+     * Si la URL no puede parsearse o no contiene la sección {@code /upload/}, se devuelve
+     * un ID por defecto basado en el identificador del usuario.
+     */
     private String extractCloudinaryPublicId(String url, Long usuarioId) {
         try {
             URI uri = new URI(url);

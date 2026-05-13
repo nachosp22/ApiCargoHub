@@ -34,6 +34,18 @@ public class EstadisticasGlobalesService {
     @Autowired
     private ClienteRepository clienteRepository;
 
+    /**
+     * Obtiene todas las estadísticas globales para el panel de administración.
+     * <p>
+     * Calcula los KPIs principales (total de portes, ingresos, conductores activos, clientes),
+     * las tendencias mensuales comparando el mes actual con el anterior, la distribución
+     * de portes por estado, el resumen de facturas (emitidas, pagadas, pendientes),
+     * el top 5 de conductores por portes completados, el top 5 de clientes por facturación,
+     * la evolución mensual de portes e ingresos de los últimos 12 meses y el desglose
+     * completo de portes por cada estado existente.
+     *
+     * @return objeto {@link EstadisticasGlobalesResponse} con todas las métricas calculadas
+     */
     public EstadisticasGlobalesResponse getEstadisticasGlobales() {
         EstadisticasGlobalesResponse resp = new EstadisticasGlobalesResponse();
 
@@ -185,11 +197,24 @@ public class EstadisticasGlobalesService {
         return resp;
     }
 
+    /**
+     * Calcula el porcentaje de variación entre el valor actual y el anterior.
+     *
+     * @param actual   valor del período actual
+     * @param anterior valor del período anterior
+     * @return porcentaje de tendencia redondeado a 2 decimales (100.0 si anterior es 0 y actual > 0, 0.0 en caso contrario)
+     */
     private double calcTendencia(double actual, double anterior) {
         if (anterior == 0) return actual > 0 ? 100.0 : 0.0;
         return round2(((actual - anterior) / anterior) * 100.0);
     }
 
+    /**
+     * Redondea un valor double a dos decimales.
+     *
+     * @param val valor a redondear
+     * @return valor redondeado a 2 decimales
+     */
     private double round2(double val) {
         return Math.round(val * 100.0) / 100.0;
     }
