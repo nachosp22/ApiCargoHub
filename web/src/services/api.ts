@@ -8,12 +8,14 @@ import {
 /**
  * Axios instance for the CargoHub API.
  *
- * - Base URL: /api (proxied by Vite dev server to localhost:8080)
+ * - Base URL: VITE_API_URL en producción, /api en desarrollo local
  * - Request interceptor: attaches Bearer token from localStorage
  * - Response interceptor: on 401, clears auth and redirects to /login
  */
+const resolvedApiBaseUrl = import.meta.env.VITE_API_URL?.trim() || 'https://cargohub-api-tjq9.onrender.com/api'
+
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: resolvedApiBaseUrl,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',

@@ -17,7 +17,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        def localApiBaseUrl = "http://10.0.2.2:8080/"
+        def localApiBaseUrl = "https://cargohub-api-tjq9.onrender.com/"
         def localPropertiesFile = rootProject.file("local.properties")
         if (localPropertiesFile.exists()) {
             def props = new Properties()

@@ -15,7 +15,7 @@ import {
  * NOTE: We import the auth store lazily inside interceptors to avoid
  * the "no active Pinia" error (store used at module level).
  */
-const resolvedApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:8080/api'
+const resolvedApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim() || 'https://cargohub-api-tjq9.onrender.com/api'
 
 export const api = axios.create({
   baseURL: resolvedApiBaseUrl,
