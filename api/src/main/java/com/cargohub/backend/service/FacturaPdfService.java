@@ -4,19 +4,23 @@ import com.cargohub.backend.entity.Cliente;
 import com.cargohub.backend.entity.Factura;
 import com.cargohub.backend.entity.Porte;
 import com.lowagie.text.*;
+import com.lowagie.text.Image;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 
 @Service
 public class FacturaPdfService {
 
-    // Issuer constants
     private static final String ISSUER_NAME = "CargoHub S.L.";
     private static final String ISSUER_CIF = "B12345678";
     private static final String ISSUER_ADDRESS = "Calle Logística 1, 28001 Madrid";
@@ -42,32 +46,26 @@ public class FacturaPdfService {
             PdfWriter.getInstance(document, baos);
             document.open();
 
-            // === HEADER ===
             addHeader(document, factura);
 
             document.add(new Paragraph(" "));
 
-            // === CLIENT DATA ===
             addClientSection(document, factura);
 
             document.add(new Paragraph(" "));
 
-            // === INVOICE META ===
             addInvoiceMeta(document, factura);
 
             document.add(new Paragraph(" "));
 
-            // === PORTE DETAILS TABLE ===
             addPorteDetails(document, factura);
 
             document.add(new Paragraph(" "));
 
-            // === AMOUNTS TABLE ===
             addAmounts(document, factura);
 
             document.add(new Paragraph(" "));
 
-            // === FOOTER ===
             addFooter(document, factura);
 
         } catch (DocumentException e) {
@@ -80,22 +78,38 @@ public class FacturaPdfService {
     }
 
     private void addHeader(Document document, Factura factura) throws DocumentException {
-        PdfPTable headerTable = new PdfPTable(2);
+        PdfPTable headerTable = new PdfPTable(3);
         headerTable.setWidthPercentage(100);
-        headerTable.setWidths(new float[]{60, 40});
+        headerTable.setWidths(new float[]{15, 45, 40});
 
-        // Left: issuer info
-        PdfPCell left = new PdfPCell();
-        left.setBorder(Rectangle.NO_BORDER);
-        left.addElement(new Paragraph(ISSUER_NAME, TITLE_FONT));
-        left.addElement(new Paragraph("CIF: " + ISSUER_CIF, NORMAL_FONT));
-        left.addElement(new Paragraph(ISSUER_ADDRESS, NORMAL_FONT));
-        left.addElement(new Paragraph(ISSUER_EMAIL, NORMAL_FONT));
+        PdfPCell logoCell = new PdfPCell();
+        logoCell.setBorder(Rectangle.NO_BORDER);
+        logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        try {
+            ClassPathResource logoResource = new ClassPathResource("logo.png");
+            if (logoResource.exists()) {
+                BufferedImage bufferedImage = ImageIO.read(logoResource.getInputStream());
+                Image logoImg = Image.getInstance(bufferedImage, null);
+                logoImg.scaleToFit(80, 80);
+                logoCell.addElement(logoImg);
+            }
+        } catch (IOException e) {
+        }
+        headerTable.addCell(logoCell);
 
-        // Right: invoice number
+        PdfPCell center = new PdfPCell();
+        center.setBorder(Rectangle.NO_BORDER);
+        center.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        center.addElement(new Paragraph(ISSUER_NAME, TITLE_FONT));
+        center.addElement(new Paragraph("CIF: " + ISSUER_CIF, NORMAL_FONT));
+        center.addElement(new Paragraph(ISSUER_ADDRESS, NORMAL_FONT));
+        center.addElement(new Paragraph(ISSUER_EMAIL, NORMAL_FONT));
+        headerTable.addCell(center);
+
         PdfPCell right = new PdfPCell();
         right.setBorder(Rectangle.NO_BORDER);
         right.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        right.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
         Paragraph facturaLabel = new Paragraph("FACTURA", new Font(Font.HELVETICA, 28, Font.BOLD, PRIMARY_COLOR));
         facturaLabel.setAlignment(Element.ALIGN_RIGHT);
@@ -105,11 +119,9 @@ public class FacturaPdfService {
         numSerie.setAlignment(Element.ALIGN_RIGHT);
         right.addElement(numSerie);
 
-        headerTable.addCell(left);
         headerTable.addCell(right);
         document.add(headerTable);
 
-        // Divider line
         PdfPTable divider = new PdfPTable(1);
         divider.setWidthPercentage(100);
         divider.setSpacingBefore(10);
@@ -173,7 +185,6 @@ public class FacturaPdfService {
         table.setWidthPercentage(100);
         table.setSpacingBefore(5);
 
-        // Headers
         String[] headers = {"Origen", "Destino", "F. Recogida", "F. Entrega", "Peso (kg)", "Volumen (m³)"};
         for (String h : headers) {
             PdfPCell cell = new PdfPCell(new Phrase(h, TABLE_HEADER_FONT));
@@ -183,7 +194,6 @@ public class FacturaPdfService {
             table.addCell(cell);
         }
 
-        // Data row
         addTableCell(table, porte.getOrigen() != null ? porte.getOrigen() : "—");
         addTableCell(table, porte.getDestino() != null ? porte.getDestino() : "—");
         addTableCell(table, porte.getFechaRecogida() != null ? porte.getFechaRecogida().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "—");
@@ -193,7 +203,6 @@ public class FacturaPdfService {
 
         document.add(table);
 
-        // Description
         if (porte.getDescripcionCliente() != null && !porte.getDescripcionCliente().isBlank()) {
             Paragraph desc = new Paragraph("Descripción: " + porte.getDescripcionCliente(), SMALL_FONT);
             desc.setSpacingBefore(5);
@@ -214,7 +223,6 @@ public class FacturaPdfService {
         addAmountRow(table, "Base Imponible", factura.getBaseImponible(), false);
         addAmountRow(table, "IVA (21%)", factura.getIva(), false);
 
-        // Total row with highlight
         PdfPCell labelCell = new PdfPCell(new Phrase("TOTAL", TOTAL_FONT));
         labelCell.setBackgroundColor(LIGHT_BG);
         labelCell.setPadding(8);
@@ -238,7 +246,6 @@ public class FacturaPdfService {
     }
 
     private void addFooter(Document document, Factura factura) throws DocumentException {
-        // Divider
         PdfPTable divider = new PdfPTable(1);
         divider.setWidthPercentage(100);
         PdfPCell divCell = new PdfPCell();
@@ -268,8 +275,6 @@ public class FacturaPdfService {
         legal.setAlignment(Element.ALIGN_CENTER);
         document.add(legal);
     }
-
-    // --- Helper methods ---
 
     private void addInfoCell(PdfPTable table, String label, String value) {
         PdfPCell cell = new PdfPCell();

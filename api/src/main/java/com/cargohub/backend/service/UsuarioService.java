@@ -4,11 +4,12 @@ import com.cargohub.backend.entity.Usuario;
 import com.cargohub.backend.entity.enums.RolUsuario;
 import com.cargohub.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder; // <--- Importante
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,11 +19,10 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder; // <--- Inyectamos el codificador
+    private PasswordEncoder passwordEncoder;
 
     @Transactional
     public Usuario registrarUsuario(String email, String password, RolUsuario rol) {
-        // Normalize email to lowercase
         String normalizedEmail = email != null ? email.toLowerCase() : null;
         
         if (usuarioRepository.existsByEmail(normalizedEmail)) {
@@ -32,7 +32,6 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setEmail(normalizedEmail);
 
-        // CAMBIO CLAVE: Encriptamos la contraseña "1234" -> "$2a$10$..."
         usuario.setPassword(passwordEncoder.encode(password));
 
         usuario.setRol(rol);
@@ -43,7 +42,6 @@ public class UsuarioService {
     }
 
     public Optional<Usuario> buscarPorEmail(String email) {
-        // Normalize email to lowercase for search
         String normalizedEmail = email != null ? email.toLowerCase() : null;
         return usuarioRepository.findByEmail(normalizedEmail);
     }
@@ -51,5 +49,53 @@ public class UsuarioService {
     @Transactional
     public Usuario guardar(Usuario usuario) {
         return usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public Usuario actualizarPerfil(Long id, String nombre, String currentPassword, String newPassword) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (nombre != null && !nombre.isBlank()) {
+            usuario.setNombre(nombre);
+        }
+
+        if (newPassword != null && !newPassword.isBlank()) {
+            if (currentPassword == null || !passwordEncoder.matches(currentPassword, usuario.getPassword())) {
+                throw new RuntimeException("La contraseña actual no es correcta");
+            }
+            usuario.setPassword(passwordEncoder.encode(newPassword));
+        }
+
+        return usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public Usuario crearAdmin(String email, String password, String nombre) {
+        Usuario admin = registrarUsuario(email, password, RolUsuario.ADMIN);
+        admin.setNombre(nombre);
+        return guardar(admin);
+    }
+
+    public List<Usuario> listarAdmins() {
+        return usuarioRepository.findByRol(RolUsuario.ADMIN);
+    }
+
+    @Transactional
+    public Usuario toggleActivo(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuario.setActivo(!usuario.isActivo());
+        return usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void eliminarUsuario(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        if (usuario.getRol() == RolUsuario.SUPERADMIN) {
+            throw new RuntimeException("No se puede eliminar a un SUPERADMIN");
+        }
+        usuarioRepository.delete(usuario);
     }
 }

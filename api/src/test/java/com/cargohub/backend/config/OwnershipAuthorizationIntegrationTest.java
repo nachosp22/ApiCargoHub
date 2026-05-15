@@ -29,6 +29,7 @@ import com.cargohub.backend.service.PorteService;
 import com.cargohub.backend.service.BloqueoRecurrenteService;
 import com.cargohub.backend.service.ConductorMatchingService;
 import com.cargohub.backend.service.VehiculoService;
+import com.cargohub.backend.service.AlbaranEntregaPdfService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,6 +119,9 @@ class OwnershipAuthorizationIntegrationTest {
 
     @MockitoBean
     private TrackingSessionRepository trackingSessionRepository;
+
+    @MockitoBean
+    private AlbaranEntregaPdfService albaranEntregaPdfService;
 
     @BeforeEach
     void setup() throws Exception {

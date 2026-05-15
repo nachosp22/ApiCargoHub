@@ -3,12 +3,14 @@ package com.cargohub.backend.service;
 import com.cargohub.backend.config.FleetRealtimeProperties;
 import com.cargohub.backend.dto.tracking.DriverState;
 import com.cargohub.backend.dto.tracking.FleetSnapshotResponse;
+import com.cargohub.backend.entity.enums.EstadoPorte;
 import com.cargohub.backend.observability.FleetRealtimeMetrics;
 import com.cargohub.backend.repository.ConductorRepository;
 import com.cargohub.backend.repository.PorteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -86,6 +89,23 @@ class FleetTrackingServiceTest {
         assertEquals(1, response.getDrivers().size());
         assertTrue(response.getMeta().isDegraded());
         assertEquals("invalid_coordinate_excluded", response.getMeta().getDegradedReason());
+    }
+
+    @Test
+    void buildSnapshot_resolvesOnlyPickupOrTransitPorteAsActive() {
+        when(conductorRepository.findFleetSnapshot(any(Pageable.class))).thenReturn(List.of(
+                projection(7L, 40.4, -3.7, LocalDateTime.of(2026, 3, 16, 9, 59, 40), null, null)
+        ));
+
+        FleetTrackingService service = new FleetTrackingService(conductorRepository, porteRepository, properties, metrics, clock);
+        service.buildSnapshot();
+
+        ArgumentCaptor<List<EstadoPorte>> estadosCaptor = ArgumentCaptor.forClass(List.class);
+        verify(porteRepository).findFirstByConductorIdAndEstadoInOrderByFechaCreacionDesc(
+                anyLong(),
+                estadosCaptor.capture()
+        );
+        assertEquals(List.of(EstadoPorte.EN_RECOGIDA, EstadoPorte.EN_TRANSITO), estadosCaptor.getValue());
     }
 
     @Test

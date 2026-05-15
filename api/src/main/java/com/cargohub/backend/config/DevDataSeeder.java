@@ -75,12 +75,23 @@ public class DevDataSeeder implements ApplicationRunner {
         String profile = System.getProperty("spring.profiles.active", "default");
         log.info("[seed] Iniciando seed de datos demo. profile={}", profile);
 
+        Usuario superadmin = upsertUsuario(
+                "superadmin@cargohub.local",
+                "Super123!",
+                RolUsuario.SUPERADMIN,
+                true
+        );
+        superadmin.setNombre("Super Admin");
+        usuarioRepository.save(superadmin);
+
         Usuario admin = upsertUsuario(
                 "admin@cargohub.local",
                 "Admin123!",
                 RolUsuario.ADMIN,
                 true
         );
+        admin.setNombre("Admin");
+        usuarioRepository.save(admin);
 
         List<Cliente> clientes = seedClientes();
         List<Conductor> conductores = seedConductores();
@@ -176,12 +187,12 @@ public class DevDataSeeder implements ApplicationRunner {
                 new VehiculoSeed("1234ABC", "Iveco", "Daily 35S14", TipoVehiculo.FURGONETA, EstadoVehiculo.DISPONIBLE, 1500, 4200, 1800, 1900, "11111111A"),
                 new VehiculoSeed("5678DEF", "Mercedes-Benz", "Atego 1224", TipoVehiculo.RIGIDO, EstadoVehiculo.DISPONIBLE, 6000, 7200, 2400, 2500, "22222222B"),
                 new VehiculoSeed("9012GHI", "Volvo", "FH 500", TipoVehiculo.TRAILER, EstadoVehiculo.DISPONIBLE, 24000, 13600, 2480, 2700, "33333333C"),
-                new VehiculoSeed("3456JKL", "Renault", "Master L3H2", TipoVehiculo.FURGONETA, EstadoVehiculo.EN_MANTENIMIENTO, 1200, 3700, 1765, 1880, "66666666F"),
+                new VehiculoSeed("3456JKL", "Renault", "Master L3H2", TipoVehiculo.FURGONETA, EstadoVehiculo.DISPONIBLE, 1200, 3700, 1765, 1880, "66666666F"),
                 new VehiculoSeed("7890MNO", "MAN", "TGX 18.510", TipoVehiculo.TRAILER, EstadoVehiculo.DISPONIBLE, 25000, 13600, 2480, 2700, "77777777G"),
                 new VehiculoSeed("2345PQR", "DAF", "XF 480", TipoVehiculo.TRAILER, EstadoVehiculo.BAJA, 24000, 13600, 2480, 2700, "55555555E"),
                 new VehiculoSeed("6789STU", "Iveco", "Eurocargo 120E25", TipoVehiculo.RIGIDO, EstadoVehiculo.DISPONIBLE, 7500, 8000, 2400, 2500, "88888888H"),
                 new VehiculoSeed("0123VWX", "Peugeot", "Boxer L4H3", TipoVehiculo.FURGONETA, EstadoVehiculo.DISPONIBLE, 1400, 4070, 1870, 2172, "11111111A"),
-                new VehiculoSeed("4567YZA", "Scania", "R 450", TipoVehiculo.ESPECIAL, EstadoVehiculo.EN_MANTENIMIENTO, 20000, 12000, 2500, 2800, "22222222B"),
+                new VehiculoSeed("4567YZA", "Scania", "R 450", TipoVehiculo.ESPECIAL, EstadoVehiculo.DISPONIBLE, 20000, 12000, 2500, 2800, "22222222B"),
                 new VehiculoSeed("8901BCD", "Ford", "Transit L3H2", TipoVehiculo.FURGONETA, EstadoVehiculo.DISPONIBLE, 1100, 3494, 1784, 1886, "33333333C")
         );
 

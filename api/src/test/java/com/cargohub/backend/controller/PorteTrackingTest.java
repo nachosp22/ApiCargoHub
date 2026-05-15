@@ -16,6 +16,7 @@ import com.cargohub.backend.repository.UsuarioRepository;
 import com.cargohub.backend.security.OwnershipSecurityService;
 import com.cargohub.backend.service.PorteService;
 import com.cargohub.backend.service.PorteTrackingService;
+import com.cargohub.backend.service.AlbaranEntregaPdfService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,9 @@ class PorteTrackingTest {
     private PorteTrackingService porteTrackingService;
 
     @MockitoBean
+    private AlbaranEntregaPdfService albaranEntregaPdfService;
+
+    @MockitoBean
     private UsuarioRepository usuarioRepository;
 
     @MockitoBean
@@ -95,7 +99,6 @@ class PorteTrackingTest {
 
     @Test
     void getTracking_clienteOwner_returns200() throws Exception {
-        // Setup: cliente owns the porte
         Usuario usuario = new Usuario();
         usuario.setEmail("cliente@test.com");
         when(usuarioRepository.findByEmail("cliente@test.com")).thenReturn(Optional.of(usuario));
@@ -121,7 +124,6 @@ class PorteTrackingTest {
 
     @Test
     void getTracking_clienteNonOwner_returns403() throws Exception {
-        // Setup: cliente does NOT own the porte
         Usuario usuario = new Usuario();
         usuario.setEmail("other@test.com");
         when(usuarioRepository.findByEmail("other@test.com")).thenReturn(Optional.of(usuario));

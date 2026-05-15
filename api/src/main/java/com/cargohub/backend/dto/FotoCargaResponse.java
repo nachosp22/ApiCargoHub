@@ -16,7 +16,7 @@ public class FotoCargaResponse {
     private Long id;
     private Long porteId;
     private TipoFotoCarga tipo;
-    private String fotoBase64;
+    private String fotoUrl;
     private String descripcion;
     private LocalDateTime fechaCaptura;
 
@@ -25,7 +25,7 @@ public class FotoCargaResponse {
         response.setId(foto.getId());
         response.setPorteId(foto.getPorte() != null ? foto.getPorte().getId() : null);
         response.setTipo(foto.getTipo());
-        response.setFotoBase64(foto.getFotoBase64());
+        response.setFotoUrl(foto.getFotoUrl());
         response.setDescripcion(foto.getDescripcion());
         response.setFechaCaptura(foto.getFechaCaptura());
         return response;

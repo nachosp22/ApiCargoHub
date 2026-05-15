@@ -81,23 +81,23 @@ public class ConductorMatchingService {
         int diaSemanaInicio = fechaInicio.getDayOfWeek().getValue();
         String diaSemanaStr = String.valueOf(diaSemanaInicio);
 
-        // Step 1: Get candidates that are disponible and work on the start day of the week
+        // Paso 1: Obtener candidatos disponibles y que trabajen el día de inicio de la semana
         List<Conductor> candidates = conductorRepository.findCandidatosDisponibles(diaSemanaStr);
 
-        // Step 2: Filter by active user
+        // Paso 2: Filtrar por usuario activo
         candidates = candidates.stream()
                 .filter(c -> c.getUsuario() == null || c.getUsuario().isActivo())
                 .collect(Collectors.toList());
 
-        // MVP: textual city is only display/input context. Matching by area is done strictly
-        // with conductor base coordinates vs porte origin coordinates and radioAccionKm.
+        // MVP: la ciudad textual solo es contexto de visualización. El emparejamiento por área
+        // se hace con coordenadas base del conductor vs coordenadas de origen del porte y radioAccionKm.
 
-        // Step 4: Filter out conductors blocked by BloqueoAgenda on ANY date in the range
+        // Paso 4: Descartar conductores bloqueados por BloqueoAgenda en CUALQUIER fecha del rango
         candidates = candidates.stream()
                 .filter(c -> !bloqueoAgendaRepository.estaBloqueado(c.getId(), fechaInicio, fin))
                 .collect(Collectors.toList());
 
-        // Step 5: Filter out conductors with active BloqueoRecurrente for ANY day in the range
+        // Paso 5: Descartar conductores con BloqueoRecurrente activo en CUALQUIER día del rango
         candidates = candidates.stream()
                 .filter(c -> {
                     LocalDateTime current = fechaInicio;
@@ -113,34 +113,34 @@ public class ConductorMatchingService {
                 })
                 .collect(Collectors.toList());
 
-        // Step 6: Filter out conductors already assigned to another porte in the date range
+        // Paso 6: Descartar conductores ya asignados a otro porte en el rango de fechas
         candidates = candidates.stream()
                 .filter(c -> !porteRepository.tieneViajeEnFecha(c.getId(), fechaInicio, fin))
                 .collect(Collectors.toList());
 
-        // Step 7: Filter by distance from origin (radioAccionKm) — MVP strict rules
+        // Paso 7: Filtrar por distancia desde origen (radioAccionKm) — reglas estrictas MVP
         if (latitudOrigen != null && longitudOrigen != null) {
             candidates = candidates.stream()
                     .filter(c -> {
                         Integer radio = c.getRadioAccionKm();
-                        // MVP: null or <= 0 => NOT eligible for automatic matching
+                        // MVP: null o <= 0 => NO elegible para emparejamiento automático
                         if (radio == null || radio <= 0) return false;
                         Double latBase = c.getLatitudBase();
                         Double lonBase = c.getLongitudBase();
-                        // MVP: missing base coordinates => NOT eligible
+                        // MVP: sin coordenadas base => NO elegible
                         if (latBase == null || lonBase == null) return false;
                         double distanciaKm = haversine(latitudOrigen, longitudOrigen, latBase, lonBase);
                         return distanciaKm <= radio;
                     })
                     .collect(Collectors.toList());
         } else {
-            // MVP: if origin coordinates are missing, no automatic matching should happen.
-            // Since this method is also used by the admin controller without coords (manual search),
-            // we only enforce strict distance filtering when coordinates are provided.
-            // The caller (PorteService) must validate coords before invoking auto-matching.
+            // MVP: si faltan coordenadas de origen, no se debe hacer emparejamiento automático.
+            // Este método también lo usa el controlador admin sin coordenadas (búsqueda manual),
+            // por lo que solo aplicamos filtro estricto de distancia cuando hay coordenadas.
+            // Quien invoca (PorteService) debe validar coordenadas antes de llamar a auto-matching.
         }
 
-        // Step 8: Filter by vehicle type if specified
+        // Paso 8: Filtrar por tipo de vehículo si se especificó
         if (tipoVehiculo != null) {
             candidates = candidates.stream()
                     .filter(c -> {

@@ -41,7 +41,6 @@ public class FacturaService {
      * @return la entidad {@link Factura} recién creada y persistida en base de datos
      * @throws RuntimeException si el porte no existe o ya tiene una factura asociada
      */
-    @Transactional
     public Factura generarFacturaParaPorte(Long porteId) {
         Porte porte = porteRepository.findById(porteId)
                 .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
@@ -62,8 +61,9 @@ public class FacturaService {
         // El IVA y el Importe Total se calculan automáticamente
         // gracias al @PrePersist que pusimos en la entidad Factura.
 
-        // Generamos el número secuencial (ej: F-2025-0042)
-        factura.setNumeroSerie(generarSiguienteNumeroFactura());
+        // Número de serie: AÑO_PORTE (ej: 2026_00054)
+        int anio = LocalDate.now().getYear();
+        factura.setNumeroSerie(String.format("%d_%05d", anio, porteId));
 
         return facturaRepository.save(factura);
     }

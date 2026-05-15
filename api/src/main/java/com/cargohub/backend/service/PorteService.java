@@ -616,24 +616,26 @@ public class PorteService {
      * @return la entidad Porte actualizada con el nuevo estado
      * @throws RuntimeException si el porte no existe
      */
-    @Transactional
+    @Transactional(noRollbackFor = RuntimeException.class)
     public Porte cambiarEstado(Long porteId, EstadoPorte nuevoEstado) {
         Porte porte = porteRepository.findById(porteId)
                 .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
+
+        if (nuevoEstado == EstadoPorte.EN_RECOGIDA && porte.getConductor() != null) {
+            Long conductorId = porte.getConductor().getId();
+            boolean tieneActivo = porteRepository.findByConductorId(conductorId).stream()
+                    .anyMatch(p -> !p.getId().equals(porteId)
+                            && (p.getEstado() == EstadoPorte.EN_RECOGIDA
+                                || p.getEstado() == EstadoPorte.EN_TRANSITO));
+            if (tieneActivo) {
+                throw new RuntimeException("Ya tienes otro porte en recogida o en tránsito. Finalízalo antes de iniciar uno nuevo.");
+            }
+        }
 
         porte.setEstado(nuevoEstado);
 
         if (nuevoEstado == EstadoPorte.ENTREGADO) {
             porte.setFechaEntrega(LocalDateTime.now());
-            // Auto-generate factura on delivery (skip if one already exists)
-            try {
-                facturaService.generarFacturaParaPorte(porteId);
-                porte.setEstado(EstadoPorte.FACTURADO);
-                log.info("Factura auto-generada para porte {}", porteId);
-            } catch (RuntimeException e) {
-                // Already has a factura — ignore duplicate
-                log.debug("Factura ya existente para porte {}: {}", porteId, e.getMessage());
-            }
         }
 
         return porteRepository.save(porte);

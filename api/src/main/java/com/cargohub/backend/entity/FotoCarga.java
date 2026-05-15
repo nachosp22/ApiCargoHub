@@ -29,8 +29,8 @@ public class FotoCarga {
     @Column(nullable = false)
     private TipoFotoCarga tipo;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String fotoBase64;
+    @Column(nullable = false)
+    private String fotoUrl;
 
     private String descripcion;
 

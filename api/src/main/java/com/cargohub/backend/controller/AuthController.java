@@ -34,12 +34,11 @@ public class AuthController {
     @Autowired private AuthenticationManager authenticationManager;
     @Autowired private JwtService jwtService;
 
-    // --- REGISTRO (soporta CLIENTE y CONDUCTOR) ---
     @PostMapping("/register")
     public ResponseEntity<?> registrar(@Valid @RequestBody RegisterRequest request) {
         try {
             String rolStr = request.getRol();
-            RolUsuario rol = RolUsuario.CLIENTE; // default
+            RolUsuario rol = RolUsuario.CLIENTE;
 
             if (rolStr != null && rolStr.equalsIgnoreCase("CONDUCTOR")) {
                 rol = RolUsuario.CONDUCTOR;
@@ -56,7 +55,6 @@ public class AuthController {
     }
 
     private ResponseEntity<?> registrarCliente(RegisterRequest request) {
-        // Validate required client fields
         if (request.getNombreEmpresa() == null || request.getNombreEmpresa().isBlank()) {
             return ResponseEntity.badRequest().body("El nombre de la empresa es obligatorio");
         }
@@ -85,7 +83,6 @@ public class AuthController {
     }
 
     private ResponseEntity<?> registrarConductor(RegisterRequest request) {
-        // Validate required conductor fields
         if (request.getNombre() == null || request.getNombre().isBlank()) {
             return ResponseEntity.badRequest().body("El nombre es obligatorio");
         }
@@ -93,7 +90,6 @@ public class AuthController {
             return ResponseEntity.badRequest().body("El DNI/NIE es obligatorio");
         }
 
-        // Create user with activo=false — requires admin approval
         Usuario nuevoUsuario = usuarioService.registrarUsuario(
                 request.getEmail(), request.getPassword(), RolUsuario.CONDUCTOR);
         nuevoUsuario.setActivo(false);
@@ -106,7 +102,7 @@ public class AuthController {
         conductor.setDni(request.getDni());
         conductor.setTelefono(request.getTelefono());
         conductor.setCiudadBase(request.getCiudadBase());
-        conductor.setDisponible(false); // Not available until approved
+        conductor.setDisponible(false);
         conductorService.guardarOActualizar(conductor);
 
         return ResponseEntity.ok(Map.of(
@@ -115,10 +111,8 @@ public class AuthController {
         ));
     }
 
-    // --- LOGIN JWT ---
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
-        // Normalize email to lowercase for login
         String normalizedEmail = email != null ? email.toLowerCase() : null;
         Optional<Usuario> userOpt = usuarioService.buscarPorEmail(normalizedEmail);
         if (userOpt.isEmpty()) {
@@ -141,6 +135,7 @@ public class AuthController {
             response.setId(usuario.getId());
             response.setEmail(usuario.getEmail());
             response.setRol(usuario.getRol());
+            response.setNombre(usuario.getNombre());
 
             if (usuario.getRol() == RolUsuario.CONDUCTOR) {
                 try {

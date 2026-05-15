@@ -275,7 +275,7 @@ public class FleetTrackingService {
 
     /**
      * Resuelve el porte activo asociado a un conductor y lo vincula al punto de ubicación.
-     * Busca portes en estado {@code EN_TRANSITO} o {@code ASIGNADO}, ordenados por fecha
+     * Busca portes en estado {@code EN_RECOGIDA} o {@code EN_TRANSITO}, ordenados por fecha
      * de creación descendente.
      *
      * @param conductorId identificador del conductor
@@ -284,7 +284,7 @@ public class FleetTrackingService {
     private void resolveActivePorte(Long conductorId, DriverLocationPoint point) {
         porteRepository.findFirstByConductorIdAndEstadoInOrderByFechaCreacionDesc(
                         conductorId,
-                        Arrays.asList(EstadoPorte.EN_TRANSITO, EstadoPorte.ASIGNADO)
+                        Arrays.asList(EstadoPorte.EN_RECOGIDA, EstadoPorte.EN_TRANSITO)
                 )
                 .ifPresent(porte -> applyActivePorte(point, porte));
     }

@@ -26,10 +26,9 @@ public class FotoCargaController {
                                                         @Valid @RequestBody CrearFotoCargaRequest request) {
         FotoCarga foto = new FotoCarga();
         foto.setTipo(request.getTipo());
-        foto.setFotoBase64(request.getFotoBase64());
         foto.setDescripcion(request.getDescripcion());
 
-        FotoCarga guardada = fotoCargaService.subirFoto(porteId, foto);
+        FotoCarga guardada = fotoCargaService.subirFoto(porteId, foto, request.getFotoBase64());
         return ResponseEntity.ok(FotoCargaResponse.fromEntity(guardada));
     }
 

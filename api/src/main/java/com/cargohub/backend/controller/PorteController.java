@@ -10,12 +10,16 @@ import com.cargohub.backend.entity.Factura;
 import com.cargohub.backend.entity.Porte;
 import com.cargohub.backend.entity.enums.EstadoPorte;
 import com.cargohub.backend.security.OwnershipSecurityService;
+import com.cargohub.backend.service.AlbaranEntregaPdfService;
 import com.cargohub.backend.service.PorteService;
 import com.cargohub.backend.service.PorteTrackingService;
 import com.cargohub.backend.dto.tracking.PorteTrackingResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ContentDisposition;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +40,9 @@ public class PorteController {
     @Autowired
     private OwnershipSecurityService ownershipSecurityService;
 
-    // Listado general para panel administrativo
+    @Autowired
+    private AlbaranEntregaPdfService albaranEntregaPdfService;
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<List<Porte>> listarTodos() {
@@ -51,21 +57,18 @@ public class PorteController {
         return ResponseEntity.ok(porteService.getResumen(anio, mes));
     }
 
-    // 1. Crear Porte (Admin/IA) - MODIFICADO PARA USAR DTO
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<Porte> crearPorte(@Valid @RequestBody CrearPorteRequest request) {
         return ResponseEntity.ok(porteService.crearPorteDesdeRequest(request));
     }
 
-    // 2. Ver Ofertas (Conductor)
     @GetMapping("/ofertas/{conductorId}")
     @PreAuthorize("hasAnyRole('CONDUCTOR','ADMIN','SUPERADMIN') and @ownership.canAccessConductor(authentication, #conductorId)")
     public ResponseEntity<List<Porte>> verOfertas(@PathVariable Long conductorId) {
         return ResponseEntity.ok(porteService.listarOfertasParaConductor(conductorId));
     }
 
-    // 3. Aceptar Porte (Conductor)
     @PostMapping("/{porteId}/aceptar")
     @PreAuthorize("hasAnyRole('CONDUCTOR','ADMIN','SUPERADMIN') and @ownership.canAccessConductor(authentication, #conductorId)")
     public ResponseEntity<?> aceptarPorte(@PathVariable Long porteId,
@@ -89,7 +92,6 @@ public class PorteController {
         }
     }
 
-    // 4. Cambiar Estado (Entregar, En Tránsito)
     @PutMapping("/{porteId}/estado")
     @PreAuthorize("hasAnyRole('CONDUCTOR','ADMIN','SUPERADMIN') and @ownership.canAccessPorte(authentication, #porteId)")
     public ResponseEntity<Porte> cambiarEstado(@PathVariable Long porteId,
@@ -97,7 +99,6 @@ public class PorteController {
         return ResponseEntity.ok(porteService.cambiarEstado(porteId, nuevo));
     }
 
-    // 5. Ajuste Manual de Precio (Admin)
     @PostMapping("/{porteId}/ajuste")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<Porte> agregarAjuste(@PathVariable Long porteId,
@@ -106,7 +107,6 @@ public class PorteController {
         return ResponseEntity.ok(porteService.agregarAjusteManual(porteId, cantidad, concepto));
     }
 
-    // 6. Facturar (Admin)
     @PostMapping("/{porteId}/facturar")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<? > generarFactura(@PathVariable Long porteId) {
@@ -117,21 +117,18 @@ public class PorteController {
         }
     }
 
-    // 7. Obtener Porte por ID (Admin/Cliente/Conductor)
     @GetMapping("/{porteId}")
     @PreAuthorize("@ownership.canAccessPorte(authentication, #porteId)")
     public ResponseEntity<? > obtenerPorte(@PathVariable Long porteId) {
         return ResponseEntity.ok(porteService.obtenerPorId(porteId));
     }
 
-    // 8. Listar Portes por Conductor (Conductor)
     @GetMapping("/conductor/{conductorId}")
     @PreAuthorize("hasAnyRole('CONDUCTOR','ADMIN','SUPERADMIN') and @ownership.canAccessConductor(authentication, #conductorId)")
     public ResponseEntity<List<Porte>> listarPortesConductor(@PathVariable Long conductorId) {
         return ResponseEntity.ok(porteService.listarPortesPorConductor(conductorId));
     }
 
-    // 9. Solicitud de porte desde portal web (Cliente)
     @PostMapping("/solicitud")
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<?> crearSolicitud(@Valid @RequestBody SolicitudPorteRequest request,
@@ -148,21 +145,18 @@ public class PorteController {
         }
     }
 
-    // 10. Listar Portes del cliente autenticado
     @GetMapping("/cliente/{clienteId}")
     @PreAuthorize("hasAnyRole('CLIENTE','ADMIN','SUPERADMIN') and @ownership.canAccessCliente(authentication, #clienteId)")
     public ResponseEntity<List<Porte>> listarPortesCliente(@PathVariable Long clienteId) {
         return ResponseEntity.ok(porteService.listarPortesPorCliente(clienteId));
     }
 
-    // 11. Listar portes pendientes de revisión manual (ADMIN)
     @GetMapping("/pendientes-revision")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<List<Porte>> listarPendientesRevision() {
         return ResponseEntity.ok(porteService.listarPendientesRevision());
     }
 
-    // 12. Actualizar dimensiones de carga (ADMIN)
     @PutMapping("/{porteId}/dimensiones")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<Porte> actualizarDimensiones(@PathVariable Long porteId,
@@ -187,14 +181,12 @@ public class PorteController {
         return ResponseEntity.ok("Porte cancelado para conservar historial");
     }
 
-    // 13. Buscar conductores candidatos para un porte (ADMIN)
     @PostMapping("/{porteId}/buscar-conductores")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<List<ConductorCandidatoResponse>> buscarConductores(@PathVariable Long porteId) {
         return ResponseEntity.ok(porteService.buscarConductoresParaPorte(porteId));
     }
 
-    // 14. Asignar conductor manualmente (ADMIN)
     @PostMapping("/{porteId}/asignar-conductor")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<Porte> asignarConductor(@PathVariable Long porteId,
@@ -202,27 +194,46 @@ public class PorteController {
         return ResponseEntity.ok(porteService.asignarConductorManualmente(porteId, conductorId));
     }
 
-    // 15. Tracking en tiempo real para clientes
     @PostMapping("/{porteId}/retry-matching")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<Porte> retryMatching(@PathVariable Long porteId) {
         return ResponseEntity.ok(porteService.retryMatching(porteId));
     }
 
-    // 16. Tracking en tiempo real para clientes
     @GetMapping("/{porteId}/tracking")
     @PreAuthorize("@ownership.canAccessPorte(authentication, #porteId)")
     public ResponseEntity<PorteTrackingResponse> getTracking(@PathVariable Long porteId) {
         return ResponseEntity.ok(porteTrackingService.getTracking(porteId));
     }
 
-    // 17. Registrar firma de entrega (Conductor/Cliente/Admin con ownership)
     @PostMapping("/{porteId}/firma")
     @PreAuthorize("@ownership.canAccessPorte(authentication, #porteId)")
     public ResponseEntity<?> registrarFirmaEntrega(@PathVariable Long porteId,
                                                    @Valid @RequestBody FirmaEntregaRequest request) {
         try {
             return ResponseEntity.ok(porteService.registrarFirmaEntrega(porteId, request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{porteId}/albaran/pdf")
+    @PreAuthorize("@ownership.canAccessPorte(authentication, #porteId)")
+    public ResponseEntity<?> descargarAlbaranPdf(@PathVariable Long porteId) {
+        try {
+            Porte porte = porteService.obtenerPorId(porteId);
+            byte[] pdf = albaranEntregaPdfService.generatePdf(porte);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(
+                    ContentDisposition.attachment()
+                            .filename("albaran-porte-" + porteId + ".pdf")
+                            .build()
+            );
+            headers.setContentLength(pdf.length);
+
+            return ResponseEntity.ok().headers(headers).body((Object) pdf);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

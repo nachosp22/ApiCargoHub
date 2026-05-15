@@ -1,0 +1,74 @@
+# ==============================================
+# CargoHub — API + PostgreSQL (producción Azure)
+# ==============================================
+#
+# Uso:
+#   1. Creá las variables de entorno necesarias:
+#      DB_PASSWORD, JWT_SECRET, CLOUDINARY_*, GEMINI_API_KEY
+#   2. docker-compose up -d
+#
+# Variables requeridas (pasarlas con -e o en .env):
+#   DB_PASSWORD         → contraseña de PostgreSQL
+#   JWT_SECRET          → al menos 32 caracteres aleatorios
+#   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+#   GEMINI_API_KEY      → opcional, para análisis de carga
+#
+# Opcional:
+#   CORS_ALLOWED_ORIGINS → dominios permitidos (separados por coma)
+#   APP_SEED_ENABLED      → true para popular datos demo
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: cargohub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cargohub
+      POSTGRES_USER: cargohub
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cargohub -d cargohub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cargohub-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring profiles
+      - SPRING_PROFILES_ACTIVE=prod
+      # Base de datos
+      - DB_URL=jdbc:postgresql://db:5432/cargohub
+      - DB_USERNAME=cargohub
+      - DB_PASSWORD=${DB_PASSWORD}
+      # JWT
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION_MS=3600000
+      # CORS — ajustá al dominio de tu web
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5174}
+      # Cloudinary
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      # Gemini (opcional)
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      # Puerto
+      - PORT=8080
+      # Seeder — activar solo para poblar datos demo
+      - APP_SEED_ENABLED=false
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

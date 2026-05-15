@@ -12,7 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/facturas")
@@ -45,6 +47,26 @@ public class FacturaController {
                         return ResponseEntity.status(403).body("Acceso denegado a esta factura");
                     }
                     return ResponseEntity.ok(factura);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // 2.5. Marcar factura como pagada
+    @PatchMapping("/{id}/pagar")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<?> pagarFactura(@PathVariable Long id, @RequestBody(required = false) Map<String, String> body) {
+        return facturaRepository.findById(id)
+                .map(factura -> {
+                    if (factura.isPagada()) {
+                        return ResponseEntity.badRequest().body((Object) "La factura ya está pagada");
+                    }
+                    factura.setPagada(true);
+                    factura.setFechaPago(LocalDate.now());
+                    if (body != null && body.containsKey("formaPago")) {
+                        factura.setFormaPago(body.get("formaPago"));
+                    }
+                    facturaRepository.save(factura);
+                    return ResponseEntity.ok((Object) factura);
                 })
                 .orElse(ResponseEntity.notFound().build());
     }

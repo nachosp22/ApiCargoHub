@@ -5,6 +5,7 @@ import com.cargohub.backend.config.JwtService;
 import com.cargohub.backend.config.SecurityConfig;
 import com.cargohub.backend.security.OwnershipSecurityService;
 import com.cargohub.backend.service.PorteService;
+import com.cargohub.backend.service.AlbaranEntregaPdfService;
 import com.cargohub.backend.entity.Porte;
 import com.cargohub.backend.entity.enums.EstadoPorte;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,9 @@ class PorteControllerSolicitudTest {
 
     @MockitoBean
     private UserDetailsService userDetailsService;
+
+    @MockitoBean
+    private AlbaranEntregaPdfService albaranEntregaPdfService;
 
     private static final String VALID_SOLICITUD_JSON = """
             {
@@ -121,4 +125,5 @@ class PorteControllerSolicitudTest {
                         .content(VALID_SOLICITUD_JSON))
                 .andExpect(status().isForbidden());
     }
+
 }

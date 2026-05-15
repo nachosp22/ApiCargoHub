@@ -22,6 +22,8 @@ public class Usuario {
     @Column(unique = true, nullable = false)
     private String email;
 
+    private String nombre;
+
     // Normalize email to lowercase to avoid case-sensitivity issues
     public void setEmail(String email) {
         this.email = email != null ? email.toLowerCase() : null;
