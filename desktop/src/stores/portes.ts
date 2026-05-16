@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { api } from '@/services/api'
 
-// --- TypeScript Interfaces ---
 
 export interface Conductor {
   id: number
@@ -113,7 +112,6 @@ export interface UpdatePorteRequest {
   estado?: EstadoPorte
 }
 
-// --- Mock Data ---
 
 const MOCK_CONDUCTORES: Conductor[] = [
   { id: 1, nombre: 'Juan', apellidos: 'Pérez', telefono: '612345678', ciudadBase: 'Madrid', disponible: true },
@@ -127,7 +125,7 @@ const MOCK_VEHICULOS: Vehiculo[] = [
   { id: 1, matricula: '1234ABC', marca: 'Mercedes', modelo: 'Actros', tipo: 'TRAILER', estado: 'DISPONIBLE', capacidadCargaKg: 25000 },
   { id: 2, matricula: '5678DEF', marca: 'Volvo', modelo: 'FH16', tipo: 'TRAILER', estado: 'DISPONIBLE', capacidadCargaKg: 24000 },
   { id: 3, matricula: '9012GHI', marca: 'Iveco', modelo: 'Daily', tipo: 'FURGONETA', estado: 'DISPONIBLE', capacidadCargaKg: 3500 },
-  { id: 4, matricula: '3456JKL', marca: 'MAN', modelo: 'TGX', tipo: 'RIGIDO', estado: 'EN_MANTENIMIENTO', capacidadCargaKg: 18000 },
+  { id: 4, matricula: '3456JKL', marca: 'MAN', modelo: 'TGX', tipo: 'RIGIDO', estado: 'DISPONIBLE', capacidadCargaKg: 18000 },
   { id: 5, matricula: '7890MNO', marca: 'Scania', modelo: 'R500', tipo: 'ESPECIAL', estado: 'DISPONIBLE', capacidadCargaKg: 30000 },
 ]
 
@@ -212,11 +210,9 @@ const MOCK_PORTES: Porte[] = [
   },
 ]
 
-// --- Store ---
 
 export const usePortesStore = defineStore('portes', () => {
   type DataSource = 'api' | 'mock'
-  // --- State ---
   const portes = ref<Porte[]>([])
   const selectedPorte = ref<Porte | null>(null)
   const conductores = ref<Conductor[]>([])
@@ -232,7 +228,6 @@ export const usePortesStore = defineStore('portes', () => {
   const conductorCandidatos = ref<ConductorCandidato[]>([])
   const loadingCandidatos = ref(false)
 
-  // --- Getters ---
   const totalPortes = computed(() => portes.value.length)
   const portesByEstado = computed(() => {
     const counts: Record<string, number> = {}
@@ -242,7 +237,6 @@ export const usePortesStore = defineStore('portes', () => {
     return counts
   })
 
-  // --- Actions ---
 
   /**
    * Fetch all portes from the API. Falls back to mock data on error.
@@ -259,7 +253,6 @@ export const usePortesStore = defineStore('portes', () => {
       const data = extractArray(response.data)
       portes.value = data.map(mapPorteFromApi)
     } catch {
-      // API unavailable — use mock data
       usingMockData.value = true
       dataSource.value = 'mock'
       warning.value = 'Mostrando portes mock porque la API no respondió'
@@ -287,13 +280,11 @@ export const usePortesStore = defineStore('portes', () => {
       selectedPorte.value = porte
       return porte
     } catch {
-      // Try from local list
       const found = portes.value.find((p) => p.id === id)
       if (found) {
         selectedPorte.value = found
         return found
       }
-      // Try mock
       const mock = MOCK_PORTES.find((p) => p.id === id)
       if (mock) {
         selectedPorte.value = mock
@@ -316,7 +307,6 @@ export const usePortesStore = defineStore('portes', () => {
       portes.value.unshift(newPorte)
       return newPorte
     } catch (error) {
-      // If API is down, create a mock porte for UX continuity
       if (usingMockData.value) {
         const mockPorte: Porte = {
           id: Math.max(0, ...portes.value.map((p) => p.id)) + 1,
@@ -352,7 +342,6 @@ export const usePortesStore = defineStore('portes', () => {
       if (selectedPorte.value?.id === id) selectedPorte.value = updated
       return updated
     } catch (error) {
-      // If using mock data, update locally
       if (usingMockData.value) {
         const idx = portes.value.findIndex((p) => p.id === id)
         if (idx !== -1) {
@@ -569,7 +558,6 @@ export const usePortesStore = defineStore('portes', () => {
     await Promise.allSettled([fetchConductores(), fetchVehiculos(), fetchClientes()])
   }
 
-  // --- Revision Manual Actions ---
 
   /**
    * Fetch portes pending manual review.
@@ -582,7 +570,6 @@ export const usePortesStore = defineStore('portes', () => {
       pendientesRevision.value = data.map(mapPorteFromApi)
     } catch {
       error.value = 'No se pudo cargar el porte solicitado'
-      // Filter from local portes as fallback
       pendientesRevision.value = portes.value.filter(
         (p) => p.revisionManual
           || (
@@ -605,7 +592,6 @@ export const usePortesStore = defineStore('portes', () => {
     try {
       const response = await api.put(`/portes/${porteId}/dimensiones`, dimensiones)
       const updated = mapPorteFromApi(response.data)
-      // Update in both lists
       const idx = portes.value.findIndex((p) => p.id === porteId)
       if (idx !== -1) portes.value[idx] = updated
       const revIdx = pendientesRevision.value.findIndex((p) => p.id === porteId)
@@ -653,15 +639,53 @@ export const usePortesStore = defineStore('portes', () => {
         params: { conductorId },
       })
       const updated = mapPorteFromApi(response.data)
-      // Update main list
       const idx = portes.value.findIndex((p) => p.id === porteId)
       if (idx !== -1) portes.value[idx] = updated
-      // Remove from pendientes
       pendientesRevision.value = pendientesRevision.value.filter((p) => p.id !== porteId)
       conductorCandidatos.value = []
       return updated
     } finally {
       saving.value = false
+    }
+  }
+
+  async function downloadAlbaran(porteId: number): Promise<void> {
+    try {
+      const response = await api.get(`/portes/${porteId}/albaran/pdf`, {
+        responseType: 'blob',
+      })
+
+      const contentType = String(response.headers['content-type'] ?? '').toLowerCase()
+      if (!contentType.includes('application/pdf')) {
+        const errorText = await response.data.text()
+        throw new Error(errorText || 'No se pudo descargar el albarán PDF')
+      }
+
+      const blob = new Blob([response.data], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+
+      const disposition = response.headers['content-disposition']
+      let filename = `albaran-porte-${porteId}.pdf`
+      if (disposition) {
+        const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+        if (match?.[1]) {
+          filename = match[1].replace(/['"]/g, '')
+        }
+      }
+
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      const message = err instanceof Error && err.message.trim()
+        ? err.message
+        : 'No se pudo descargar el albarán PDF'
+      error.value = message
+      throw new Error(message)
     }
   }
 
@@ -690,7 +714,25 @@ export const usePortesStore = defineStore('portes', () => {
     }
   }
 
-  // --- Helpers ---
+  /**
+   * Publica un porte revisado: limpia revisionManual, valida y ejecuta matching.
+   */
+  async function publicarPorteRevisado(porteId: number): Promise<Porte> {
+    saving.value = true
+    try {
+      const response = await api.post(`/portes/${porteId}/publicar`)
+      const updated = mapPorteFromApi(response.data)
+      const idx = portes.value.findIndex((p) => p.id === porteId)
+      if (idx !== -1) portes.value[idx] = updated
+
+      // Quitar de pendientes revisión
+      pendientesRevision.value = pendientesRevision.value.filter((p) => p.id !== porteId)
+      return updated
+    } finally {
+      saving.value = false
+    }
+  }
+
 
   function extractArray(data: unknown): Record<string, unknown>[] {
     if (Array.isArray(data)) return data as Record<string, unknown>[]
@@ -761,9 +803,7 @@ export const usePortesStore = defineStore('portes', () => {
     }
   }
 
-  // Return ALL state, getters, and actions
   return {
-    // State
     portes,
     selectedPorte,
     conductores,
@@ -778,10 +818,8 @@ export const usePortesStore = defineStore('portes', () => {
     pendientesRevision,
     conductorCandidatos,
     loadingCandidatos,
-    // Getters
     totalPortes,
     portesByEstado,
-    // Actions
     fetchPortes,
     fetchPorteById,
     createPorte,
@@ -790,6 +828,7 @@ export const usePortesStore = defineStore('portes', () => {
     deletePorte,
     ajustarPrecio,
     facturarPorte,
+    downloadAlbaran,
     fetchConductores,
     fetchVehiculos,
     fetchClientes,
@@ -799,5 +838,6 @@ export const usePortesStore = defineStore('portes', () => {
     buscarConductores,
     asignarConductor,
     retryMatching,
+    publicarPorteRevisado,
   }
 })

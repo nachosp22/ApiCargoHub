@@ -175,6 +175,7 @@ export const useFacturasStore = defineStore('facturas', () => {
   const facturas = ref<Factura[]>([])
   const selectedFactura = ref<Factura | null>(null)
   const loading = ref(false)
+  const saving = ref(false)
   const error = ref<string | null>(null)
   const usingMockData = ref(false)
   const dataSource = ref<DataSource>('api')
@@ -308,6 +309,28 @@ export const useFacturasStore = defineStore('facturas', () => {
     }
   }
 
+  async function pagarFactura(facturaId: number, formaPago?: string): Promise<Factura | null> {
+    saving.value = true
+    error.value = null
+    try {
+      const body: Record<string, string> = {}
+      if (formaPago) body.formaPago = formaPago
+      const response = await api.patch(`/facturas/${facturaId}/pagar`, body)
+      const pagada = mapFacturaFromApi(response.data)
+      // Update in local list
+      const idx = facturas.value.findIndex((f) => f.id === facturaId)
+      if (idx !== -1) facturas.value[idx] = pagada
+      return pagada
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error ? e.message : 'Error al marcar la factura como pagada'
+      error.value = message
+      return null
+    } finally {
+      saving.value = false
+    }
+  }
+
   // --- Helpers ---
 
   function extractArray(data: unknown): Record<string, unknown>[] {
@@ -394,6 +417,7 @@ export const useFacturasStore = defineStore('facturas', () => {
     facturas,
     selectedFactura,
     loading,
+    saving,
     error,
     usingMockData,
     dataSource,
@@ -410,5 +434,6 @@ export const useFacturasStore = defineStore('facturas', () => {
     fetchFactura,
     fetchFacturasByPorte,
     downloadPdf,
+    pagarFactura,
   }
 })

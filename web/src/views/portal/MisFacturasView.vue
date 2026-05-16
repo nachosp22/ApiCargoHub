@@ -1,45 +1,52 @@
 <template>
   <div>
     <!-- Filters -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-6">
-      <div class="flex flex-wrap items-center gap-4">
-        <div class="flex items-center gap-2">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('portal.facturas.filterStatus') }}</label>
-          <Select
-            v-model="filterEstado"
-            :options="estadoOptions"
-            optionLabel="label"
-            optionValue="value"
-            :placeholder="t('portal.facturas.filterAll')"
-            class="w-40"
-          />
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-4">
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Buscar</label>
+          <input
+            v-model.trim="filters.search"
+            type="text"
+            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white h-9"
+            placeholder="Número de serie, ruta, importe..."
+          >
         </div>
-        <div class="flex items-center gap-2">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('portal.facturas.filterFrom') }}</label>
-          <DatePicker
-            v-model="filterDesde"
-            dateFormat="dd/mm/yy"
-            :placeholder="t('portal.facturas.filterDateStart')"
-            showIcon
-            class="w-44"
-          />
+        <div class="flex gap-2">
+          <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Desde</label>
+            <input
+              v-model="filters.fechaDesde"
+              type="date"
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white h-9"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Hasta</label>
+            <input
+              v-model="filters.fechaHasta"
+              type="date"
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white h-9"
+            >
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('portal.facturas.filterTo') }}</label>
-          <DatePicker
-            v-model="filterHasta"
-            dateFormat="dd/mm/yy"
-            :placeholder="t('portal.facturas.filterDateEnd')"
-            showIcon
-            class="w-44"
-          />
+        <div class="w-44">
+          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Estado</label>
+          <select
+            v-model="filters.estado"
+            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white h-9"
+          >
+            <option value="">Todos</option>
+            <option value="pagada">Pagada</option>
+            <option value="pendiente">Pendiente</option>
+          </select>
         </div>
         <Button
           v-if="hasActiveFilters"
-          :label="t('portal.facturas.clearFilters')"
           icon="pi pi-filter-slash"
           severity="secondary"
-          text
+          size="small"
+          class="h-9 mt-auto"
           @click="clearFilters"
         />
       </div>
@@ -130,8 +137,7 @@
             <Button
               icon="pi pi-download"
               severity="secondary"
-              text
-              rounded
+              size="small"
               v-tooltip.top="t('portal.facturas.downloadPdf')"
               @click="handleDownloadPdf(data.id)"
             />
@@ -148,43 +154,56 @@ import { useI18n } from 'vue-i18n'
 import { useFacturasStore } from '@/stores/facturas'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import Select from 'primevue/select'
-import DatePicker from 'primevue/datepicker'
 import Button from 'primevue/button'
 
 const { t } = useI18n()
 const facturasStore = useFacturasStore()
 
-const filterEstado = ref<string | null>(null)
-const filterDesde = ref<Date | null>(null)
-const filterHasta = ref<Date | null>(null)
-
-const estadoOptions = computed(() => [
-  { label: t('portal.facturas.filterAll'), value: null },
-  { label: t('portal.facturas.filterPaid'), value: 'pagada' },
-  { label: t('portal.facturas.filterPending'), value: 'pendiente' },
-])
+const filters = ref({
+  search: '',
+  fechaDesde: '',
+  fechaHasta: '',
+  estado: '',
+})
 
 const hasActiveFilters = computed(() =>
-  filterEstado.value !== null || filterDesde.value !== null || filterHasta.value !== null
+  filters.value.search !== '' || filters.value.fechaDesde !== '' || filters.value.fechaHasta !== '' || filters.value.estado !== ''
 )
+
+function normalizeText(value?: string | null): string {
+  return (value ?? '').toLocaleLowerCase('es-ES').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+}
 
 const filteredFacturas = computed(() => {
   let result = [...facturasStore.facturas]
 
-  if (filterEstado.value === 'pagada') {
+  // Global search
+  const search = normalizeText(filters.value.search)
+  if (search) {
+    result = result.filter((f) => {
+      const serieMatch = normalizeText(f.numeroSerie).includes(search)
+      const rutaMatch = f.porte ? normalizeText(`${f.porte.origen} ${f.porte.destino}`).includes(search) : false
+      const importeMatch = String(f.importeTotal).includes(search)
+      return serieMatch || rutaMatch || importeMatch
+    })
+  }
+
+  // Estado filter
+  if (filters.value.estado === 'pagada') {
     result = result.filter((f) => f.pagada)
-  } else if (filterEstado.value === 'pendiente') {
+  } else if (filters.value.estado === 'pendiente') {
     result = result.filter((f) => !f.pagada)
   }
 
-  if (filterDesde.value) {
-    const desde = filterDesde.value.getTime()
+  // Fecha desde
+  if (filters.value.fechaDesde) {
+    const desde = new Date(filters.value.fechaDesde).getTime()
     result = result.filter((f) => new Date(f.fechaEmision).getTime() >= desde)
   }
 
-  if (filterHasta.value) {
-    const hasta = filterHasta.value.getTime() + 86400000
+  // Fecha hasta
+  if (filters.value.fechaHasta) {
+    const hasta = new Date(filters.value.fechaHasta).getTime() + 86400000
     result = result.filter((f) => new Date(f.fechaEmision).getTime() <= hasta)
   }
 
@@ -192,9 +211,10 @@ const filteredFacturas = computed(() => {
 })
 
 function clearFilters() {
-  filterEstado.value = null
-  filterDesde.value = null
-  filterHasta.value = null
+  filters.value.search = ''
+  filters.value.fechaDesde = ''
+  filters.value.fechaHasta = ''
+  filters.value.estado = ''
 }
 
 onMounted(() => loadData())

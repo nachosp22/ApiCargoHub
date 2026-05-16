@@ -88,10 +88,11 @@
         {{ t('portal.dashboard.noRecentActivity') }}
       </div>
       <div v-else class="divide-y divide-gray-100 dark:divide-gray-700">
-        <div
+        <router-link
           v-for="porte in recentPortes"
           :key="porte.id"
-          class="px-6 py-4 flex items-center justify-between"
+          :to="`/portal/mis-portes?search=${porte.id}`"
+          class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
         >
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
@@ -108,7 +109,7 @@
           >
             {{ porte.estado.replace('_', ' ') }}
           </span>
-        </div>
+        </router-link>
       </div>
     </div>
   </div>

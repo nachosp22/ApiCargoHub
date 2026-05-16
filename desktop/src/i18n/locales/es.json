@@ -487,12 +487,10 @@
     "stats": {
       "totalFlota": "Total Flota",
       "disponibles": "Disponibles",
-      "enMantenimiento": "En Mantenimiento",
       "deBaja": "De Baja"
     },
     "estado": {
       "disponible": "Disponible",
-      "enMantenimiento": "En Mantenimiento",
       "baja": "Baja"
     },
     "tipo": {
@@ -522,19 +520,7 @@
     },
     "mockStats": {
       "kmRecorridos": "Km Recorridos",
-      "portesCompletados": "Portes Completados",
-      "mesesMantenimiento": "Meses desde último mantenimiento"
-    },
-    "historial": {
-      "title": "Historial de Mantenimiento",
-      "items": {
-        "revisionItv": "Revisión ITV",
-        "itvEstado": "Aprobado",
-        "cambioAceite": "Cambio de aceite y filtros",
-        "cambioAceiteEstado": "Completado",
-        "reparacionFrenos": "Reparación frenos",
-        "reparacionFrenosEstado": "Completado"
-      }
+      "portesCompletados": "Portes Completados"
     },
     "table": {
       "title": "Flota de Vehículos",

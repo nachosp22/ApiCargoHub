@@ -8,7 +8,7 @@ interface FotoCarga {
   id: number
   porteId: number
   tipo: 'CARGA' | 'DESCARGA' | 'DANO'
-  fotoBase64: string
+  fotoUrl: string
   descripcion?: string
   fechaCaptura?: string
 }
@@ -32,9 +32,9 @@ const tipoLabels: Record<string, string> = {
 }
 
 const tipoColors: Record<string, string> = {
-  CARGA: 'bg-blue-100 text-blue-700',
-  DESCARGA: 'bg-green-100 text-green-700',
-  DANO: 'bg-red-100 text-red-700',
+  CARGA: 'bg-blue-50 text-blue-700 ring-blue-600/20',
+  DESCARGA: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+  DANO: 'bg-red-50 text-red-700 ring-red-600/20',
 }
 
 watch(
@@ -115,14 +115,14 @@ function formatDate(dateStr?: string): string {
         @click="openFullImage(foto)"
       >
         <img
-          :src="'data:image/jpeg;base64,' + foto.fotoBase64"
+          :src="foto.fotoUrl"
           :alt="foto.descripcion || 'Foto de carga'"
           class="w-full h-24 object-cover"
         />
         <div class="p-2">
           <span
-            class="text-xs font-semibold px-2 py-0.5 rounded-full"
-            :class="tipoColors[foto.tipo] || 'bg-gray-100 text-gray-600'"
+            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
+            :class="tipoColors[foto.tipo] || 'bg-gray-50 text-gray-600 ring-gray-500/20'"
           >
             {{ tipoLabels[foto.tipo] || foto.tipo }}
           </span>
@@ -143,14 +143,14 @@ function formatDate(dateStr?: string): string {
     >
       <div v-if="selectedFoto" class="space-y-3">
         <img
-          :src="'data:image/jpeg;base64,' + selectedFoto.fotoBase64"
+          :src="selectedFoto.fotoUrl"
           :alt="selectedFoto.descripcion || 'Foto'"
           class="w-full rounded-lg"
         />
         <div class="flex items-center gap-3">
           <span
-            class="text-xs font-semibold px-2 py-1 rounded-full"
-            :class="tipoColors[selectedFoto.tipo] || 'bg-gray-100 text-gray-600'"
+            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
+            :class="tipoColors[selectedFoto.tipo] || 'bg-gray-50 text-gray-600 ring-gray-500/20'"
           >
             {{ tipoLabels[selectedFoto.tipo] || selectedFoto.tipo }}
           </span>

@@ -145,6 +145,22 @@ public class PorteController {
         }
     }
 
+    @PostMapping("/solicitud/{id}/confirmar")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<?> confirmarSolicitud(@PathVariable Long id,
+                                                 Authentication authentication) {
+        try {
+            Long clienteId = ownershipSecurityService.resolveClienteIdFromAuth(authentication);
+            if (clienteId == null) {
+                return ResponseEntity.status(403).body("No se encontró cliente asociado al usuario");
+            }
+            Porte porte = porteService.confirmarSolicitud(id, clienteId);
+            return ResponseEntity.ok(porte);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/cliente/{clienteId}")
     @PreAuthorize("hasAnyRole('CLIENTE','ADMIN','SUPERADMIN') and @ownership.canAccessCliente(authentication, #clienteId)")
     public ResponseEntity<List<Porte>> listarPortesCliente(@PathVariable Long clienteId) {
@@ -160,8 +176,19 @@ public class PorteController {
     @PutMapping("/{porteId}/dimensiones")
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     public ResponseEntity<Porte> actualizarDimensiones(@PathVariable Long porteId,
-                                                          @Valid @RequestBody ActualizarDimensionesRequest request) {
+                                                           @Valid @RequestBody ActualizarDimensionesRequest request) {
         return ResponseEntity.ok(porteService.actualizarDimensiones(porteId, request));
+    }
+
+    @PostMapping("/{porteId}/publicar")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    public ResponseEntity<?> publicarPorteRevisado(@PathVariable Long porteId) {
+        try {
+            Porte porte = porteService.publicarPorteRevisado(porteId);
+            return ResponseEntity.ok(porte);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/{porteId}")

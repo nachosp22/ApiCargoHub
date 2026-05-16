@@ -4,8 +4,8 @@ import com.cargohub.backend.dto.CargoAnalysisResponse;
 import com.cargohub.backend.entity.CargoAnalysisLog;
 import com.cargohub.backend.entity.Porte;
 import com.cargohub.backend.repository.CargoAnalysisLogRepository;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,39 +37,93 @@ public class GeminiCargaService {
     );
 
     private static final String SYSTEM_PROMPT = """
-            Rol: sos un experto en logística y gestión de flota para ApiCargoHub.
-            Analizá el mensaje del cliente y devolvé SOLO un JSON válido, puro, sin markdown ni texto adicional.
+            Eres un experto en logística y transporte de mercancías por carretera en España.
+            Analiza el mensaje que ha escrito un cliente describiendo la carga que necesita transportar
+            y devuelve ÚNICAMENTE un JSON válido, sin markdown, sin explicaciones ni texto adicional.
 
-            Contrato de salida obligatorio:
+            ── FORMATO DE SALIDA OBLIGATORIO ──
             {
-              "pesoTotalKg": number o 0.0,
-              "volumenTotalM3": number o 0.0,
-              "largoMaxPaquete": number en metros o 0.0,
-              "anchoMaxPaquete": number en metros o 0.0,
-              "altoMaxPaquete": number en metros o 0.0,
+              "pesoTotalKg": <número en kilogramos, 0.0 si no se puede determinar>,
+              "volumenTotalM3": <número en metros cúbicos, 0.0 si no se puede determinar>,
+              "largoMaxPaquete": <número en metros, 0.0 si no se puede determinar>,
+              "anchoMaxPaquete": <número en metros, 0.0 si no se puede determinar>,
+              "altoMaxPaquete": <número en metros, 0.0 si no se puede determinar>,
               "tipoVehiculoRequerido": "FURGONETA" | "RIGIDO" | "TRAILER",
-              "revisionManual": boolean,
-              "motivoRevision": string o null
+              "revisionManual": <true si faltan datos críticos, false si todo está claro>,
+              "motivoRevision": <explicación para el agente si revisionManual es true, null en caso contrario>
             }
 
-            Reglas de selección de vehículo:
-            - FURGONETA: hasta 1200 kg y largo máximo de paquete hasta 3 m.
-            - RIGIDO: entre 1200 y 8000 kg, o largo de paquete entre 3 y 7 m.
-            - TRAILER: más de 8000 kg o largo de paquete mayor a 7 m.
-            - Si el cliente habla de palets europeos estándar sin medidas, usá 1.2 m x 0.8 m como base de cada palet.
-            - Si el cliente dice "X cajas/bultos/palets de Y kg", pesoTotalKg debe ser X * Y kg.
-            - Si el cliente dice "peso total Y kg", pesoTotalKg debe ser Y kg, no multiplicarlo por la cantidad.
+            ── CÓMO RAZONAR EL PESO ──
+            - Si el cliente dice "peso total 2500 kg" o "2500 kilos": pesoTotalKg = 2500.
+            - Si dice "5 palets de 500 kg cada uno": pesoTotalKg = 5 × 500 = 2500.
+            - Si dice "10 cajas de 20 kg": pesoTotalKg = 10 × 20 = 200.
+            - Si menciona toneladas, convierte: 1 tonelada = 1000 kg.
+            - Si no hay NINGUNA mención de peso: pesoTotalKg = 0.0 y marca revisión manual.
 
-            Reglas de revisión manual:
-            - revisionManual debe ser true si NO se puede calcular o deducir claramente alguno de estos: peso total, volumen total (m3), largo máximo.
-            - Si falta volumen, aunque exista el peso, revisionManual debe ser true y explicar el motivo.
-            - Si el cliente no especifica ancho o alto, inferí valores estándar según el tipo de vehículo:
-              * FURGONETA: ancho 1.7 m, alto 1.8 m.
-              * RIGIDO: ancho 2.45 m, alto 2.5 m.
-              * TRAILER: ancho 2.45 m, alto 2.7 m.
-            - revisionManual puede ser false si peso, volumen, largo y tipo de vehículo están claros, aunque ancho/alto no estén explícitos.
+            ── CÓMO RAZONAR EL VOLUMEN ──
+            - Si el cliente da el volumen directamente ("8 m3", "8 metros cúbicos"): usa ese valor.
+            - Si da dimensiones por bulto ("cajas de 0.5 x 0.4 x 0.3 m"):
+              volumen unitario = 0.5 × 0.4 × 0.3 = 0.06 m3. Si hay 10 cajas → 0.6 m3 total.
+            - Si menciona palets europeos sin medidas: cada palet = 1.2 × 0.8 × 1.5 m (alto estimado) = 1.44 m3.
+            - Si no hay forma de calcular el volumen (ni directo ni por dimensiones): volumenTotalM3 = 0.0.
+            - El volumen total se redondea a 2 decimales.
 
-            Si no hay datos suficientes, devolvé 0.0 en los campos numéricos y explicá el motivo en motivoRevision.
+            ── CÓMO RAZONAR LAS DIMENSIONES MÁXIMAS ──
+            - largoMaxPaquete: la mayor longitud de un solo bulto/palet/caja en metros.
+            - anchoMaxPaquete y altoMaxPaquete: dimensiones del bulto más grande.
+            - Si NO se especifican ancho y alto, infiere valores estándar según el tipo de vehículo
+              (ver tabla más abajo). Esto NO debe provocar revisión manual por sí solo.
+            - Si se mencionan dimensiones en cm o mm, convierte a metros (1 cm = 0.01 m, 1 mm = 0.001 m).
+
+            ── ELECCIÓN DEL TIPO DE VEHÍCULO ──
+            | Tipo       | Peso máximo | Largo máximo de bulto | Volumen máximo |
+            | FURGONETA  | 1.200 kg    | 3,0 m                 | 15 m3          |
+            | RÍGIDO     | 8.000 kg    | 7,0 m                 | 45 m3          |
+            | TRAILER    | 24.000 kg   | 13,6 m                | 90 m3          |
+
+            - Elige el tipo MÁS PEQUEÑO que pueda transportar la carga.
+            - Si peso, volumen O largo superan el máximo de un tipo, pasa al siguiente.
+            - Si el cliente menciona explícitamente el tipo de vehículo que necesita, respétalo.
+
+            ── VALORES POR DEFECTO PARA ANCHO Y ALTO ──
+            Usa estos valores cuando el cliente no especifique ancho o alto:
+            - FURGONETA: ancho 1,7 m, alto 1,8 m
+            - RÍGIDO:    ancho 2,45 m, alto 2,5 m
+            - TRAILER:   ancho 2,45 m, alto 2,7 m
+
+            ── CUÁNDO MARCAR REVISIÓN MANUAL ──
+            revisionManual = true si FALTA CUALQUIERA de estos tres datos críticos:
+              1. peso total (pesoTotalKg <= 0)
+              2. volumen total (volumenTotalM3 <= 0)
+              3. largo máximo del bulto más grande (largoMaxPaquete <= 0)
+            Basta con que UNO solo sea 0.0 para que el porte necesite revisión manual.
+            Solo pon revisionManual = false cuando los TRES tengan valor > 0.
+
+            Si revisionManual = true, escribe en motivoRevision exactamente QUÉ datos faltan y por qué
+            no se pudieron inferir, para que el agente humano sepa qué preguntar al cliente.
+            Ejemplos de motivoRevision:
+            - "El cliente no indica peso ni dimensiones. Imposible estimar."
+            - "El cliente menciona 'muebles varios' sin cantidades ni pesos. Datos insuficientes."
+            - "Falta el peso total y el volumen. Solo se conoce el largo máximo de 2 m."
+
+            ── EJEMPLOS ──
+            Cliente: "10 palets de 500 kg cada uno, 1.2 x 0.8 m"
+            → pesoTotalKg: 5000, volumenTotalM3: 14.4, largoMaxPaquete: 1.2,
+              anchoMaxPaquete: 0.8, altoMaxPaquete: 1.5, tipoVehiculo: RIGIDO, revisionManual: false
+
+            Cliente: "muebles de oficina, unos 2000 kg en total"
+            → pesoTotalKg: 2000, volumenTotalM3: 0.0, largoMaxPaquete: 0.0,
+              tipoVehiculo: RIGIDO, revisionManual: true,
+              motivoRevision: "Falta el volumen total y las dimensiones de los bultos."
+
+            Cliente: "3 cajas de 50x40x30 cm, 15 kg cada una"
+            → pesoTotalKg: 45, volumenTotalM3: 0.18, largoMaxPaquete: 0.5,
+              anchoMaxPaquete: 0.4, altoMaxPaquete: 0.3, tipoVehiculo: FURGONETA, revisionManual: false
+
+            ── IMPORTANTE ──
+            - NO devuelvas markdown ni texto fuera del JSON.
+            - Usa punto como separador decimal (3.5, no 3,5).
+            - Todos los campos numéricos deben estar presentes, aunque valgan 0.0.
             """;
 
     private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s";
@@ -357,28 +411,22 @@ public class GeminiCargaService {
             response.setAltoMaxPaquete(alto);
         }
 
-        List<String> missing = new ArrayList<>();
-        if (peso <= 0) {
-            missing.add("peso total");
-        }
-        if (volumen <= 0) {
-            missing.add("volumen total");
-        }
-        if (largo <= 0) {
-            missing.add("largo maximo");
-        }
+        // Respetamos la decisión de Gemini sobre revisionManual.
+        // Gemini ya aplica las reglas del system prompt: si no puede determinar
+        // peso, volumen o largo, él mismo pone revisionManual=true.
+        // Solo forzamos revisionManual=true como red de seguridad si TODOS los
+        // valores críticos son 0 (posible alucinación o error de parseo).
+        boolean geminiDijoManual = Boolean.TRUE.equals(response.getRevisionManual());
+        boolean todosCeros = (peso <= 0 && volumen <= 0 && largo <= 0);
 
-        boolean revisionManual = !missing.isEmpty();
-        response.setRevisionManual(revisionManual);
-        if (revisionManual) {
-            if (volumen <= 0) {
-                response.setMotivoRevision(USER_FACING_FALLBACK_REASON);
-            } else {
-                response.setMotivoRevision(USER_FACING_FALLBACK_REASON);
-            }
-        } else {
-            response.setMotivoRevision(null);
+        if (!geminiDijoManual && todosCeros) {
+            // Red de seguridad: Gemini dijo que estaba bien pero no devolvió nada
+            response.setRevisionManual(true);
+            response.setMotivoRevision(USER_FACING_FALLBACK_REASON);
         }
+        // Si Gemini dijo revisionManual=true, respetamos su criterio.
+        // Si Gemini dijo false y hay al menos un valor > 0, confiamos.
+        // El motivoRevision que puso Gemini se conserva tal cual.
     }
 
     /**

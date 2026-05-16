@@ -19,10 +19,11 @@ const emit = defineEmits<{
   (e: 'view', factura: Factura): void
 }>()
 
-// --- Filters ---
 const globalFilter = ref('')
 const ALL_ESTADOS_VALUE = '__ALL_ESTADOS__'
+const ALL_CLIENTS_VALUE = '__ALL_CLIENTS__'
 const estadoFilter = ref<'pagada' | 'pendiente' | typeof ALL_ESTADOS_VALUE>(ALL_ESTADOS_VALUE)
+const clienteFilter = ref<number | typeof ALL_CLIENTS_VALUE>(ALL_CLIENTS_VALUE)
 const fechaDesde = ref<Date | null>(null)
 const fechaHasta = ref<Date | null>(null)
 
@@ -32,17 +33,35 @@ const estadoFilterOptions = [
   { label: 'Pendientes', value: 'pendiente' },
 ]
 
+const uniqueClients = computed(() => {
+  const seen = new Map<number, { id: number; nombreEmpresa: string }>()
+  for (const f of props.facturas) {
+    const c = f.porte?.cliente
+    if (c && !seen.has(c.id)) {
+      seen.set(c.id, { id: c.id, nombreEmpresa: c.nombreEmpresa })
+    }
+  }
+  return Array.from(seen.values())
+})
+
+const clienteFilterOptions = computed(() => [
+  { label: 'Todos los clientes', value: ALL_CLIENTS_VALUE },
+  ...uniqueClients.value.map((c) => ({ label: c.nombreEmpresa, value: c.id })),
+])
+
 const filteredFacturas = computed(() => {
   let result = props.facturas
 
-  // Estado filter
   if (estadoFilter.value === 'pagada') {
     result = result.filter((f) => f.pagada)
   } else if (estadoFilter.value === 'pendiente') {
     result = result.filter((f) => !f.pagada)
   }
 
-  // Date range filter
+  if (clienteFilter.value !== ALL_CLIENTS_VALUE) {
+    result = result.filter((f) => f.porte?.cliente?.id === clienteFilter.value)
+  }
+
   if (fechaDesde.value) {
     const desde = new Date(fechaDesde.value)
     desde.setHours(0, 0, 0, 0)
@@ -54,7 +73,6 @@ const filteredFacturas = computed(() => {
     result = result.filter((f) => new Date(f.fechaEmision) <= hasta)
   }
 
-  // Global text search
   if (globalFilter.value) {
     const query = globalFilter.value.toLowerCase()
     result = result.filter(
@@ -73,20 +91,19 @@ const filteredFacturas = computed(() => {
 function clearFilters(): void {
   globalFilter.value = ''
   estadoFilter.value = ALL_ESTADOS_VALUE
+  clienteFilter.value = ALL_CLIENTS_VALUE
   fechaDesde.value = null
   fechaHasta.value = null
 }
 
 const hasActiveFilters = computed(() =>
-  globalFilter.value || estadoFilter.value !== ALL_ESTADOS_VALUE || fechaDesde.value || fechaHasta.value,
+  globalFilter.value || estadoFilter.value !== ALL_ESTADOS_VALUE || clienteFilter.value !== ALL_CLIENTS_VALUE || fechaDesde.value || fechaHasta.value,
 )
 
-// --- Row click ---
 function onRowClick(event: { data: Factura }): void {
   emit('view', event.data)
 }
 
-// --- Helpers ---
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—'
   try {
@@ -135,6 +152,17 @@ function getEstadoConfig(pagada: boolean): { bg: string; text: string; ring: str
             optionLabel="label"
             optionValue="value"
             class="w-40"
+          />
+
+          <!-- Cliente Filter -->
+          <Select
+            v-model="clienteFilter"
+            :options="clienteFilterOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Cliente"
+            filter
+            class="w-48"
           />
 
           <!-- Fecha Desde -->

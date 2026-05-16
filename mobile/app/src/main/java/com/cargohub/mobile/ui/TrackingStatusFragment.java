@@ -56,6 +56,7 @@ import com.cargohub.mobile.tracking.OsrmRouteService;
 import com.cargohub.mobile.tracking.RouteInfo;
 import com.cargohub.mobile.tracking.TrackingForegroundService;
 import com.cargohub.mobile.tracking.TrackingPause;
+import com.cargohub.mobile.ui.PortesFragment;
 import com.cargohub.mobile.ui.FirmaEntregaFragment;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
@@ -98,7 +99,6 @@ public class TrackingStatusFragment extends Fragment {
     private static final String TRACKING_PHASE_TO_DROPOFF = "TO_DROPOFF";
     private static final String TRACKING_PHASE_IDLE = "IDLE";
 
-    // Default driver location: Gijón, Asturias (used when no real GPS is available)
     private static final double DEFAULT_DRIVER_LAT = 43.5322;
     private static final double DEFAULT_DRIVER_LON = -5.6611;
 
@@ -119,15 +119,15 @@ public class TrackingStatusFragment extends Fragment {
     private static final String PREF_TIMER_DISTANCE_M = "tracking_timer_distance_m";
     private static final long ROUTE_REFRESH_INTERVAL_MS = 45_000L;
 
-    // Setup overlay views
     private View setupOverlay;
     private ProgressBar loadingProgress;
     private TextView statusText;
     private TextView permissionText;
     private MaterialButton permissionButton;
     private MaterialButton toggleTrackingButton;
+    private MaterialButton goHomeButton;
+    private MaterialButton goPortesButton;
 
-    // Map views
     private MapView mapView;
     private MaterialCardView statsCard;
     private TextView etaValue;
@@ -139,8 +139,8 @@ public class TrackingStatusFragment extends Fragment {
     private TextView syncStatusValue;
     private MaterialButton reportIncidentButton;
     private MaterialButton stopButton;
+    private MaterialButton confirmPickupButton;
 
-    // New views: play/pause, status chip, pause stats
     private FloatingActionButton playPauseFab;
     private FloatingActionButton recenterFab;
     private FloatingActionButton infoFab;
@@ -153,7 +153,6 @@ public class TrackingStatusFragment extends Fragment {
     private TextView pauseCountValue;
     private TextView timeTotalValue;
 
-    // Driving mode views
     private FloatingActionButton drivingModeFab;
     private FrameLayout drivingOverlayTop;
     private FrameLayout drivingOverlayBottom;
@@ -164,19 +163,16 @@ public class TrackingStatusFragment extends Fragment {
     private FloatingActionButton drivingPlayPauseFab;
     private FloatingActionButton drivingExitFab;
 
-    // Map overlays
     private Marker driverMarker;
     private Marker destinationMarker;
     private Polyline routePolyline;
     private Polyline routeOutline;
 
-    // State
     private Porte activeTrip;
     private Long hintedPorteId;
     private double destLat = Double.NaN;
     private double destLon = Double.NaN;
 
-    // Stats tracking
     private long trackingStartTimeMs;
     private long totalWorkTimeMs;
     private long lastPlayResumeMs;
@@ -185,12 +181,11 @@ public class TrackingStatusFragment extends Fragment {
     private int locationCount;
     private double totalSpeedSum;
 
-    // Play/Pause state
     private boolean isPlaying;
     private final ArrayList<TrackingPause> pauses = new ArrayList<>();
 
-    // Driving mode state
     private boolean isDrivingMode;
+    private boolean preventAutoReload;
     private float lastBearing;
     private float currentSmoothedBearing;
     private RouteInfo lastRouteInfo;
@@ -357,15 +352,12 @@ public class TrackingStatusFragment extends Fragment {
             activeTrackingSessionId = readPersistedSessionId();
         }
 
-        // Setup overlay
         setupOverlay = view.findViewById(R.id.trackingSetupOverlay);
         loadingProgress = view.findViewById(R.id.trackingLoadingProgress);
         statusText = view.findViewById(R.id.trackingStatusText);
-        permissionText = view.findViewById(R.id.trackingPermissionText);
-        permissionButton = view.findViewById(R.id.trackingPermissionButton);
-        toggleTrackingButton = view.findViewById(R.id.trackingToggleButton);
+        goHomeButton = view.findViewById(R.id.trackingGoHomeButton);
+        goPortesButton = view.findViewById(R.id.trackingGoPortesButton);
 
-        // Map
         mapView = view.findViewById(R.id.trackingMapView);
         mapView.setTileSource(ROAD_FOCUSED_TILE_SOURCE);
         mapView.setMultiTouchControls(true);
@@ -373,7 +365,6 @@ public class TrackingStatusFragment extends Fragment {
         mapController.setZoom(15.0);
         mapController.setCenter(new GeoPoint(DEFAULT_DRIVER_LAT, DEFAULT_DRIVER_LON));
 
-        // Stats card
         statsCard = view.findViewById(R.id.trackingStatsCard);
         etaValue = view.findViewById(R.id.trackingEtaValue);
         distanceRemainingValue = view.findViewById(R.id.trackingDistanceRemainingValue);
@@ -384,25 +375,22 @@ public class TrackingStatusFragment extends Fragment {
         syncStatusValue = view.findViewById(R.id.trackingSyncStatusValue);
         reportIncidentButton = view.findViewById(R.id.trackingReportIncidentButton);
         stopButton = view.findViewById(R.id.trackingStopButton);
+        confirmPickupButton = view.findViewById(R.id.trackingConfirmPickupButton);
 
-        // Play/pause FAB
         playPauseFab = view.findViewById(R.id.trackingPlayPauseFab);
         recenterFab = view.findViewById(R.id.trackingRecenterFab);
         infoFab = view.findViewById(R.id.trackingInfoFab);
 
-        // Status chip
         statusChipCard = view.findViewById(R.id.trackingStatusChipCard);
         statusChipText = view.findViewById(R.id.trackingStatusChipText);
         sessionMetaCard = view.findViewById(R.id.trackingSessionMetaCard);
         sessionStatusValue = view.findViewById(R.id.trackingSessionStatusValue);
         sessionPhaseValue = view.findViewById(R.id.trackingSessionPhaseValue);
 
-        // Pause stats
         timePausedValue = view.findViewById(R.id.trackingTimePausedValue);
         pauseCountValue = view.findViewById(R.id.trackingPauseCountValue);
         timeTotalValue = view.findViewById(R.id.trackingTimeTotalValue);
 
-        // Driving mode
         drivingModeFab = view.findViewById(R.id.drivingModeFab);
         drivingOverlayTop = view.findViewById(R.id.drivingOverlayTop);
         drivingOverlayBottom = view.findViewById(R.id.drivingOverlayBottom);
@@ -413,20 +401,26 @@ public class TrackingStatusFragment extends Fragment {
         drivingPlayPauseFab = view.findViewById(R.id.drivingPlayPauseFab);
         drivingExitFab = view.findViewById(R.id.drivingExitFab);
 
-        permissionButton.setOnClickListener(v -> requestLocationPermission());
-        toggleTrackingButton.setOnClickListener(v -> toggleTracking());
+        if (permissionButton != null) permissionButton.setOnClickListener(v -> requestLocationPermission());
+        if (toggleTrackingButton != null) toggleTrackingButton.setOnClickListener(v -> toggleTracking());
+        if (goHomeButton != null) {
+            goHomeButton.setOnClickListener(v -> navigateBack());
+        }
+        if (goPortesButton != null) {
+            goPortesButton.setOnClickListener(v -> navigateToPortes());
+        }
         playPauseFab.setOnClickListener(v -> onPlayPauseTapped());
         recenterFab.setOnClickListener(v -> onRecenterTapped());
         infoFab.setOnClickListener(v -> showActiveTripDetails());
         reportIncidentButton.setOnClickListener(v -> openNewIncidentFromTracking());
         stopButton.setOnClickListener(v -> showFinalizeConfirmation());
+        confirmPickupButton.setOnClickListener(v -> confirmPickup());
         drivingModeFab.setOnClickListener(v -> {
-            // Unified navigation mode: toggle intentionally disabled.
+            // Modo navegación unificado: el toggle se mantiene deshabilitado a propósito.
         });
         drivingPlayPauseFab.setOnClickListener(v -> onPlayPauseTapped());
         drivingExitFab.setOnClickListener(v -> exitDrivingMode());
 
-        // Show setup overlay initially
         setupOverlay.setVisibility(View.VISIBLE);
         statsCard.setVisibility(View.GONE);
         playPauseFab.setVisibility(View.GONE);
@@ -500,14 +494,12 @@ public class TrackingStatusFragment extends Fragment {
         }
     }
 
-    // ── Play/Pause logic ────────────────────────────────────────────────
+    // ── Lógica de reproducción/pausa ─────────────────────────────────────
 
     private void onPlayPauseTapped() {
         if (isPlaying) {
-            // User wants to PAUSE → show reason picker
             showPauseReasonPicker();
         } else {
-            // User wants to RESUME (play)
             resumeTracking();
         }
     }
@@ -562,7 +554,6 @@ public class TrackingStatusFragment extends Fragment {
     }
 
     private void executePause(@NonNull MotivoPausa motivo, @Nullable String nota) {
-        // Accumulate work time up to now
         long now = System.currentTimeMillis();
         if (lastPlayResumeMs > 0) {
             totalWorkTimeMs += (now - lastPlayResumeMs);
@@ -573,11 +564,9 @@ public class TrackingStatusFragment extends Fragment {
         updateTrackingSession(TRACKING_STATUS_PAUSED);
         stopTrackingForegroundService();
 
-        // Record pause locally
         TrackingPause pause = new TrackingPause(motivo, nota, now);
         pauses.add(pause);
 
-        // Persist pause to backend
         persistPauseToBackend(motivo.name(), nota, now, 0L);
 
         persistTimerState();
@@ -585,12 +574,10 @@ public class TrackingStatusFragment extends Fragment {
     }
 
     private void resumeTracking() {
-        // Close active pause if any
         long now = System.currentTimeMillis();
         TrackingPause activePause = getActivePause();
         if (activePause != null) {
             activePause.cerrar(now);
-            // Persist pause end to backend
             persistPauseEndToBackend(now);
         }
 
@@ -731,7 +718,7 @@ public class TrackingStatusFragment extends Fragment {
         return System.currentTimeMillis() - trackingStartTimeMs;
     }
 
-    // ── Existing tracking lifecycle (adapted) ───────────────────────────
+    // ── Ciclo de vida del tracking (adaptado) ────────────────────────────
 
     private void refreshTrackingState() {
         Long conductorId = SessionManager.resolveConductorId();
@@ -750,6 +737,9 @@ public class TrackingStatusFragment extends Fragment {
         loadingProgress.setVisibility(View.GONE);
 
         if (!result.isSuccessful() || result.getData() == null) {
+            // Si la API falla, limpiamos el timer persistido para no bloquear
+            // al usuario con un timer stale que no podemos verificar.
+            clearPersistedTimerState();
             showSnackbar(result.getMessage(), R.string.generic_api_error_short, Snackbar.LENGTH_LONG);
             return;
         }
@@ -757,17 +747,45 @@ public class TrackingStatusFragment extends Fragment {
         activeTrip = resolveActiveTrip(result.getData());
 
         Long persistedTimerPorteId = readPersistedTimerPorteId();
-        if (persistedTimerPorteId != null && hintedPorteId != null && !persistedTimerPorteId.equals(hintedPorteId)) {
-            showSnackbar(R.string.tracking_active_trip_already_running, Snackbar.LENGTH_LONG);
+        if (persistedTimerPorteId != null) {
+            boolean timerPorteStillActive = false;
+            for (Porte trip : result.getData()) {
+                if (trip.getId() != null && trip.getId().equals(persistedTimerPorteId)
+                        && (trip.getEstadoPorte() == EstadoPorte.EN_RECOGIDA
+                            || trip.getEstadoPorte() == EstadoPorte.EN_TRANSITO)) {
+                    timerPorteStillActive = true;
+                    break;
+                }
+            }
+            if (!timerPorteStillActive) {
+                clearPersistedTimerState();
+                persistedTimerPorteId = null;
+            }
         }
 
-        // Resolve destination coordinates from trip if not passed via args
-        if (Double.isNaN(destLat) && activeTrip != null && activeTrip.hasDestinationCoordinates()) {
-            destLat = activeTrip.getDestinoLat();
-            destLon = activeTrip.getDestinoLon();
+        // Dynamic destination: ASIGNADO → origen, EN_TRANSITO → destino
+        if (activeTrip != null) {
+            EstadoPorte state = activeTrip.getEstadoPorte();
+            if (state == EstadoPorte.EN_RECOGIDA && activeTrip.hasOriginCoordinates()) {
+                destLat = activeTrip.getOrigenLat();
+                destLon = activeTrip.getOrigenLon();
+            } else if (state == EstadoPorte.ASIGNADO && activeTrip.hasOriginCoordinates()) {
+                destLat = activeTrip.getOrigenLat();
+                destLon = activeTrip.getOrigenLon();
+            } else if (state == EstadoPorte.EN_TRANSITO && activeTrip.hasDestinationCoordinates()) {
+                destLat = activeTrip.getDestinoLat();
+                destLon = activeTrip.getDestinoLon();
+            }
         }
 
         if (activeTrip == null) {
+            preventAutoReload = false;
+            statusText.setText(R.string.tracking_status_idle);
+            clearTrackingSessionMeta();
+            setupOverlay.setVisibility(View.VISIBLE);
+            stopTrackingForegroundService();
+        } else if (preventAutoReload && readPersistedTimerPorteId() == null) {
+            preventAutoReload = false;
             statusText.setText(R.string.tracking_status_idle);
             clearTrackingSessionMeta();
             setupOverlay.setVisibility(View.VISIBLE);
@@ -775,40 +793,43 @@ public class TrackingStatusFragment extends Fragment {
         } else {
             renderPermissionState();
             if (hasLocationPermission()) {
-                // Show map view and wait for user to press play (no auto-start)
                 showMapView();
+                boolean restored = restoreTimerStateForActiveTrip();
+                if (restored) {
+                    startTimerUpdates();
+                    updatePlayPauseUI();
+                    if (isPlaying) {
+                        startTrackingForegroundServiceInternal();
+                    }
+                }
             } else {
                 setupOverlay.setVisibility(View.VISIBLE);
                 statusText.setText(R.string.tracking_status_ready);
             }
         }
-        toggleTrackingButton.setEnabled(activeTrip != null);
+        if (toggleTrackingButton != null) toggleTrackingButton.setEnabled(activeTrip != null);
         updateReportIncidentCtaVisibility();
         updateFinalizePorteCtaVisibility();
+        updateConfirmPickupCtaVisibility();
     }
 
     @Nullable
     private Porte resolveActiveTrip(@NonNull List<Porte> trips) {
         Long persistedTimerPorteId = readPersistedTimerPorteId();
         Porte persisted = null;
-        Porte hinted = null;
         Porte fallback = null;
         for (Porte trip : trips) {
             EstadoPorte state = trip.getEstadoPorte();
-            boolean active = state == EstadoPorte.EN_TRANSITO || state == EstadoPorte.ASIGNADO;
+            boolean active = state == EstadoPorte.EN_RECOGIDA || state == EstadoPorte.EN_TRANSITO;
             if (!active) continue;
             if (persistedTimerPorteId != null && trip.getId() != null && persistedTimerPorteId.equals(trip.getId())) {
                 persisted = trip;
                 break;
             }
-            if (hintedPorteId != null && trip.getId() != null && hintedPorteId.equals(trip.getId())) {
-                hinted = trip;
-                break;
-            }
             if (fallback == null) fallback = trip;
         }
         if (persisted != null) return persisted;
-        return hinted != null ? hinted : fallback;
+        return fallback;
     }
 
     private void requestLocationPermission() {
@@ -903,13 +924,11 @@ public class TrackingStatusFragment extends Fragment {
         double lat = location.getLatitude();
         double lon = location.getLongitude();
 
-        // Accumulate distance only when playing
         if (lastLocation != null) {
             totalDistanceMeters += lastLocation.distanceTo(location);
         }
         lastLocation = location;
 
-        // Speed stats
         if (location.hasSpeed()) {
             double speedKph = location.getSpeed() * 3.6;
             locationCount++;
@@ -918,15 +937,12 @@ public class TrackingStatusFragment extends Fragment {
         }
         updateNavigationStatusUI();
 
-        // Distance covered
         distanceCoveredValue.setText(String.format(Locale.US, "%.1f km", totalDistanceMeters / 1000.0));
         persistTimerState();
         updateRecenterUiState();
 
-        // Update driver marker
         updateDriverMarker(lat, lon);
 
-        // Rotate map by route bearing (preferred) or GPS bearing as fallback
         Float routeBearing = calculateRouteBearing(lat, lon);
         float bearing;
         if (routeBearing != null) {
@@ -939,22 +955,17 @@ public class TrackingStatusFragment extends Fragment {
         if (!Float.isNaN(bearing)) {
             float smoothed = smoothBearing(bearing);
             mapView.setMapOrientation(-smoothed);
-            // Do NOT rotate the marker — the rotated map already orients it correctly.
-            // The arrow icon points up; with map rotation it aligns with the road.
             if (driverMarker != null) {
                 driverMarker.setRotation(0f);
             }
-            // Always use forward-perspective centering when we have a bearing
             centerMapWithForwardPerspective(lat, lon, smoothed);
         } else {
             centerMapOnDriver(lat, lon);
         }
 
-        // Destination marker & route
         if (!Double.isNaN(destLat)) {
             updateDestinationMarker();
             fetchRoute(lat, lon);
-            // Only fit bounds when no valid bearing (e.g. stationary)
             if (Float.isNaN(bearing)) {
                 fitMapBounds(lat, lon);
             }
@@ -1095,7 +1106,6 @@ public class TrackingStatusFragment extends Fragment {
             return;
         }
         String text = lastRouteInfo.getArrivalTimeFormatted() + " " + formatRouteDuration(lastRouteInfo);
-        // Guard: avoid redundant setText to prevent visual flicker / duplication artifacts
         CharSequence current = etaValue.getText();
         if (current != null && text.contentEquals(current)) {
             return;
@@ -1154,7 +1164,6 @@ public class TrackingStatusFragment extends Fragment {
         mapView.getOverlays().add(1, routePolyline);
         mapView.invalidate();
 
-        // Compute straight-line distance as fallback for remaining km
         float[] results = new float[1];
         android.location.Location.distanceBetween(fromLat, fromLon, toLat, toLon, results);
         double distanceKm = results[0] / 1000.0;
@@ -1171,8 +1180,6 @@ public class TrackingStatusFragment extends Fragment {
             }
             PorteTrackingResponse tracking = result.getData();
             Integer etaMinutes = tracking.getEtaMinutes();
-            // Ignore null, negative, or suspiciously low values (backend often
-            // returns 0 before the driver has moved enough to compute a real ETA).
             if (etaMinutes == null || etaMinutes < 2) {
                 return;
             }
@@ -1199,19 +1206,15 @@ public class TrackingStatusFragment extends Fragment {
     }
 
     private void updateTimerDisplays() {
-        // Work time: only when playing
         long workMs = getCurrentWorkTimeMs();
         timeWorkedValue.setText(formatDuration(workMs));
 
-        // Total time since session start
         long totalMs = getTotalElapsedMs();
         timeTotalValue.setText(formatDuration(totalMs));
 
-        // Paused time
         long pausedMs = getTotalPausedMs();
         timePausedValue.setText(formatDurationShort(pausedMs));
 
-        // Pause count
         pauseCountValue.setText(String.valueOf(pauses.size()));
         updateNavigationStatusUI();
     }
@@ -1235,7 +1238,7 @@ public class TrackingStatusFragment extends Fragment {
         return String.format(Locale.US, "%dh %02dm", hours, mins);
     }
 
-    // ── View state management ───────────────────────────────────────────
+    // ── Gestión de estado de vista ───────────────────────────────────────
 
     private void showMapView() {
         if (hasPersistedTimerForDifferentPorte()) {
@@ -1253,13 +1256,23 @@ public class TrackingStatusFragment extends Fragment {
         recenterFab.setVisibility(View.GONE);
         isAutoFollowEnabled = true;
 
-        if (!isDrivingMode) {
+        boolean isPickupPhase = activeTrip != null && activeTrip.getEstadoPorte() == EstadoPorte.ASIGNADO;
+
+        if (!isDrivingMode && !isPickupPhase) {
             enterDrivingMode();
         }
 
         updateReportIncidentCtaVisibility();
         updateFinalizePorteCtaVisibility();
-        initializeTrackingSession();
+        updateConfirmPickupCtaVisibility();
+
+        if (!isPickupPhase) {
+            initializeTrackingSession();
+        } else {
+            // Setup timer display for pickup phase without starting tracking session
+            startTimerUpdates();
+            updatePlayPauseUI();
+        }
 
         // Try real last known location first; fallback only if nothing is available
         if (lastLocation == null) {
@@ -1297,6 +1310,9 @@ public class TrackingStatusFragment extends Fragment {
         if (reportIncidentButton != null) {
             reportIncidentButton.setVisibility(View.GONE);
         }
+        if (confirmPickupButton != null) {
+            confirmPickupButton.setVisibility(View.GONE);
+        }
         statusText.setText(message);
         timerHandler.removeCallbacksAndMessages(null);
     }
@@ -1330,7 +1346,7 @@ public class TrackingStatusFragment extends Fragment {
             mercancia.setText(nvl(activeTrip.getDescripcionMercancia(), "—"));
         }
         if (cliente != null) {
-            cliente.setText(nvl(activeTrip.getDescripcionCliente(), "—"));
+            cliente.setText(nvl(activeTrip.getNombreCliente(), "—"));
         }
         if (fechas != null) {
             fechas.setText(UiFormatters.formatPorteSchedule(activeTrip));
@@ -1342,7 +1358,32 @@ public class TrackingStatusFragment extends Fragment {
             estado.setText(UiFormatters.formatPorteState(activeTrip));
         }
 
+        MaterialButton openFotosBtn = sheet.findViewById(R.id.bsOpenFotosButton);
+        if (openFotosBtn != null && activeTrip.getId() != null) {
+            final long porteId = activeTrip.getId();
+            openFotosBtn.setOnClickListener(v -> {
+                dialog.dismiss();
+                openFotosFromTracking(porteId);
+            });
+        }
+
         dialog.show();
+    }
+
+    private void openFotosFromTracking(long porteId) {
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFragmentContainer, FotoCargaFragment.newInstance(porteId))
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void navigateToPortes() {
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFragmentContainer, new PortesFragment())
+                .addToBackStack(null)
+                .commit();
     }
 
     @NonNull
@@ -1373,7 +1414,7 @@ public class TrackingStatusFragment extends Fragment {
                 .commit();
     }
 
-    // ── Finalize journey ────────────────────────────────────────────────
+    // ── Finalizar viaje ──────────────────────────────────────────────────
 
     private void showFinalizeConfirmation() {
         new AlertDialog.Builder(requireContext())
@@ -1409,20 +1450,61 @@ public class TrackingStatusFragment extends Fragment {
         );
     }
 
+    private void confirmPickup() {
+        if (activeTrip == null || activeTrip.getId() == null || activeTrip.getEstadoPorte() != EstadoPorte.EN_RECOGIDA) {
+            showSnackbar(R.string.generic_api_error_short, Snackbar.LENGTH_LONG);
+            return;
+        }
+        confirmPickupButton.setEnabled(false);
+        porteRepository.changeTripState(
+                activeTrip.getId(),
+                EstadoPorte.EN_RECOGIDA,
+                EstadoPorte.EN_TRANSITO,
+                result -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    confirmPickupButton.setEnabled(true);
+                    if (!result.isSuccessful() || result.getData() == null) {
+                        showSnackbar(result.getMessage(), R.string.generic_api_error_short, Snackbar.LENGTH_LONG);
+                        return;
+                    }
+                    activeTrip = result.getData();
+                    // Switch destination to DESTINO coords
+                    if (activeTrip.hasDestinationCoordinates()) {
+                        destLat = activeTrip.getDestinoLat();
+                        destLon = activeTrip.getDestinoLon();
+                    }
+                    // Remove old origin marker and redraw for destination
+                    if (destinationMarker != null) {
+                        mapView.getOverlays().remove(destinationMarker);
+                        destinationMarker = null;
+                    }
+                    // Re-render route to new destination
+                    if (lastLocation != null) {
+                        updateDestinationMarker();
+                        fetchRoute(lastLocation.getLatitude(), lastLocation.getLongitude());
+                    } else if (!Double.isNaN(destLat)) {
+                        updateDestinationMarker();
+                    }
+                    updateConfirmPickupCtaVisibility();
+                    updateFinalizePorteCtaVisibility();
+                    Snackbar.make(requireView(), R.string.tracking_pickup_confirmed, Snackbar.LENGTH_LONG).show();
+                }
+        );
+    }
+
     private void finishTrackingSessionAndShowSummary() {
-        // Exit driving mode if active
         if (isDrivingMode) {
             exitDrivingMode();
         }
 
-        // If still playing, accumulate last work segment
         if (isPlaying && lastPlayResumeMs > 0) {
             totalWorkTimeMs += (System.currentTimeMillis() - lastPlayResumeMs);
             lastPlayResumeMs = 0;
         }
         isPlaying = false;
 
-        // Close active pause
         TrackingPause activePause = getActivePause();
         long now = System.currentTimeMillis();
         if (activePause != null) {
@@ -1438,7 +1520,6 @@ public class TrackingStatusFragment extends Fragment {
         clearPersistedTimerState();
         timerHandler.removeCallbacksAndMessages(null);
 
-        // Show summary
         String totalTime = formatDuration(getTotalElapsedMs());
         String workTime = formatDuration(totalWorkTimeMs);
         String pausedTime = formatDurationShort(getTotalPausedMs());
@@ -1450,13 +1531,36 @@ public class TrackingStatusFragment extends Fragment {
         String body = getString(R.string.tracking_finalize_summary_body,
                 totalTime, workTime, pausedTime, pauses.size(), distance, avgSpeed);
 
+        final long finalizedPorteId = activeTrip != null && activeTrip.getId() != null ? activeTrip.getId() : -1L;
+        activeTrip = null;
+        preventAutoReload = true;
+
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.tracking_finalize_summary_title)
                 .setMessage(body)
-                .setPositiveButton("Firmar entrega", (d, w) -> openFirmaEntrega())
-                .setNegativeButton("Volver", (d, w) -> navigateBack())
+                .setPositiveButton("Firmar entrega", (d, w) -> openFirmaEntrega(finalizedPorteId))
+                .setNegativeButton("Volver", (d, w) -> showIdleOverlay())
                 .setCancelable(false)
                 .show();
+    }
+
+    private void showIdleOverlay() {
+        setupOverlay.setVisibility(View.VISIBLE);
+        statusText.setText(R.string.tracking_status_idle);
+        clearTrackingSessionMeta();
+        stopTrackingForegroundService();
+    }
+
+    private void openFirmaEntrega(long porteId) {
+        if (porteId <= 0) {
+            navigateBack();
+            return;
+        }
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFragmentContainer, FirmaEntregaFragment.newInstance(porteId))
+                .addToBackStack(null)
+                .commit();
     }
 
     private void openFirmaEntrega() {
@@ -1481,79 +1585,76 @@ public class TrackingStatusFragment extends Fragment {
 
     private void renderPermissionState() {
         boolean granted = hasLocationPermission();
-        permissionText.setText(granted
-                ? getString(R.string.tracking_permission_granted)
-                : getString(R.string.tracking_permission_missing));
-        permissionButton.setVisibility(granted ? View.GONE : View.VISIBLE);
-        toggleTrackingButton.setText(isPlaying
-                ? R.string.tracking_stop_action
-                : R.string.tracking_start_action);
+        if (permissionText != null) {
+            permissionText.setText(granted
+                    ? getString(R.string.tracking_permission_granted)
+                    : getString(R.string.tracking_permission_missing));
+        }
+        if (permissionButton != null) {
+            permissionButton.setVisibility(granted ? View.GONE : View.VISIBLE);
+        }
+        if (toggleTrackingButton != null) {
+            toggleTrackingButton.setText(isPlaying
+                    ? R.string.tracking_stop_action
+                    : R.string.tracking_start_action);
+        }
     }
 
-    // ── Driving mode ──────────────────────────────────────────────────────
+    // ── Modo conducción ───────────────────────────────────────────────────
 
     private void enterDrivingMode() {
         isDrivingMode = true;
 
-        // Keep unified UI: map + bottom stats/actions.
         statsCard.setVisibility(View.VISIBLE);
         statusChipCard.setVisibility(View.VISIBLE);
         playPauseFab.setVisibility(View.VISIBLE);
         stopButton.setVisibility(View.VISIBLE);
         updateFinalizePorteCtaVisibility();
+        updateConfirmPickupCtaVisibility();
         drivingModeFab.setVisibility(View.GONE);
         drivingOverlayTop.setVisibility(View.GONE);
         drivingOverlayBottom.setVisibility(View.GONE);
 
-        // Keep screen on
         if (getActivity() != null) {
             getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
-        // Switch driver marker to arrow
         updateDriverMarkerToDrivingMode();
 
-        // Set map orientation for navigation-style follow
         mapView.getController().setZoom(17.0);
         recenterFab.setVisibility(View.GONE);
 
-        // Update driving overlay data
         updateDrivingOverlayUI();
     }
 
     private void exitDrivingMode() {
         isDrivingMode = false;
 
-        // Restore default map mode behavior while preserving card UI.
         statsCard.setVisibility(View.VISIBLE);
         statusChipCard.setVisibility(View.VISIBLE);
         playPauseFab.setVisibility(View.VISIBLE);
         stopButton.setVisibility(View.VISIBLE);
         updateFinalizePorteCtaVisibility();
+        updateConfirmPickupCtaVisibility();
         drivingModeFab.setVisibility(View.GONE);
 
-        // Ensure dedicated driving overlays remain hidden.
         drivingOverlayTop.setVisibility(View.GONE);
         drivingOverlayBottom.setVisibility(View.GONE);
 
-        // Remove keep-screen-on
         if (getActivity() != null) {
             getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
-        // Reset map orientation
         mapView.setMapOrientation(0f);
         mapView.getController().setZoom(15.0);
         isAutoFollowEnabled = true;
         updateRecenterUiState();
 
-        // Restore default driver marker
         if (driverMarker != null) {
             applyDriverMarkerStyle();
             driverMarker.setRotation(0f);
         }
 
-        // Re-fit bounds if we have destination
         if (lastLocation != null && !Double.isNaN(destLat)) {
             fitMapBounds(lastLocation.getLatitude(), lastLocation.getLongitude());
         }
@@ -1613,6 +1714,15 @@ public class TrackingStatusFragment extends Fragment {
         stopButton.setEnabled(canFinalizePorte);
     }
 
+    private void updateConfirmPickupCtaVisibility() {
+        if (confirmPickupButton == null) {
+            return;
+        }
+        boolean canConfirmPickup = activeTrip != null && activeTrip.getEstadoPorte() == EstadoPorte.EN_RECOGIDA;
+        confirmPickupButton.setVisibility(canConfirmPickup ? View.VISIBLE : View.GONE);
+        confirmPickupButton.setEnabled(canConfirmPickup);
+    }
+
     private void applyDriverMarkerStyle() {
         if (driverMarker == null) return;
         Drawable arrowDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_driver_arrow);
@@ -1662,12 +1772,9 @@ public class TrackingStatusFragment extends Fragment {
      */
     private float smoothBearing(float newBearing) {
         float diff = newBearing - currentSmoothedBearing;
-        // Normalize to [-180, 180]
         while (diff > 180) diff -= 360;
         while (diff < -180) diff += 360;
-        // Lerp factor 0.3 for smooth transition
         currentSmoothedBearing += diff * 0.3f;
-        // Normalize result
         while (currentSmoothedBearing < 0) currentSmoothedBearing += 360;
         while (currentSmoothedBearing >= 360) currentSmoothedBearing -= 360;
         return currentSmoothedBearing;
@@ -1688,10 +1795,8 @@ public class TrackingStatusFragment extends Fragment {
             GeoPoint driverPoint = new GeoPoint(lat, lon);
             Point driverPixel = projection.toPixels(driverPoint, null);
 
-            // Place driver at ~75% from top (25% from bottom) = 30% ahead offset
             int offsetPixels = (int) (mapView.getHeight() * 0.30);
 
-            // Bearing 0 = North = -Y on screen. Move center "ahead" of driver.
             int aheadX = (int) (Math.sin(Math.toRadians(bearing)) * offsetPixels);
             int aheadY = (int) (-Math.cos(Math.toRadians(bearing)) * offsetPixels);
 
@@ -1704,7 +1809,6 @@ public class TrackingStatusFragment extends Fragment {
     }
 
     private void updateDrivingOverlayUI() {
-        // Speed
         if (lastLocation != null && lastLocation.hasSpeed()) {
             int speedKph = (int) (lastLocation.getSpeed() * 3.6);
             drivingSpeedValue.setText(String.valueOf(speedKph));
@@ -1712,13 +1816,11 @@ public class TrackingStatusFragment extends Fragment {
             drivingSpeedValue.setText("0");
         }
 
-        // ETA (renderEta handles backend vs OSRM preference) + distance
         renderEta();
         if (lastRouteInfo != null) {
             drivingDistanceValue.setText(lastRouteInfo.getDistanceKmFormatted());
         }
 
-        // Status chip color based on play/pause
         if (isPlaying) {
             drivingStatusText.setText(R.string.driving_mode_on_route);
             drivingStatusText.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.ch_success_chip_tint));
@@ -2165,9 +2267,10 @@ public class TrackingStatusFragment extends Fragment {
             return TRACKING_PHASE_IDLE;
         }
         switch (state) {
+            case EN_RECOGIDA:
+                return TRACKING_PHASE_TO_PICKUP;
             case EN_TRANSITO:
                 return TRACKING_PHASE_TO_DROPOFF;
-            case PENDIENTE:
             case ASIGNADO:
                 return TRACKING_PHASE_TO_PICKUP;
             case ENTREGADO:
@@ -2181,8 +2284,8 @@ public class TrackingStatusFragment extends Fragment {
         if (!isPlaying || activeTrackingSessionId == null || !isAdded()) {
             return;
         }
-        // If service was already started without sessionId, send ACTION_START again with the id.
-        // Service handles this as an in-place session propagation.
+        // Si el servicio arrancó sin sessionId, reenviamos ACTION_START con el id.
+        // El servicio lo interpreta como propagación en caliente de sesión.
         startTrackingForegroundServiceInternal();
     }
 
@@ -2219,7 +2322,7 @@ public class TrackingStatusFragment extends Fragment {
         }
     }
 
-    // ── ViewHolder for pause reasons ────────────────────────────────────
+    // ── ViewHolder para motivos de pausa ─────────────────────────────────
 
     private static class PauseReasonVH extends RecyclerView.ViewHolder {
         final TextView emoji;

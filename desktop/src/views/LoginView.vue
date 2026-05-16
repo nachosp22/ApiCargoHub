@@ -6,6 +6,7 @@ import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
 const loginBackgroundImage = '/assets/brand/login-bg.png'
+const whiteLogo = '/assets/brand/logo-blanco.png'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -88,7 +89,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="relative min-h-screen flex items-center justify-center px-4 py-8 overflow-hidden">
+  <div class="relative min-h-screen flex items-center justify-center overflow-hidden bg-blue-950 px-4 py-6">
     <img
       :src="loginBackgroundImage"
       alt=""
@@ -98,7 +99,7 @@ onMounted(async () => {
 
     <div
       class="absolute inset-0"
-      style="background: linear-gradient(120deg, rgba(15, 23, 42, 0.74) 0%, rgba(30, 64, 175, 0.62) 45%, rgba(15, 23, 42, 0.8) 100%)"
+      style="background: linear-gradient(120deg, rgba(8, 38, 112, 0.76) 0%, rgba(14, 73, 190, 0.58) 48%, rgba(8, 38, 112, 0.78) 100%)"
     ></div>
 
     <div
@@ -134,32 +135,24 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div class="absolute inset-0 bg-slate-950/20 backdrop-blur-[1.5px]"></div>
+    <div class="absolute inset-0 bg-blue-950/20 backdrop-blur-[1.5px]"></div>
 
-    <div class="relative z-10 w-full max-w-md">
+    <div class="relative z-10 flex w-full max-w-[440px] flex-col items-center">
       <!-- Logo / Brand -->
-      <div class="text-center mb-8">
-        <div
-          class="inline-flex items-center justify-center w-16 h-16 bg-white/95 dark:bg-gray-800/95 shadow-lg rounded-2xl mb-4"
-        >
-          <img
-            src="/assets/brand/logo.png"
-            alt="CargoHub"
-            class="w-10 h-10 object-contain"
-          />
-        </div>
-        <h1 class="text-2xl font-bold text-white drop-shadow">CargoHub</h1>
-        <p class="text-blue-100/95 mt-1">Plataforma de Gestión Logística</p>
+      <div class="mb-7 text-center text-white">
+        <img :src="whiteLogo" alt="CargoHub" class="mx-auto h-20 w-auto object-contain drop-shadow-2xl" />
+        <h1 class="mt-3 text-2xl font-bold leading-tight drop-shadow">CargoHub</h1>
+        <p class="mt-1.5 text-base text-blue-50/95 drop-shadow-sm">Plataforma de Gestión Logística</p>
       </div>
 
       <!-- Login Card -->
-      <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-2xl shadow-2xl ring-1 ring-white/30 dark:ring-slate-600/60 p-8">
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-6">Iniciar Sesión</h2>
+      <div class="w-full rounded-[1.15rem] bg-white/95 p-8 shadow-2xl shadow-blue-950/45 ring-1 ring-white/70 backdrop-blur-md">
+        <h2 class="mb-7 text-center text-2xl font-bold tracking-tight text-gray-950">Iniciar Sesión</h2>
 
         <form @submit.prevent="handleLogin" class="space-y-5">
           <!-- Email -->
-          <div class="flex flex-col gap-2">
-            <label for="email" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div class="flex flex-col gap-2.5">
+            <label for="email" class="text-sm font-semibold text-gray-700">
               Correo electrónico
             </label>
             <InputText
@@ -173,8 +166,8 @@ onMounted(async () => {
           </div>
 
           <!-- Password -->
-          <div class="flex flex-col gap-2">
-            <label for="password" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div class="flex flex-col gap-2.5">
+            <label for="password" class="text-sm font-semibold text-gray-700">
               Contraseña
             </label>
             <Password
@@ -192,10 +185,10 @@ onMounted(async () => {
           <!-- Error message -->
           <div
             v-if="errorMessage"
-            class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-lg flex items-center gap-2"
+            class="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
           >
-            <i class="pi pi-exclamation-circle"></i>
-            {{ errorMessage }}
+            <i class="pi pi-exclamation-circle mt-0.5"></i>
+            <span>{{ errorMessage }}</span>
           </div>
 
           <!-- Submit -->
@@ -210,9 +203,44 @@ onMounted(async () => {
       </div>
 
       <!-- Footer -->
-      <p class="text-center text-blue-100/85 text-xs mt-6">
+      <p class="mt-6 text-center text-sm text-blue-50/95 drop-shadow-sm">
         CargoHub Desktop &copy; {{ new Date().getFullYear() }}
       </p>
     </div>
   </div>
 </template>
+
+<style scoped>
+:deep(.p-inputtext),
+:deep(.p-password-input) {
+  height: 2.85rem;
+  border-radius: 0.45rem;
+  border-color: #cbd5e1;
+  font-size: 0.98rem;
+}
+
+:deep(.p-inputtext:enabled:focus),
+:deep(.p-password-input:enabled:focus) {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 1px #0d6efd;
+}
+
+:deep(.p-inputtext::placeholder),
+:deep(.p-password-input::placeholder) {
+  color: #66789f;
+}
+
+:deep(.p-button) {
+  height: 2.95rem;
+  border-radius: 0.45rem;
+  border-color: #0d6efd;
+  background: #0d6efd;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+:deep(.p-button:not(:disabled):hover) {
+  border-color: #0b5ed7;
+  background: #0b5ed7;
+}
+</style>

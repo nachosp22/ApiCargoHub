@@ -4,7 +4,7 @@ import com.cargohub.backend.dto.CargoAnalysisResponse;
 import com.cargohub.backend.entity.CargoAnalysisLog;
 import com.cargohub.backend.entity.Porte;
 import com.cargohub.backend.repository.CargoAnalysisLogRepository;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

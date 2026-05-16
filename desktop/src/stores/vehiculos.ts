@@ -2,9 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { api } from '@/services/api'
 
-// --- TypeScript Interfaces ---
 
-export type EstadoVehiculo = 'DISPONIBLE' | 'EN_MANTENIMIENTO' | 'BAJA'
+export type EstadoVehiculo = 'DISPONIBLE' | 'BAJA'
 export type TipoVehiculo = 'FURGONETA' | 'RIGIDO' | 'TRAILER' | 'ESPECIAL'
 
 export interface ConductorResumen {
@@ -52,7 +51,6 @@ export interface UpdateVehiculoRequest {
   conductor?: { id: number } | null
 }
 
-// --- Mock Data ---
 
 const MOCK_VEHICULOS: Vehiculo[] = [
   {
@@ -75,7 +73,7 @@ const MOCK_VEHICULOS: Vehiculo[] = [
   },
   {
     id: 4, matricula: '3456JKL', marca: 'Renault', modelo: 'Master L3H2',
-    tipo: 'FURGONETA', estado: 'EN_MANTENIMIENTO', capacidadCargaKg: 1200,
+    tipo: 'FURGONETA', estado: 'DISPONIBLE', capacidadCargaKg: 1200,
     largoUtilMm: 3700, anchoUtilMm: 1765, altoUtilMm: 1880, volumenM3: 12.28,
     conductor: { id: 6, nombre: 'Laura', apellidos: 'Hernández Romero' },
   },
@@ -105,7 +103,7 @@ const MOCK_VEHICULOS: Vehiculo[] = [
   },
   {
     id: 9, matricula: '4567YZA', marca: 'Scania', modelo: 'R 450',
-    tipo: 'ESPECIAL', estado: 'EN_MANTENIMIENTO', capacidadCargaKg: 20000,
+    tipo: 'ESPECIAL', estado: 'DISPONIBLE', capacidadCargaKg: 20000,
     largoUtilMm: 12000, anchoUtilMm: 2500, altoUtilMm: 2800, volumenM3: 84.0,
     conductor: { id: 11, nombre: 'Raúl', apellidos: 'Castillo Prieto' },
   },
@@ -117,11 +115,9 @@ const MOCK_VEHICULOS: Vehiculo[] = [
   },
 ]
 
-// --- Store ---
 
 export const useVehiculosStore = defineStore('vehiculos', () => {
   type DataSource = 'api' | 'mock'
-  // --- State ---
   const vehiculos = ref<Vehiculo[]>([])
   const selectedVehiculo = ref<Vehiculo | null>(null)
   const loading = ref(false)
@@ -131,7 +127,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
   const warning = ref<string | null>(null)
   const error = ref<string | null>(null)
 
-  // --- Getters ---
   const totalVehiculos = computed(() => vehiculos.value.length)
 
   const vehiculosByEstado = computed(() => {
@@ -154,15 +149,10 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
     vehiculos.value.filter((v) => v.estado === 'DISPONIBLE')
   )
 
-  const enMantenimiento = computed(() =>
-    vehiculos.value.filter((v) => v.estado === 'EN_MANTENIMIENTO')
-  )
-
   const enBaja = computed(() =>
     vehiculos.value.filter((v) => v.estado === 'BAJA')
   )
 
-  // --- Actions ---
 
   /**
    * Fetch all vehiculos from the API. Falls back to mock data on error.
@@ -179,7 +169,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
       const data = extractArray(response.data)
       vehiculos.value = data.map(mapVehiculoFromApi)
     } catch {
-      // API unavailable — use mock data
       usingMockData.value = true
       dataSource.value = 'mock'
       warning.value = 'Mostrando vehículos mock porque la API no respondió'
@@ -195,14 +184,12 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
    * Backend does not expose GET /vehiculos/{id}, so we resolve locally.
    */
   async function fetchVehiculoById(id: number): Promise<Vehiculo | null> {
-    // Resolve from local cache first
     const local = vehiculos.value.find((v) => v.id === id)
     if (local) {
       selectedVehiculo.value = local
       return local
     }
 
-    // If list is empty, load it once and retry locally
     if (vehiculos.value.length === 0) {
       await fetchVehiculos()
       const fromFetchedList = vehiculos.value.find((v) => v.id === id)
@@ -212,7 +199,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
       }
     }
 
-    // Fallback to mock data
     const mock = MOCK_VEHICULOS.find((v) => v.id === id)
     if (mock) {
       selectedVehiculo.value = mock
@@ -234,7 +220,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
       vehiculos.value.unshift(newVehiculo)
       return newVehiculo
     } catch (error) {
-      // If API is down, create a mock vehiculo for UX continuity
       if (usingMockData.value) {
         const mockVehiculo: Vehiculo = {
           id: Math.max(0, ...vehiculos.value.map((v) => v.id)) + 1,
@@ -265,7 +250,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
   async function updateVehiculo(id: number, request: UpdateVehiculoRequest): Promise<Vehiculo> {
     saving.value = true
     try {
-      // API uses POST /vehiculos for both create and update (entity has id)
       const payload = { id, ...request }
       const response = await api.post('/vehiculos', payload)
       const updated = mapVehiculoFromApi(response.data)
@@ -274,7 +258,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
       if (selectedVehiculo.value?.id === id) selectedVehiculo.value = updated
       return updated
     } catch (error) {
-      // If using mock data, update locally
       if (usingMockData.value) {
         const idx = vehiculos.value.findIndex((v) => v.id === id)
         if (idx !== -1) {
@@ -311,7 +294,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
       if (!vehiculo) throw new Error('Vehículo no encontrado')
 
       if (vehiculo.estado === 'BAJA') {
-        // Reactivar
         await api.put(`/vehiculos/${id}/reactivar`)
         const idx = vehiculos.value.findIndex((v) => v.id === id)
         if (idx !== -1) {
@@ -319,7 +301,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
           return vehiculos.value[idx]
         }
       } else {
-        // Dar de baja
         await api.delete(`/vehiculos/${id}`)
         const idx = vehiculos.value.findIndex((v) => v.id === id)
         if (idx !== -1) {
@@ -351,7 +332,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
     saving.value = true
     try {
       await api.delete(`/vehiculos/${id}`)
-      // Mark as BAJA instead of removing from list (soft delete)
       const idx = vehiculos.value.findIndex((v) => v.id === id)
       if (idx !== -1) {
         vehiculos.value[idx] = { ...vehiculos.value[idx], estado: 'BAJA' }
@@ -373,7 +353,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
     }
   }
 
-  // --- Helpers ---
 
   function extractArray(data: unknown): Record<string, unknown>[] {
     if (Array.isArray(data)) return data as Record<string, unknown>[]
@@ -388,7 +367,6 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
   function mapVehiculoFromApi(raw: unknown): Vehiculo {
     const v = raw as Record<string, unknown>
 
-    // Map conductor (may be nested object or null)
     let conductor: ConductorResumen | null = null
     if (v.conductor && typeof v.conductor === 'object') {
       const c = v.conductor as Record<string, unknown>
@@ -415,9 +393,7 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
     }
   }
 
-  // Return ALL state, getters, and actions
   return {
-    // State
     vehiculos,
     selectedVehiculo,
     loading,
@@ -426,14 +402,11 @@ export const useVehiculosStore = defineStore('vehiculos', () => {
     dataSource,
     warning,
     error,
-    // Getters
     totalVehiculos,
     vehiculosByEstado,
     vehiculosByTipo,
     disponibles,
-    enMantenimiento,
     enBaja,
-    // Actions
     fetchVehiculos,
     fetchVehiculoById,
     createVehiculo,

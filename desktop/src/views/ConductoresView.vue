@@ -20,11 +20,9 @@ const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 
-// --- Dialog state ---
 const showDialog = ref(false)
 const editingConductor = ref<Conductor | null>(null)
 
-// --- Detail panel state ---
 const showDetail = ref(false)
 const detailConductor = ref<Conductor | null>(null)
 const activeTab = ref(0)
@@ -43,7 +41,6 @@ const dateSpecificBlocks = computed(() =>
     })
 )
 
-// --- Load tab data when detail opens or tab changes ---
 watch([showDetail, activeTab], ([visible, tab]) => {
   if (!visible || !detailConductor.value) return
   const id = detailConductor.value.id
@@ -55,11 +52,9 @@ watch([showDetail, activeTab], ([visible, tab]) => {
   }
 })
 
-// --- Toggle confirmation ---
 const showToggleConfirm = ref(false)
 const togglingConductor = ref<Conductor | null>(null)
 
-// --- Lifecycle ---
 onMounted(async () => {
   await conductoresStore.fetchConductores()
   await openConductorFromQuery()
@@ -69,7 +64,6 @@ watch(() => route.query.conductorId, () => {
   void openConductorFromQuery()
 })
 
-// --- Handlers ---
 
 function onNewConductor(): void {
   editingConductor.value = null
@@ -162,7 +156,6 @@ async function onToggleEstado(): Promise<void> {
     })
     showToggleConfirm.value = false
     togglingConductor.value = null
-    // Also update detail if viewing the toggled conductor
     if (detailConductor.value?.id === conductor.id) {
       detailConductor.value = conductoresStore.conductores.find((c) => c.id === conductor.id) ?? null
     }
@@ -401,7 +394,7 @@ function isSameCalendarDay(start: string, end: string): boolean {
           </div>
           <div class="flex items-center gap-3">
             <span
-              class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ring-1 ring-inset"
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
               :class="[
                 getEstadoConfig(detailConductor.estado).bg,
                 getEstadoConfig(detailConductor.estado).text,

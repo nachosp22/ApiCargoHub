@@ -43,9 +43,15 @@ function formatDateTime(dateStr: string | null | undefined): string {
   }
 }
 
-function getPrioridadLabel(prioridad: string): string {
-  const labels: Record<string, string> = { ALTA: 'Alta', MEDIA: 'Media', BAJA: 'Baja' }
-  return labels[prioridad] ?? prioridad
+type StyleConfig = { bg: string; text: string; ring: string; label: string }
+
+function getPrioridadConfig(prioridad: string): StyleConfig {
+  const configs: Record<string, StyleConfig> = {
+    ALTA: { bg: 'bg-red-50', text: 'text-red-700', ring: 'ring-red-600/20', label: 'Alta' },
+    MEDIA: { bg: 'bg-orange-50', text: 'text-orange-700', ring: 'ring-orange-600/20', label: 'Media' },
+    BAJA: { bg: 'bg-yellow-50', text: 'text-yellow-700', ring: 'ring-yellow-600/20', label: 'Baja' },
+  }
+  return configs[prioridad] ?? { bg: 'bg-gray-50', text: 'text-gray-600', ring: 'ring-gray-500/20', label: prioridad }
 }
 
 function getEstadoLabel(estado: string): string {
@@ -125,7 +131,12 @@ function onClose(): void {
             </div>
             <div class="flex justify-between">
               <span class="text-sm text-gray-500">Prioridad</span>
-              <span class="text-sm font-medium text-gray-700">{{ getPrioridadLabel(incidencia.prioridad) }}</span>
+              <span
+                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
+                :class="[getPrioridadConfig(incidencia.prioridad).bg, getPrioridadConfig(incidencia.prioridad).text, getPrioridadConfig(incidencia.prioridad).ring]"
+              >
+                {{ getPrioridadConfig(incidencia.prioridad).label }}
+              </span>
             </div>
             <div class="flex justify-between">
               <span class="text-sm text-gray-500">Fecha Reporte</span>

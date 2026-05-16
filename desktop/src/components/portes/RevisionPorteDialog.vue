@@ -114,6 +114,24 @@ async function onRetryMatching(): Promise<void> {
   }
 }
 
+async function onPublicar(): Promise<void> {
+  if (!props.porte) return
+  try {
+    const updated = await portesStore.publicarPorteRevisado(props.porte.id)
+    toast.add({
+      severity: 'success',
+      summary: 'Porte publicado',
+      detail: `El porte #${updated.id} ha sido publicado y se está buscando conductor.`,
+      life: 4000,
+    })
+    emit('update:visible', false)
+    emit('assigned')
+  } catch (err: any) {
+    const msg = err?.response?.data?.message || err?.message || 'Error al publicar el porte'
+    toast.add({ severity: 'error', summary: 'Error al publicar', detail: String(msg), life: 6000 })
+  }
+}
+
 const reviewLabel = computed(() =>
   props.porte?.revisionManual ? 'Revisión Manual' : 'Atención Operativa',
 )
@@ -342,6 +360,14 @@ const reviewBadgeClass = computed(() =>
             severity="contrast"
             :loading="portesStore.saving"
             @click="onRetryMatching"
+          />
+          <Button
+            label="Publicar y buscar conductor"
+            icon="pi pi-send"
+            size="small"
+            severity="success"
+            :loading="portesStore.saving"
+            @click="onPublicar"
           />
         </div>
       </div>

@@ -3,10 +3,12 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useConductoresStore } from '@/stores/conductores'
+import { usePortesStore } from '@/stores/portes'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const conductoresStore = useConductoresStore()
+const portesStore = usePortesStore()
 
 interface NavItem {
   label: string
@@ -21,7 +23,7 @@ const navItems: NavItem[] = [
   { label: 'Dashboard', icon: 'pi-chart-bar', route: '/dashboard' },
   { label: 'Estadísticas', icon: 'pi-chart-line', route: '/estadisticas' },
   { label: 'Portes', icon: 'pi-truck', route: '/portes' },
-  { label: 'Revisión Portes', icon: 'pi-eye', route: '/revision-portes' },
+  { label: 'Revisión Portes', icon: 'pi-eye', route: '/revision-portes', badge: () => portesStore.pendientesRevision.length },
   { label: 'Conductores', icon: 'pi-users', route: '/conductores' },
   { label: 'Aprobaciones', icon: 'pi-user-plus', route: '/aprobacion-conductores', badge: () => conductoresStore.pendientesAprobacion.length },
   { label: 'Vehículos', icon: 'pi-car', route: '/vehiculos' },
@@ -33,9 +35,10 @@ const navItems: NavItem[] = [
     : []),
 ]
 
-// Fetch pending count on sidebar mount
+// Fetch pending counts on sidebar mount
 onMounted(() => {
   conductoresStore.fetchPendientesAprobacion()
+  portesStore.fetchPendientesRevision()
 })
 
 async function handleLogout(): Promise<void> {

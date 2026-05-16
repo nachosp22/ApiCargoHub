@@ -43,6 +43,8 @@ public class PorteService {
     public static final String MSG_SIN_CONDUCTORES_DISPONIBLES = "Porte validado correctamente, pero no hay conductores disponibles que se ajusten a los requisitos en este momento";
     public static final String MSG_SIN_MATCH_VEHICULO_CONDUCTOR = "Porte validado correctamente, pero no hay vehículos o conductores compatibles para estos requisitos en este momento";
     public static final String MSG_REMATCHING_EXITO = "Rematching completado. Se ha enviado oferta a %d conductores.";
+    public static final String MSG_PENDIENTE_CONFIRMACION_CLIENTE = "Pendiente de confirmación del cliente";
+    public static final String MSG_DATOS_COMPLETADOS_PENDIENTE_PUBLICAR = "Datos completados por el administrador. Pendiente de publicar.";
 
     @Autowired private PorteRepository porteRepository;
     @Autowired private VehiculoRepository vehiculoRepository;
@@ -87,13 +89,13 @@ public class PorteService {
 
     /**
      * Crea un porte a partir de una solicitud del cliente desde el portal web.
-     * El clienteId se resuelve desde la autenticación JWT. Construye la entidad Porte
-     * con los datos de la solicitud (origen, destino, coordenadas, descripción, fechas)
-     * y delega en {@link #crearPorte(Porte)} para ejecutar la lógica completa de creación.
+     * Analiza la carga con IA, calcula distancia y precio, pero NO ejecuta matching
+     * automático. El cliente debe confirmar posteriormente mediante
+     * {@link #confirmarSolicitud(Long, Long)} para que se busquen conductores.
      *
      * @param request DTO con los datos de la solicitud de porte
      * @param clienteId ID del cliente autenticado que realiza la solicitud
-     * @return la entidad Porte persistida con toda la lógica de creación aplicada
+     * @return la entidad Porte persistida con análisis y presupuesto, sin matching
      */
     @Transactional
     public Porte crearPorteDesdeSolicitud(SolicitudPorteRequest request, Long clienteId) {
@@ -113,7 +115,38 @@ public class PorteService {
         porte.setDescripcionCliente(request.getDescripcionCliente());
         porte.setFechaRecogida(request.getFechaRecogida());
 
-        return crearPorte(porte);
+        // Crear sin matching: el cliente ve el presupuesto primero
+        return crearPorte(porte, false);
+    }
+
+    /**
+     * Confirma una solicitud de porte creada por un cliente y ejecuta el matching
+     * automático para buscar conductores. Solo se permite si el porte está PENDIENTE
+     * y pertenece al cliente indicado.
+     *
+     * @param porteId   ID del porte a confirmar
+     * @param clienteId ID del cliente que confirma (debe ser el propietario)
+     * @return la entidad Porte actualizada con el resultado del matching
+     */
+    @Transactional
+    public Porte confirmarSolicitud(Long porteId, Long clienteId) {
+        Porte porte = porteRepository.findById(porteId)
+                .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
+
+        if (!porte.getCliente().getId().equals(clienteId)) {
+            throw new RuntimeException("Este porte no pertenece a tu cuenta");
+        }
+
+        if (porte.getEstado() != EstadoPorte.PENDIENTE) {
+            throw new RuntimeException("Este porte ya no está pendiente de confirmación");
+        }
+
+        if (porte.isRevisionManual()) {
+            throw new RuntimeException("Este porte requiere revisión manual. No se puede publicar hasta que un agente complete los datos.");
+        }
+
+        aplicarResultadoMatchingAutomatico(porte);
+        return porteRepository.save(porte);
     }
 
     /**
@@ -127,23 +160,30 @@ public class PorteService {
     }
 
     /**
-     * Método principal de creación de un porte. Ejecuta toda la lógica de negocio:
-     * 1. Analiza la descripción de la carga con Gemini para inferir dimensiones y tipo de vehículo.
-     * 2. Infiere ancho/alto faltantes basándose en el tipo de vehículo.
-     * 3. Valida los datos críticos necesarios para el matching automático.
-     * 4. Calcula la distancia en kilómetros entre origen y destino (con factor de corrección del 20%).
-     * 5. Calcula el precio total mediante la calculadora de precios.
-     * 6. Ejecuta el matching automático para buscar vehículos y conductores compatibles.
-     * Si el porte requiere revisión manual, se salta el matching y se persiste directamente.
+     * Método principal de creación de un porte con matching automático.
+     * Delega en {@link #crearPorte(Porte, boolean)} con ejecutarMatching=true.
      *
      * @param porte entidad Porte con los datos básicos a completar y persistir
-     * @return la entidad Porte persistida con dimensiones, precio, distancia y estado calculados
+     * @return la entidad Porte persistida con dimensiones, precio, distancia y matching
+     */
+    public Porte crearPorte(Porte porte) {
+        return crearPorte(porte, true);
+    }
+
+    /**
+     * Crea un porte ejecutando análisis de carga, cálculo de distancia y precio.
+     * Si ejecutarMatching es true y el porte no requiere revisión manual, ejecuta
+     * el matching automático para buscar conductores.
+     *
+     * @param porte            entidad Porte con los datos básicos
+     * @param ejecutarMatching si false, se salta el matching (el cliente debe confirmar luego)
+     * @return la entidad Porte persistida
      */
     @Transactional
-    public Porte crearPorte(Porte porte) {
+    public Porte crearPorte(Porte porte, boolean ejecutarMatching) {
         // 0. Analizar carga con Gemini para inferir dimensiones
         if (porte.getDescripcionCliente() != null && !porte.getDescripcionCliente().isEmpty()) {
-            CargoAnalysisResponse cargoAnalysisResponse = cargoAnalysisService.calcularDimensiones(porte.getDescripcionCliente());
+            CargoAnalysisResponse cargoAnalysisResponse = cargoAnalysisService.calcularDimensiones(porte.getDescripcionCliente(), porte);
 
             if (cargoAnalysisResponse != null) {
                 // Aplicar dimensiones inferidas por IA
@@ -208,7 +248,11 @@ public class PorteService {
         porte.setFechaCreacion(LocalDateTime.now());
         porte.setEstado(EstadoPorte.PENDIENTE);
 
-        if (porte.isRevisionManual()) {
+        if (porte.isRevisionManual() || !ejecutarMatching) {
+            if (!ejecutarMatching && !porte.isRevisionManual()) {
+                // Porte analizado OK pero sin matching: pendiente de que el cliente confirme
+                porte.setMotivoRevision(MSG_PENDIENTE_CONFIRMACION_CLIENTE);
+            }
             return porteRepository.save(porte);
         }
 
@@ -821,9 +865,80 @@ public class PorteService {
             porte.setTipoVehiculoRequerido(TipoVehiculo.valueOf(request.getTipoVehiculoRequerido()));
         }
 
+        // Recalculate distance if coordinates exist and not yet calculated
+        if (hasValidCoordinates(porte) && (porte.getDistanciaKm() == null || porte.getDistanciaKm() <= 0)) {
+            double km = CalculadoraDistancia.calcularKm(
+                    porte.getLatitudOrigen(), porte.getLongitudOrigen(),
+                    porte.getLatitudDestino(), porte.getLongitudDestino());
+            porte.setDistanciaKm(km * 1.2);
+            porte.setDistanciaEstimada(true);
+        }
+
         // Recalculate price with updated dimensions
         porte.setPrecio(calculadoraPrecio.calcularPrecioTotal(porte));
 
+        // Marcar que los datos ya están completos, pendiente de publicar
+        porte.setMotivoRevision(MSG_DATOS_COMPLETADOS_PENDIENTE_PUBLICAR);
+
+        return porteRepository.save(porte);
+    }
+
+    /**
+     * Publica un porte que estaba pendiente de revisión manual.
+     * El admin ya completó los datos (dimensiones, peso, volumen, tipo de vehículo)
+     * y el cliente ha confirmado. Limpia la bandera de revisión manual, recalcula
+     * distancia y precio si faltaban, valida los datos críticos y ejecuta el matching
+     * automático para buscar conductores.
+     *
+     * @param porteId ID del porte a publicar
+     * @return la entidad Porte actualizada con el resultado del matching
+     * @throws RuntimeException si el porte no existe, no está pendiente, o siguen faltando datos críticos
+     */
+    @Transactional
+    public Porte publicarPorteRevisado(Long porteId) {
+        Porte porte = porteRepository.findById(porteId)
+                .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
+
+        if (porte.getEstado() != EstadoPorte.PENDIENTE) {
+            throw new RuntimeException("Solo se pueden publicar portes en estado PENDIENTE. Estado actual: " + porte.getEstado());
+        }
+
+        // Inferir ancho/alto faltantes desde el tipo de vehículo
+        if (porte.getTipoVehiculoRequerido() != null) {
+            if (porte.getAnchoMaxPaquete() == null || porte.getAnchoMaxPaquete() <= 0) {
+                porte.setAnchoMaxPaquete(inferAnchoFromVehicleType(porte.getTipoVehiculoRequerido().name()));
+            }
+            if (porte.getAltoMaxPaquete() == null || porte.getAltoMaxPaquete() <= 0) {
+                porte.setAltoMaxPaquete(inferAltoFromVehicleType(porte.getTipoVehiculoRequerido().name()));
+            }
+        }
+
+        // Recalcular distancia si no se calculó antes
+        if (hasValidCoordinates(porte) && (porte.getDistanciaKm() == null || porte.getDistanciaKm() <= 0)) {
+            double km = CalculadoraDistancia.calcularKm(
+                    porte.getLatitudOrigen(), porte.getLongitudOrigen(),
+                    porte.getLatitudDestino(), porte.getLongitudDestino());
+            porte.setDistanciaKm(km * 1.2);
+            porte.setDistanciaEstimada(true);
+        }
+
+        // Recalcular precio con datos actualizados
+        porte.setPrecio(calculadoraPrecio.calcularPrecioTotal(porte));
+
+        // Limpiar flags de revisión manual
+        porte.setRevisionManual(false);
+        porte.setMotivoRevision(null);
+
+        // Validar que los datos críticos estén completos
+        validarDatosCriticosParaMatching(porte);
+
+        if (porte.isRevisionManual()) {
+            throw new RuntimeException("Faltan datos críticos para publicar el porte. Complete peso, volumen, largo y tipo de vehículo.");
+        }
+
+        aplicarResultadoMatchingAutomatico(porte);
+
+        log.info("Admin publicó porte revisado {}: matching ejecutado", porteId);
         return porteRepository.save(porte);
     }
 

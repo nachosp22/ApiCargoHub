@@ -119,6 +119,12 @@ function formatDimension(mm: number | null): string {
   return `${(mm / 1000).toFixed(2)} m`
 }
 
+function calcVolumeM3(largo: number | null, ancho: number | null, alto: number | null): string {
+  if (largo == null || ancho == null || alto == null) return '--'
+  const m3 = (largo * ancho * alto) / 1_000_000_000
+  return `${m3.toFixed(2)} m³`
+}
+
 type StyleConfig = {
   bg: string
   text: string
@@ -128,7 +134,6 @@ type StyleConfig = {
 
 const estadoConfig: Record<string, StyleConfig> = {
   DISPONIBLE: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', ring: 'ring-emerald-600/20 dark:ring-emerald-500/30', label: 'Disponible' },
-  EN_MANTENIMIENTO: { bg: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', ring: 'ring-amber-600/20 dark:ring-amber-500/30', label: 'En Mantenimiento' },
   BAJA: { bg: 'bg-gray-50 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-300', ring: 'ring-gray-500/20 dark:ring-gray-400/30', label: 'Baja' },
 }
 
@@ -230,7 +235,7 @@ function getTipoConfig(tipo: string): StyleConfig {
           </div>
           <div class="flex items-center gap-3">
             <span
-              class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ring-1 ring-inset"
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
               :class="[
                 getEstadoConfig(detailVehiculo.estado).bg,
                 getEstadoConfig(detailVehiculo.estado).text,
@@ -240,7 +245,7 @@ function getTipoConfig(tipo: string): StyleConfig {
               {{ getEstadoConfig(detailVehiculo.estado).label }}
             </span>
             <span
-              class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ring-1 ring-inset"
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
               :class="[
                 getTipoConfig(detailVehiculo.tipo).bg,
                 getTipoConfig(detailVehiculo.tipo).text,
@@ -307,7 +312,7 @@ function getTipoConfig(tipo: string): StyleConfig {
             </div>
             <div>
               <span class="text-xs text-gray-500 dark:text-gray-400">Volumen</span>
-              <p class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ detailVehiculo.volumenM3 != null ? `${detailVehiculo.volumenM3} m³` : '--' }}</p>
+              <p class="text-gray-800 dark:text-gray-100 text-sm font-medium">{{ calcVolumeM3(detailVehiculo.largoUtilMm, detailVehiculo.anchoUtilMm, detailVehiculo.altoUtilMm) }}</p>
             </div>
           </div>
         </div>

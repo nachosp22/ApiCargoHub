@@ -32,24 +32,19 @@ const visiblePortes = computed(() => {
   return portesStore.portes.filter((porte) => porte.cliente?.id === selectedClienteId.value)
 })
 
-// --- Dialog state ---
 const showDialog = ref(false)
 const editingPorte = ref<Porte | null>(null)
 
-// --- Detail panel state ---
 const showDetail = ref(false)
 const detailPorte = ref<Porte | null>(null)
 
-// --- Delete confirmation ---
 const showDeleteConfirm = ref(false)
 const deletingPorte = ref<Porte | null>(null)
 
-// --- Ajuste precio state ---
 const showAjusteDialog = ref(false)
 const ajustePorte = ref<Porte | null>(null)
 const ajusteForm = ref({ precioAjustado: 0, motivo: '' })
 
-// --- Facturar confirmation ---
 const showFacturarConfirm = ref(false)
 const facturandoPorte = ref<Porte | null>(null)
 
@@ -79,7 +74,6 @@ const completadosEsteMes = computed(() => {
   }).length
 })
 
-// --- Lifecycle ---
 onMounted(async () => {
   await Promise.all([portesStore.fetchPortes(), portesStore.fetchReferenceData()])
   await openPorteFromQuery()
@@ -89,7 +83,6 @@ watch(() => route.query.porteId, () => {
   void openPorteFromQuery()
 })
 
-// --- Handlers ---
 
 function onNewPorte(): void {
   editingPorte.value = null
@@ -262,6 +255,24 @@ async function onFacturar(): Promise<void> {
   }
 }
 
+async function onDescargarAlbaran(porte: Porte): Promise<void> {
+  try {
+    await portesStore.downloadAlbaran(porte.id)
+    toast.add({
+      severity: 'success',
+      summary: 'Albarán descargado',
+      detail: `Se descargó el albarán del porte #${porte.id}.`,
+      life: 3000,
+    })
+  } catch (error: unknown) {
+    const detail =
+      axios.isAxiosError(error) && typeof error.response?.data === 'string'
+        ? error.response.data
+        : 'No se pudo descargar el albarán. Verificá que el porte tenga firma.'
+    toast.add({ severity: 'error', summary: 'Error', detail, life: 5000 })
+  }
+}
+
 function resolveFacturarErrorMessage(error: unknown): string {
   const fallback = 'No se pudo facturar el porte. Inténtalo de nuevo.'
 
@@ -345,7 +356,6 @@ async function onDeletePorte(): Promise<void> {
     })
     showDeleteConfirm.value = false
     deletingPorte.value = null
-    // Also close detail if viewing the deleted porte
     if (detailPorte.value?.id === id) {
       showDetail.value = false
       detailPorte.value = null
@@ -394,7 +404,6 @@ function formatDimensionLabel(porte: Porte): string {
   return parts.join(' × ')
 }
 
-// Suppress unused variable warnings — authStore is used in template
 void authStore
 </script>
 
@@ -490,6 +499,7 @@ void authStore
         @delete="onConfirmDelete"
         @ajustar-precio="onAjustarPrecio"
         @facturar="onConfirmFacturar"
+        @descargar-albaran="onDescargarAlbaran"
       />
     </div>
 

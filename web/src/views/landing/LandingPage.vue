@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Hero Section -->
     <section class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-primary-900 to-gray-900">
       <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0); background-size: 40px 40px;"></div>
 
@@ -39,7 +38,6 @@
               </router-link>
             </div>
 
-            <!-- Trust indicators -->
             <div class="mt-12 flex items-center gap-8 text-gray-400">
               <div class="text-center">
                 <p class="text-2xl font-bold text-white">0€</p>
@@ -58,7 +56,6 @@
             </div>
           </div>
 
-          <!-- Hero visual -->
           <div class="hidden lg:flex justify-center">
             <div class="relative w-full max-w-md">
               <div class="absolute -top-4 -left-4 bg-white rounded-2xl shadow-2xl p-5 z-10 animate-float">
@@ -115,7 +112,6 @@
       </div>
     </section>
 
-    <!-- How it works — DUAL AUDIENCE -->
     <section id="como-funciona" class="py-20 lg:py-28 bg-white dark:bg-gray-900">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-16">
@@ -126,7 +122,6 @@
         </div>
 
         <div class="grid lg:grid-cols-2 gap-12 items-stretch">
-          <!-- Para Empresas -->
           <div class="bg-gradient-to-br from-blue-50 to-primary-50 dark:from-blue-950/30 dark:to-primary-950/30 rounded-3xl p-8 border border-blue-100 dark:border-blue-900 h-full flex flex-col">
             <div class="flex items-center gap-3 mb-8">
               <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center">
@@ -158,7 +153,6 @@
             </div>
           </div>
 
-          <!-- Para Camioneros -->
           <div class="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 rounded-3xl p-8 border border-emerald-100 dark:border-emerald-900 h-full flex flex-col">
             <div class="flex items-center gap-3 mb-8">
               <div class="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center">
@@ -193,7 +187,6 @@
       </div>
     </section>
 
-    <!-- Benefits — DUAL AUDIENCE -->
     <section id="beneficios" class="py-20 lg:py-28 bg-canvas dark:bg-gray-800">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-16">
@@ -204,7 +197,6 @@
         </div>
 
         <div class="grid lg:grid-cols-2 gap-12">
-          <!-- Empresas benefits -->
           <div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <i class="pi pi-building text-blue-600"></i>
@@ -229,7 +221,6 @@
             </div>
           </div>
 
-          <!-- Camioneros benefits -->
           <div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <i class="pi pi-car text-emerald-600"></i>
@@ -257,7 +248,6 @@
       </div>
     </section>
 
-    <!-- Pricing — Commission model -->
     <section id="precios" class="py-20 lg:py-28 bg-white dark:bg-gray-900">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto">
@@ -329,7 +319,6 @@
       </div>
     </section>
 
-    <!-- CTA Section -->
     <section class="py-20 lg:py-28 bg-gradient-to-r from-primary-600 to-primary-800 relative overflow-hidden">
       <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0); background-size: 32px 32px;"></div>
       <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

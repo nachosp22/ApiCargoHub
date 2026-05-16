@@ -97,9 +97,9 @@ function stateLabel(state: DriverState): string {
     : 'No reporta ubicación'
 }
 
-function stateChipClass(state: DriverState): string {
-  if (mapDriverStateToReportingState(state) === 'REPORTING') return 'bg-blue-100 text-blue-800 ring-blue-200'
-  return 'bg-rose-100 text-rose-800 ring-rose-200'
+function stateDotClass(state: DriverState): string {
+  if (mapDriverStateToReportingState(state) === 'REPORTING') return 'bg-blue-500 ring-blue-100 dark:ring-blue-900/40'
+  return 'bg-red-500 ring-red-100 dark:ring-red-900/40'
 }
 
 function mapDriverStateToReportingState(state: DriverState): ReportingState {
@@ -364,9 +364,9 @@ function formatPorteStatus(status?: string): string {
         <div>
           <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">Mapa de flota</h1>
           <p class="text-sm text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span>Total conductores: <strong class="text-slate-700 dark:text-slate-200">{{ totalDriversCount }}</strong></span>
+            <span>Total conductores: <strong class="text-gray-700 dark:text-gray-200">{{ totalDriversCount }}</strong></span>
             <span>Reportan ubicación: <strong class="text-blue-700 dark:text-blue-300">{{ reportingDriversCount }}</strong></span>
-            <span>No reportan ubicación: <strong class="text-rose-700 dark:text-rose-300">{{ notReportingDriversCount }}</strong></span>
+            <span>No reportan ubicación: <strong class="text-red-700 dark:text-red-300">{{ notReportingDriversCount }}</strong></span>
             <span v-if="fleetStore.lastSnapshotAt">Último snapshot: {{ fleetStore.lastSnapshotAt }}</span>
           </p>
         </div>
@@ -397,15 +397,15 @@ function formatPorteStatus(status?: string): string {
       </div>
 
       <aside
-        class="h-full min-h-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/60 p-4 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.35)] dark:shadow-[0_14px_34px_-20px_rgba(0,0,0,0.75)]"
+        class="h-full min-h-0 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/60 p-4 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.35)] dark:shadow-[0_14px_34px_-20px_rgba(0,0,0,0.75)]"
         aria-label="Panel lateral de seguimiento"
       >
         <div class="flex h-full min-h-0 flex-col gap-4">
-          <div class="shrink-0 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3">
-            <h2 class="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-300">Filtros de seguimiento</h2>
+          <div class="shrink-0 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
+            <h2 class="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-300">Filtros de seguimiento</h2>
             <div class="space-y-3">
               <div>
-                <label for="driver-search" class="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">Buscar conductor</label>
+                <label for="driver-search" class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Buscar conductor</label>
                 <div class="relative">
                   <input
                     id="driver-search"
@@ -413,18 +413,18 @@ function formatPorteStatus(status?: string): string {
                     type="text"
                     placeholder="Ej: Juan Pérez o 1024"
                     aria-label="Buscar conductor por nombre o ID"
-                    class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-3 pr-9 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-800"
+                    class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 pl-3 pr-9 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-gray-800"
                   />
-                  <i class="pi pi-search pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 dark:text-slate-500"></i>
+                  <i class="pi pi-search pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500"></i>
                 </div>
               </div>
               <div>
-                <label for="state-filter" class="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-300">Estado</label>
+                <label for="state-filter" class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Estado</label>
                 <select
                   id="state-filter"
                   v-model="stateFilter"
                   aria-label="Filtrar por estado del conductor"
-                  class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-800"
+                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-gray-800"
                 >
                   <option value="ALL">Todos los estados</option>
                   <option value="REPORTING">Reporta ubicación</option>
@@ -434,13 +434,13 @@ function formatPorteStatus(status?: string): string {
             </div>
           </div>
 
-          <div class="flex min-h-0 flex-1 flex-col rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3">
+          <div class="flex min-h-0 flex-1 flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
             <div class="mb-3 flex items-center justify-between gap-2">
-              <h3 class="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-300">Conductores visibles</h3>
-              <span class="rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-1 text-xs font-semibold text-slate-700 dark:text-slate-100">{{ filteredDrivers.length }}</span>
+              <h3 class="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-300">Conductores visibles</h3>
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset bg-gray-50 text-gray-600 ring-gray-500/20">{{ filteredDrivers.length }}</span>
             </div>
 
-            <p v-if="!fleetStore.hasDrivers" class="text-sm text-slate-500 dark:text-slate-400">No hay conductores activos</p>
+            <p v-if="!fleetStore.hasDrivers" class="text-sm text-gray-500 dark:text-gray-400">No hay conductores activos</p>
 
             <ul
               v-else
@@ -451,27 +451,37 @@ function formatPorteStatus(status?: string): string {
               <li v-for="driver in filteredDrivers" :key="driver.driverId">
                 <button
                   type="button"
-                  class="w-full rounded-xl border px-3 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1"
+                  class="w-full rounded-xl border px-3 py-3.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1"
                   :class="selectedDriverId === driver.driverId
                     ? 'border-sky-300 dark:border-sky-500 bg-sky-50 dark:bg-sky-900/30 shadow-sm'
-                    : 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                    : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'"
                   role="option"
                   :aria-selected="selectedDriverId === driver.driverId"
                   :aria-label="`Seleccionar conductor ${getDriverLabel(driver)}`"
                   @click="selectedDriverId = driver.driverId"
                 >
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="font-semibold text-slate-900 dark:text-slate-100">{{ getDriverLabel(driver) }}</span>
+                  <div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold leading-5 text-gray-900 dark:text-gray-100">
+                        {{ getDriverIdentity(driver).primary }}
+                      </p>
+                      <p
+                        v-if="getDriverIdentity(driver).secondary"
+                        class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400"
+                      >
+                        {{ getDriverIdentity(driver).secondary }}
+                      </p>
+                    </div>
                     <span
-                      class="rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1"
-                      :class="stateChipClass(driver.state)"
-                    >
-                      {{ stateLabel(driver.state) }}
-                    </span>
+                      class="mt-1 h-3 w-3 shrink-0 rounded-full ring-4"
+                      :class="stateDotClass(driver.state)"
+                      :aria-label="stateLabel(driver.state)"
+                      :title="stateLabel(driver.state)"
+                    />
                   </div>
-                  <div class="mt-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                  <div class="mt-3 flex items-center justify-between border-t border-gray-100 pt-2 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
                     <span>Última señal</span>
-                    <span class="font-medium text-slate-600 dark:text-slate-300">{{ formatRecordedAt(driver.recordedAt) }}</span>
+                    <span class="font-medium text-gray-600 dark:text-gray-300">{{ formatRecordedAt(driver.recordedAt) }}</span>
                   </div>
                 </button>
               </li>

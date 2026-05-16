@@ -2,26 +2,23 @@
 import { onMounted, computed } from 'vue'
 import { useEstadisticasStore } from '@/stores/estadisticas'
 import KpiCard from '@/components/dashboard/KpiCard.vue'
-import { Bar, Doughnut, Line } from 'vue-chartjs'
+import { Bar, Doughnut } from 'vue-chartjs'
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
-  LineElement,
-  PointElement,
   ArcElement,
   Title,
   Tooltip,
   Legend,
-  Filler,
   type ChartData,
   type ChartOptions,
 } from 'chart.js'
 
 ChartJS.register(
-  CategoryScale, LinearScale, BarElement, LineElement,
-  PointElement, ArcElement, Title, Tooltip, Legend, Filler,
+  CategoryScale, LinearScale, BarElement,
+  ArcElement, Title, Tooltip, Legend,
 )
 
 const store = useEstadisticasStore()
@@ -49,36 +46,6 @@ const barChartData = computed<ChartData<'bar'>>(() => {
 })
 
 const barChartOptions = computed<ChartOptions<'bar'>>(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1F2937', cornerRadius: 8 } },
-  scales: {
-    x: { grid: { display: false }, border: { display: false }, ticks: { color: '#9CA3AF', font: { size: 11 } } },
-    y: { beginAtZero: true, grid: { color: '#F3F4F6' }, border: { display: false }, ticks: { color: '#9CA3AF', font: { size: 11 } } },
-  },
-}))
-
-// --- Chart: Ingresos por mes (Line) ---
-const lineChartData = computed<ChartData<'line'>>(() => {
-  const items = store.data?.portesPorMes ?? []
-  return {
-    labels: items.map((m) => m.mes),
-    datasets: [
-      {
-        label: 'Ingresos (€)',
-        data: items.map((m) => m.ingresos),
-        borderColor: 'rgba(16, 185, 129, 1)',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 3,
-        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
-      },
-    ],
-  }
-})
-
-const lineChartOptions = computed<ChartOptions<'line'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1F2937', cornerRadius: 8 } },
@@ -214,46 +181,6 @@ function formatTrend(val: number): string {
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Distribución actual</p>
           <div class="h-64">
             <Doughnut :data="doughnutChartData" :options="doughnutChartOptions" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Line Chart: Ingresos por mes -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Ingresos por Mes</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Evolución de facturación (últimos 12 meses)</p>
-        <div class="h-64">
-          <Line :data="lineChartData" :options="lineChartOptions" />
-        </div>
-      </div>
-
-      <!-- Facturas Summary Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 flex items-center gap-4">
-          <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-            <i class="pi pi-file text-blue-600"></i>
-          </div>
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Facturas Emitidas</p>
-            <p class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ store.data.facturasEmitidas }}</p>
-          </div>
-        </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 flex items-center gap-4">
-          <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-            <i class="pi pi-check-circle text-emerald-600"></i>
-          </div>
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Facturas Pagadas</p>
-            <p class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ store.data.facturasPagadas }}</p>
-          </div>
-        </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 flex items-center gap-4">
-          <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
-            <i class="pi pi-clock text-amber-600"></i>
-          </div>
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Facturas Pendientes</p>
-            <p class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ store.data.facturasPendientes }}</p>
           </div>
         </div>
       </div>

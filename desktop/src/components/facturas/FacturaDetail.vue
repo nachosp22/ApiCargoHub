@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
-import Select from 'primevue/select'
+import { useToast } from 'primevue/usetoast'
 import { useFacturasStore, type Factura } from '@/stores/facturas'
 
 interface Props {
@@ -16,19 +16,21 @@ const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void
 }>()
 
+const toast = useToast()
 const facturasStore = useFacturasStore()
-const formaPagoSeleccionada = ref('TRANSFERENCIA')
-
-const formaPagoOptions = [
-  { label: 'Transferencia', value: 'TRANSFERENCIA' },
-  { label: 'Tarjeta (próximamente)', value: 'TARJETA', disabled: true },
-  { label: 'Efectivo (próximamente)', value: 'EFECTIVO', disabled: true },
-]
+const marcandoPagada = ref(false)
+const badgeAnimating = ref(false)
+const prevPagada = ref<boolean | null>(null)
 
 watch(
   () => props.factura,
-  () => {
-    formaPagoSeleccionada.value = 'TRANSFERENCIA'
+  (nueva) => {
+    // Trigger badge animation when factura goes from pendiente → pagada
+    if (nueva && prevPagada.value === false && nueva.pagada === true) {
+      badgeAnimating.value = true
+      setTimeout(() => { badgeAnimating.value = false }, 1200)
+    }
+    prevPagada.value = nueva?.pagada ?? null
   },
   { immediate: true },
 )
@@ -77,6 +79,18 @@ async function handleDownloadPdf() {
     await facturasStore.downloadPdf(props.factura.id)
   }
 }
+
+async function handlePagar() {
+  if (!props.factura || props.factura.pagada) return
+  marcandoPagada.value = true
+  const result = await facturasStore.pagarFactura(props.factura.id)
+  marcandoPagada.value = false
+  if (result) {
+    toast.add({ severity: 'success', summary: 'Factura pagada', detail: `La factura ${props.factura.numeroSerie} ha sido marcada como pagada.`, life: 4000 })
+  } else {
+    toast.add({ severity: 'error', summary: 'Error', detail: facturasStore.error ?? 'No se pudo marcar como pagada', life: 5000 })
+  }
+}
 </script>
 
 <template>
@@ -91,21 +105,42 @@ async function handleDownloadPdf() {
     <div v-if="factura" class="space-y-5 pt-2">
       <!-- Invoice Header -->
       <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-4">
-        <div>
-          <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ factura.numeroSerie }}</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Emitida el {{ formatDate(factura.fechaEmision) }}</p>
+        <div class="flex items-center gap-4">
+          <img
+            src="/assets/brand/logo.png"
+            alt="CargoHub"
+            class="h-10 w-10 object-contain"
+          />
+          <div>
+            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">{{ factura.numeroSerie }}</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Emitida el {{ formatDate(factura.fechaEmision) }}</p>
+          </div>
         </div>
         <div class="flex items-center gap-3">
           <span
-            class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ring-1 ring-inset"
+            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset transition-all duration-700"
             :class="[
               factura.pagada
                 ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
                 : 'bg-orange-50 text-orange-700 ring-orange-600/20',
+              badgeAnimating ? 'scale-110 shadow-[0_0_12px_rgba(16,185,129,0.4)]' : '',
             ]"
           >
+            <i
+              v-if="factura.pagada"
+              class="pi pi-check-circle mr-1 text-xs"
+            />
             {{ factura.pagada ? 'Pagada' : 'Pendiente' }}
           </span>
+          <Button
+            v-if="!factura.pagada"
+            label="Marcar como pagada"
+            icon="pi pi-check"
+            severity="success"
+            size="small"
+            :loading="marcandoPagada"
+            @click="handlePagar"
+          />
           <Button
             label="Descargar PDF"
             icon="pi pi-file-pdf"
@@ -133,22 +168,7 @@ async function handleDownloadPdf() {
       </div>
 
       <!-- Invoice Meta -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div>
-          <span class="text-xs text-gray-400 dark:text-gray-500 uppercase">Forma de Pago</span>
-          <Select
-            v-model="formaPagoSeleccionada"
-            :options="formaPagoOptions"
-            optionLabel="label"
-            optionValue="value"
-            optionDisabled="disabled"
-            class="mt-1 w-full sm:w-56"
-          />
-        </div>
-        <div>
-          <span class="text-xs text-gray-400 dark:text-gray-500 uppercase">Condiciones</span>
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ factura.condicionesPago ?? '—' }}</p>
-        </div>
+      <div class="grid grid-cols-2 gap-4">
         <div>
           <span class="text-xs text-gray-400 dark:text-gray-500 uppercase">Fecha Emisión</span>
           <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ formatDate(factura.fechaEmision) }}</p>

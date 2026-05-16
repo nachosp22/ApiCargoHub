@@ -16,6 +16,13 @@ export interface User {
   fotoUrl?: string | null
 }
 
+export interface AdminUser {
+  id: number
+  email: string
+  nombre: string
+  activo: boolean
+}
+
 interface LoginResponse {
   accessToken?: string
   token?: string
@@ -47,15 +54,15 @@ export class AuthLoginError extends Error {
     this.name = 'AuthLoginError'
     this.kind = kind
     this.status = status
+    }
   }
-}
 
 export const useAuthStore = defineStore('auth', () => {
-  // --- State ---
   const token = ref<string | null>(null)
   const user = ref<User | null>(null)
+  const admins = ref<AdminUser[]>([])
+  const adminsLoading = ref(false)
 
-  // --- Getters ---
   const isAuthenticated = computed(() => !!token.value)
 
   function toRoleString(value: unknown): string {
@@ -132,15 +139,8 @@ export const useAuthStore = defineStore('auth', () => {
     return null
   }
 
-  // --- Actions ---
-
-  /**
-   * Authenticate with the API using email and password.
-   * Stores the JWT token and user info on success.
-   */
   async function login(email: string, password: string): Promise<void> {
     try {
-      // Backend contract: @RequestParam email/password (form/query), not JSON body.
       const formData = new URLSearchParams({ email, password })
 
       const response = await api.post<LoginResponse>('/auth/login', formData, {
@@ -161,7 +161,6 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = resolvedToken
       user.value = normalizedUser
 
-      // Persist to localStorage
       localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, resolvedToken)
       localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(normalizedUser))
     } catch (error: unknown) {
@@ -191,9 +190,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /**
-   * Clear authentication state and remove persisted data.
-   */
   function logout(): void {
     token.value = null
     user.value = null
@@ -205,10 +201,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /**
-   * Restore authentication state from localStorage.
-   * Called once during app initialization.
-   */
   function loadFromStorage(): void {
     const storedToken = resolveStoredToken()
     const storedUser = localStorage.getItem(AUTH_USER_STORAGE_KEY)
@@ -231,9 +223,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /**
-   * Update the user's profile photo URL in local state.
-   */
   function setFotoUrl(url: string | null): void {
     if (user.value) {
       user.value = { ...user.value, fotoUrl: url }
@@ -241,17 +230,94 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Return ALL state, getters, and actions (Pinia setup store best practice)
+  async function updateProfile(data: {
+    nombre?: string
+    currentPassword?: string
+    newPassword?: string
+  }): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await api.patch('/usuarios/me', data)
+      if (user.value && response.data?.nombre) {
+        user.value = { ...user.value, nombre: response.data.nombre }
+        localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(user.value))
+      }
+      return { success: true }
+    } catch (e: unknown) {
+      const msg =
+        e instanceof Error ? e.message : 'Error al actualizar el perfil'
+      if (axios.isAxiosError(e) && e.response?.data?.error) {
+        return { success: false, error: String(e.response.data.error) }
+      }
+      return { success: false, error: msg }
+    }
+  }
+
+  async function createAdmin(data: {
+    email: string
+    nombre: string
+    password: string
+  }): Promise<{ success: boolean; error?: string }> {
+    try {
+      await api.post('/usuarios/admin', data)
+      return { success: true }
+    } catch (e: unknown) {
+      const msg =
+        e instanceof Error ? e.message : 'Error al crear administrador'
+      if (axios.isAxiosError(e) && e.response?.data?.error) {
+        return { success: false, error: String(e.response.data.error) }
+      }
+      return { success: false, error: msg }
+    }
+  }
+
+  async function fetchAdmins(): Promise<void> {
+    adminsLoading.value = true
+    try {
+      const response = await api.get<AdminUser[]>('/usuarios/admins')
+      admins.value = Array.isArray(response.data) ? response.data : []
+    } catch {
+      admins.value = []
+    } finally {
+      adminsLoading.value = false
+    }
+  }
+
+  async function toggleAdminActive(id: number): Promise<boolean> {
+    try {
+      const response = await api.patch(`/usuarios/${id}/toggle-active`)
+      const activo = response.data?.activo === true
+      const idx = admins.value.findIndex((a) => a.id === id)
+      if (idx !== -1) admins.value[idx] = { ...admins.value[idx], activo }
+      return activo
+    } catch {
+      return false
+    }
+  }
+
+  async function deleteAdmin(id: number): Promise<boolean> {
+    try {
+      await api.delete(`/usuarios/${id}`)
+      admins.value = admins.value.filter((a) => a.id !== id)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   return {
-    // State
     token,
     user,
-    // Getters
+    admins,
+    adminsLoading,
     isAuthenticated,
-    // Actions
     login,
     logout,
     loadFromStorage,
     setFotoUrl,
+    updateProfile,
+    createAdmin,
+    fetchAdmins,
+    toggleAdminActive,
+    deleteAdmin,
   }
 })

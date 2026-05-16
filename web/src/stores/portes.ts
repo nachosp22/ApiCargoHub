@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { api } from '@/services/api'
 
-// --- Types ---
 
 export type EstadoPorte =
   | 'PENDIENTE'
@@ -69,7 +68,6 @@ export interface PorteTracking {
   vehicleInfo: string | null
 }
 
-// --- Store ---
 
 export const usePortesStore = defineStore('portes', () => {
   const portes = ref<Porte[]>([])
@@ -80,7 +78,6 @@ export const usePortesStore = defineStore('portes', () => {
   const trackingLoading = ref(false)
   let trackingInterval: ReturnType<typeof setInterval> | null = null
 
-  // --- Getters ---
   const portesActivos = computed(() =>
     portes.value.filter((p) =>
       ['PENDIENTE', 'SOLICITUD', 'ASIGNADO', 'EN_TRANSITO'].includes(p.estado)
@@ -91,7 +88,6 @@ export const usePortesStore = defineStore('portes', () => {
     portes.value.filter((p) => p.estado === 'ENTREGADO' || p.estado === 'FACTURADO')
   )
 
-  // --- Actions ---
 
   async function fetchOwn(clienteId: number): Promise<void> {
     loading.value = true
@@ -126,7 +122,69 @@ export const usePortesStore = defineStore('portes', () => {
     }
   }
 
-  // --- Helpers ---
+  async function confirmarSolicitud(porteId: number): Promise<Porte> {
+    submitting.value = true
+    error.value = null
+
+    try {
+      const response = await api.post(`/portes/solicitud/${porteId}/confirmar`)
+      const updated = mapPorteFromApi(response.data)
+      // Replace in local list
+      const idx = portes.value.findIndex(p => p.id === porteId)
+      if (idx !== -1) portes.value[idx] = updated
+      return updated
+    } catch (err) {
+      error.value = 'No se pudo confirmar la solicitud.'
+      throw err
+    } finally {
+      submitting.value = false
+    }
+  }
+
+  async function downloadAlbaran(porteId: number): Promise<void> {
+    try {
+      const response = await api.get(`/portes/${porteId}/albaran/pdf`, {
+        responseType: 'blob',
+      })
+
+      const contentType = String(response.headers['content-type'] ?? '').toLowerCase()
+      if (!contentType.includes('application/pdf')) {
+        const errorText = await response.data.text()
+        throw new Error(errorText || 'No se pudo descargar el albarán PDF')
+      }
+
+      const blob = new Blob([response.data], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+
+      const disposition = response.headers['content-disposition']
+      const filenameMatch = disposition?.match(/filename[^;=\n]*=(.*)/i)
+      link.download = filenameMatch
+        ? filenameMatch[1].replace(/["']/g, '').trim()
+        : `albaran-porte-${porteId}.pdf`
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'response' in err) {
+        const response = (err as { response?: { data?: Blob } }).response
+        if (response?.data instanceof Blob) {
+          const text = await response.data.text()
+          throw new Error(text || 'No se pudo descargar el albarán PDF')
+        }
+      }
+
+      if (err instanceof Error && err.message.trim()) {
+        throw err
+      }
+
+      throw new Error('No se pudo descargar el albarán PDF')
+    }
+  }
+
 
   function extractArray(data: unknown): Record<string, unknown>[] {
     if (Array.isArray(data)) return data as Record<string, unknown>[]
@@ -232,6 +290,8 @@ export const usePortesStore = defineStore('portes', () => {
     portesCompletados,
     fetchOwn,
     createSolicitud,
+    confirmarSolicitud,
+    downloadAlbaran,
     fetchTracking,
     startTrackingPolling,
     stopTrackingPolling,

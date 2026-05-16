@@ -19,7 +19,6 @@ const emit = defineEmits<{
   (e: 'edit', vehiculo: Vehiculo): void
 }>()
 
-// --- Filters ---
 const globalFilter = ref('')
 const ALL_ESTADOS_VALUE = '__ALL_ESTADOS__'
 const ALL_TIPOS_VALUE = '__ALL_TIPOS__'
@@ -29,7 +28,6 @@ const tipoFilter = ref<TipoVehiculo | typeof ALL_TIPOS_VALUE>(ALL_TIPOS_VALUE)
 const estadoFilterOptions = [
   { label: 'Todos los estados', value: ALL_ESTADOS_VALUE },
   { label: 'Disponible', value: 'DISPONIBLE' },
-  { label: 'En Mantenimiento', value: 'EN_MANTENIMIENTO' },
   { label: 'Baja', value: 'BAJA' },
 ]
 
@@ -44,17 +42,14 @@ const tipoFilterOptions = [
 const filteredVehiculos = computed(() => {
   let result = props.vehiculos
 
-  // Status filter
   if (estadoFilter.value !== ALL_ESTADOS_VALUE) {
     result = result.filter((v) => v.estado === estadoFilter.value)
   }
 
-  // Type filter
   if (tipoFilter.value !== ALL_TIPOS_VALUE) {
     result = result.filter((v) => v.tipo === tipoFilter.value)
   }
 
-  // Global text search
   if (globalFilter.value) {
     const query = globalFilter.value.toLowerCase()
     result = result.filter(
@@ -71,12 +66,10 @@ const filteredVehiculos = computed(() => {
   return result
 })
 
-// --- Row Click Handler ---
 function onRowClick(event: { data: Vehiculo }): void {
   emit('view', event.data)
 }
 
-// --- Helpers ---
 
 function getConductorName(vehiculo: Vehiculo): string {
   if (!vehiculo.conductor) return 'Sin asignar'
@@ -109,7 +102,6 @@ type StyleConfig = {
 
 const estadoConfig: Record<string, StyleConfig> = {
   DISPONIBLE: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', ring: 'ring-emerald-600/20 dark:ring-emerald-500/30', label: 'Disponible' },
-  EN_MANTENIMIENTO: { bg: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', ring: 'ring-amber-600/20 dark:ring-amber-500/30', label: 'En Mantenimiento' },
   BAJA: { bg: 'bg-gray-50 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-300', ring: 'ring-gray-500/20 dark:ring-gray-400/30', label: 'Baja' },
 }
 

@@ -34,7 +34,7 @@ const filteredClientes = computed(() => {
         c.cif.toLowerCase().includes(query) ||
         c.emailContacto.toLowerCase().includes(query) ||
         c.telefono.toLowerCase().includes(query) ||
-        c.direccion.toLowerCase().includes(query) ||
+        (c.direccion ?? '').toLowerCase().includes(query) ||
         c.ciudad.toLowerCase().includes(query)
     )
   }

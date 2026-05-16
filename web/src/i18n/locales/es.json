@@ -301,13 +301,20 @@
       "invalidLocationsError": "Origen y destino deben seleccionarse desde sugerencias reales.",
       "submit": "Enviar Solicitud",
       "successMessage": "La carga se ha analizado correctamente. Le asignaremos un conductor lo antes posible.",
-      "viewMyPortes": "Ver mis portes →"
+      "viewMyPortes": "Ver mis portes →",
+      "estimatedPrice": "Presupuesto estimado: {price} €",
+      "confirmAndPublish": "Confirmar y buscar conductor",
+      "confirming": "Confirmando…",
+      "publishedSuccess": "¡Porte publicado! Se está buscando conductor.",
+      "pendingManualReview": "Tu solicitud ha sido recibida. Un agente revisará manualmente los datos de la carga y te contactará.",
+      "distanceLabel": "Distancia estimada: {km} km",
+      "vehicleLabel": "Vehículo requerido: {tipo}"
     },
     "tracking": {
       "title": "Tracking Porte #{id}",
-      "estimatedTime": "Tiempo estimado",
+      "estimatedTime": "Tiempo restante",
+      "estimatedArrival": "Hora estimada",
       "noEstimation": "Sin estimación",
-      "confidence": "Confianza: {value}",
       "driver": "Conductor",
       "unassigned": "Sin asignar",
       "route": "Ruta",

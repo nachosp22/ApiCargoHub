@@ -122,7 +122,8 @@ function onClose(): void {
     :header="dialogTitle"
     :modal="true"
     :closable="true"
-    :style="{ width: '600px' }"
+    :style="{ width: '640px' }"
+    :breakpoints="{ '640px': '90vw' }"
     @update:visible="onClose"
   >
     <div class="space-y-5 pt-2">
@@ -141,7 +142,7 @@ function onClose(): void {
       </div>
 
       <!-- Marca / Modelo -->
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
           <InputText
@@ -189,32 +190,23 @@ function onClose(): void {
         />
       </div>
 
-      <!-- Dimensiones -->
-      <div class="grid grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Largo (mm)</label>
+      <!-- Dimensiones (mm) -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Dimensiones (mm)</label>
+        <div class="grid grid-cols-3 gap-2">
           <InputNumber
             v-model="form.largoUtilMm"
-            placeholder="13600"
-            class="w-full"
+            placeholder="Largo"
             :min="0"
           />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Ancho (mm)</label>
           <InputNumber
             v-model="form.anchoUtilMm"
-            placeholder="2480"
-            class="w-full"
+            placeholder="Ancho"
             :min="0"
           />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Alto (mm)</label>
           <InputNumber
             v-model="form.altoUtilMm"
-            placeholder="2700"
-            class="w-full"
+            placeholder="Alto"
             :min="0"
           />
         </div>

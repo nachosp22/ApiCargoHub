@@ -301,13 +301,20 @@
       "invalidLocationsError": "Origin and destination must be selected from real suggestions.",
       "submit": "Submit Request",
       "successMessage": "The cargo request has been created successfully. We will assign you a driver as soon as possible.",
-      "viewMyPortes": "View my shipments →"
+      "viewMyPortes": "View my shipments →",
+      "estimatedPrice": "Estimated quote: €{price}",
+      "confirmAndPublish": "Confirm & find driver",
+      "confirming": "Confirming…",
+      "publishedSuccess": "Published! We are searching for a driver.",
+      "pendingManualReview": "Your request has been received. An agent will manually review the cargo details and contact you.",
+      "distanceLabel": "Estimated distance: {km} km",
+      "vehicleLabel": "Required vehicle: {tipo}"
     },
     "tracking": {
       "title": "Tracking Shipment #{id}",
-      "estimatedTime": "Estimated time",
+      "estimatedTime": "Remaining time",
+      "estimatedArrival": "Estimated arrival",
       "noEstimation": "No estimation",
-      "confidence": "Confidence: {value}",
       "driver": "Driver",
       "unassigned": "Unassigned",
       "route": "Route",

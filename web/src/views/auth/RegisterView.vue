@@ -19,12 +19,10 @@
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('auth.register.subtitle') }}</p>
       </div>
 
-      <!-- Error message -->
       <div v-if="errorMessage" class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
         <p class="text-sm text-red-700 dark:text-red-400">{{ errorMessage }}</p>
       </div>
 
-      <!-- Success message (conductor pending approval) -->
       <div v-if="registrationSuccess" class="mb-4 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-center">
         <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <i class="pi pi-check-circle text-green-600 text-3xl"></i>
@@ -42,7 +40,6 @@
         </router-link>
       </div>
 
-      <!-- Step 1: Account type selection -->
       <div v-if="!selectedRole && !registrationSuccess" class="space-y-4">
         <p class="text-center text-gray-600 mb-6">{{ t('auth.register.accountTypeQuestion') }}</p>
 
@@ -73,9 +70,7 @@
         </div>
       </div>
 
-      <!-- Step 2: Registration form -->
       <form v-if="selectedRole && !registrationSuccess" @submit.prevent="handleRegister" class="space-y-6">
-        <!-- Back button -->
         <button
           type="button"
           @click="selectedRole = null"
@@ -92,7 +87,6 @@
           {{ selectedRole === 'CLIENTE' ? t('auth.register.companyRegistration') : t('auth.register.driverRegistration') }}
         </div>
 
-        <!-- Account Section (shared) -->
         <fieldset class="space-y-4">
           <legend class="text-lg font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2 w-full">
             {{ t('auth.register.accessData') }}
@@ -147,7 +141,6 @@
           </div>
         </fieldset>
 
-        <!-- CLIENTE: Company Section -->
         <fieldset v-if="selectedRole === 'CLIENTE'" class="space-y-4">
           <legend class="text-lg font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2 w-full">
             {{ t('auth.register.companyData') }}
@@ -239,7 +232,6 @@
           </div>
         </fieldset>
 
-        <!-- CONDUCTOR: Driver Section -->
         <fieldset v-if="selectedRole === 'CONDUCTOR'" class="space-y-4">
           <legend class="text-lg font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2 w-full">
             {{ t('auth.register.personalData') }}
@@ -347,7 +339,6 @@
           </div>
         </fieldset>
 
-        <!-- Info box for conductors -->
         <div v-if="selectedRole === 'CONDUCTOR'" class="p-4 bg-amber-50 border border-amber-200 rounded-xl">
           <div class="flex items-start gap-3">
             <i class="pi pi-info-circle text-amber-600 mt-0.5"></i>

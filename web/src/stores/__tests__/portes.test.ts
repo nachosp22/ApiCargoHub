@@ -120,4 +120,47 @@ describe('Portes Store', () => {
       expect(store.portesCompletados).toHaveLength(1)
     })
   })
+
+  describe('downloadAlbaran', () => {
+    it('descarga PDF cuando la respuesta es válida', async () => {
+      Object.defineProperty(window, 'URL', {
+        value: {
+          createObjectURL: vi.fn(() => 'blob:test'),
+          revokeObjectURL: vi.fn(),
+        },
+        writable: true,
+      })
+      const appendSpy = vi.spyOn(document.body, 'appendChild')
+      const removeSpy = vi.spyOn(document.body, 'removeChild')
+      appendSpy.mockImplementation(() => null as unknown as Node)
+      removeSpy.mockImplementation(() => null as unknown as Node)
+      const click = vi.fn()
+      vi.spyOn(document, 'createElement').mockReturnValue({ click, href: '', download: '' } as unknown as HTMLAnchorElement)
+
+      vi.mocked(api.get).mockResolvedValueOnce({
+        data: new Blob(['pdf'], { type: 'application/pdf' }),
+        headers: {
+          'content-type': 'application/pdf',
+          'content-disposition': 'attachment; filename="albaran-9.pdf"',
+        },
+      } as never)
+
+      const store = usePortesStore()
+      await store.downloadAlbaran(9)
+
+      expect(click).toHaveBeenCalled()
+      expect(appendSpy).toHaveBeenCalled()
+      expect(removeSpy).toHaveBeenCalled()
+    })
+
+    it('falla con mensaje del backend cuando no llega PDF', async () => {
+      vi.mocked(api.get).mockResolvedValueOnce({
+        data: { text: async () => 'Porte sin firma' },
+        headers: { 'content-type': 'text/plain' },
+      } as never)
+
+      const store = usePortesStore()
+      await expect(store.downloadAlbaran(9)).rejects.toThrow('Porte sin firma')
+    })
+  })
 })

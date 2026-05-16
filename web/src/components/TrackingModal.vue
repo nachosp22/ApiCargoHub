@@ -14,7 +14,7 @@
         </h3>
         <span
           v-if="portesStore.tracking"
-          class="text-xs font-medium px-2.5 py-1 rounded-full"
+          class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
           :class="estadoBadgeClass(portesStore.tracking.status)"
         >
           {{ portesStore.tracking.status.replace('_', ' ') }}
@@ -27,14 +27,11 @@
     </template>
 
     <div v-if="portesStore.tracking" class="flex flex-col md:flex-row gap-4">
-      <!-- Map -->
       <div class="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden h-[320px] md:h-[420px]">
         <div ref="mapContainer" class="w-full h-full" />
       </div>
 
-      <!-- Info panel -->
       <div class="md:w-72 space-y-3">
-        <!-- ETA -->
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
             {{ t('portal.tracking.estimatedTime') }}
@@ -43,12 +40,12 @@
             {{ portesStore.tracking.etaMinutes }} min
           </div>
           <div v-else class="text-lg text-gray-400">{{ t('portal.tracking.noEstimation') }}</div>
-          <p v-if="portesStore.tracking.etaConfidence" class="text-xs text-gray-400 mt-1">
-            {{ t('portal.tracking.confidence', { value: portesStore.tracking.etaConfidence }) }}
+          <p v-if="portesStore.tracking.etaMinutes != null" class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <i class="pi pi-clock mr-1 text-xs" />
+            {{ t('portal.tracking.estimatedArrival') }}: {{ formatEtaClock(portesStore.tracking.etaMinutes) }} h
           </p>
         </div>
 
-        <!-- Driver -->
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
             {{ t('portal.tracking.driver') }}
@@ -65,7 +62,6 @@
           </p>
         </div>
 
-        <!-- Route -->
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
             {{ t('portal.tracking.route') }}
@@ -88,7 +84,6 @@
           </div>
         </div>
 
-        <!-- Last update -->
         <div v-if="portesStore.tracking.lastUpdate" class="text-xs text-gray-400 text-center">
           {{ t('portal.tracking.lastUpdate', { time: formatTime(portesStore.tracking.lastUpdate) }) }}
           <br />
@@ -97,12 +92,10 @@
       </div>
     </div>
 
-    <!-- Loading state -->
     <div v-else-if="portesStore.trackingLoading" class="flex items-center justify-center h-[320px] md:h-[420px]">
       <i class="pi pi-spin pi-spinner text-4xl text-primary-500"></i>
     </div>
 
-    <!-- Error state -->
     <div v-else class="flex flex-col items-center justify-center h-[320px] md:h-[420px] text-gray-400">
       <i class="pi pi-map-marker text-4xl mb-3"></i>
       <p>{{ t('portal.tracking.errorLoading') }}</p>
@@ -141,7 +134,34 @@ const mapContainer = ref<HTMLElement | null>(null)
 let map: L.Map | null = null
 let driverMarker: L.Marker | null = null
 
-// Fix default marker icons for Leaflet + bundlers
+const OSRM_BASE = 'https://router.project-osrm.org'
+
+interface OsrmRouteResponse {
+  code: string
+  routes: Array<{
+    geometry: { coordinates: Array<[number, number]> }
+    distance: number
+    duration: number
+  }>
+}
+
+async function fetchOsrmRoute(
+  originLat: number, originLng: number,
+  destLat: number, destLng: number,
+): Promise<Array<[number, number]> | null> {
+  try {
+    const url = `${OSRM_BASE}/route/v1/driving/${originLng},${originLat};${destLng},${destLat}?overview=full&geometries=geojson`
+    const res = await fetch(url)
+    const data: OsrmRouteResponse = await res.json()
+    if (data.code === 'Ok' && data.routes.length > 0) {
+      return data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng])
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -228,11 +248,18 @@ function initMap(tracking: NonNullable<typeof portesStore.tracking>) {
     bounds.push([tracking.destinationLat, tracking.destinationLng])
   }
 
+  let routeLoaded = false
   if (tracking.originLat != null && tracking.originLng != null && tracking.destinationLat != null && tracking.destinationLng != null) {
-    L.polyline(
-      [[tracking.originLat, tracking.originLng], [tracking.destinationLat, tracking.destinationLng]],
-      { color: '#6366F1', weight: 3, dashArray: '8 4', opacity: 0.6 }
-    ).addTo(map)
+    fetchOsrmRoute(tracking.originLat, tracking.originLng, tracking.destinationLat, tracking.destinationLng)
+      .then((coords) => {
+        if (!map) return
+        const path = coords ?? [[tracking.originLat!, tracking.originLng!], [tracking.destinationLat!, tracking.destinationLng!]]
+        L.polyline(path, { color: '#3B82F6', weight: 4, opacity: 0.8 }).addTo(map)
+        const allBounds = L.latLngBounds(path)
+        if (driverMarker) allBounds.extend(driverMarker.getLatLng())
+        map.fitBounds(allBounds, { padding: [40, 40] })
+      })
+    routeLoaded = true
   }
 
   if (tracking.driverLat != null && tracking.driverLng != null) {
@@ -242,10 +269,12 @@ function initMap(tracking: NonNullable<typeof portesStore.tracking>) {
     bounds.push([tracking.driverLat, tracking.driverLng])
   }
 
-  if (bounds.length >= 2) {
-    map.fitBounds(L.latLngBounds(bounds), { padding: [40, 40] })
-  } else if (bounds.length === 1) {
-    map.setView(bounds[0], 12)
+  if (!routeLoaded) {
+    if (bounds.length >= 2) {
+      map.fitBounds(L.latLngBounds(bounds), { padding: [40, 40] })
+    } else if (bounds.length === 1) {
+      map.setView(bounds[0], 12)
+    }
   }
 }
 
@@ -272,15 +301,15 @@ function cleanupMap() {
 
 function estadoBadgeClass(estado: string): string {
   const m: Record<string, string> = {
-    PENDIENTE: 'bg-yellow-100 text-yellow-700',
-    SOLICITUD: 'bg-purple-100 text-purple-700',
-    ASIGNADO: 'bg-blue-100 text-blue-700',
-    EN_TRANSITO: 'bg-indigo-100 text-indigo-700',
-    ENTREGADO: 'bg-green-100 text-green-700',
-    CANCELADO: 'bg-red-100 text-red-700',
-    FACTURADO: 'bg-gray-100 text-gray-700',
+    PENDIENTE: 'bg-yellow-50 text-yellow-700',
+    SOLICITUD: 'bg-purple-50 text-purple-700',
+    ASIGNADO: 'bg-blue-50 text-blue-700',
+    EN_TRANSITO: 'bg-indigo-50 text-indigo-700',
+    ENTREGADO: 'bg-green-50 text-green-700',
+    CANCELADO: 'bg-red-50 text-red-700',
+    FACTURADO: 'bg-gray-50 text-gray-600',
   }
-  return m[estado] ?? 'bg-gray-100 text-gray-600'
+  return m[estado] ?? 'bg-gray-50 text-gray-600'
 }
 
 function formatTime(dateStr: string): string {
@@ -288,5 +317,12 @@ function formatTime(dateStr: string): string {
     hour: '2-digit', minute: '2-digit', second: '2-digit',
     day: '2-digit', month: 'short',
   }).format(new Date(dateStr))
+}
+
+function formatEtaClock(etaMinutes: number): string {
+  const arrival = new Date(Date.now() + etaMinutes * 60_000)
+  return new Intl.DateTimeFormat('es-ES', {
+    hour: '2-digit', minute: '2-digit',
+  }).format(arrival)
 }
 </script>

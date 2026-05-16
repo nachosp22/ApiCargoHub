@@ -47,8 +47,7 @@ function formatCurrencyCompact(value: number): string {
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
-    notation: 'compact',
-    maximumFractionDigits: 1,
+    maximumFractionDigits: 0,
   }).format(value)
 }
 
@@ -112,25 +111,13 @@ const facturacionMensual = computed(() => {
     }
   })
 
-  const ytdMax = Math.max(...ytdMensual.map((m) => m.total), 1)
-
-  const ytdBars = ytdMensual.map((mes, index) => {
-    const barAreaWidth = 100
-    const gap = 2.2
-    const width = Math.max((barAreaWidth - gap * (ytdMensual.length - 1)) / ytdMensual.length, 1.8)
-    const x = index * (width + gap)
-    const normalized = ytdMax > 0 ? mes.total / ytdMax : 0
-    const height = Number.isFinite(normalized) ? Math.max(normalized * 84, mes.total > 0 ? 4 : 0) : 0
-    const y = 92 - height
-
-    return {
-      ...mes,
-      x,
-      y,
-      width,
-      height,
-    }
-  })
+  const ytdMax = Math.max(...ytdMensual.map((m) => m.total), 0)
+  const ytdScaleMax = Math.max(Math.ceil(ytdMax / 1000) * 1000, 1000)
+  const ytdScaleTicks = Array.from({ length: ytdScaleMax / 1000 + 1 }, (_, index) => index * 1000).reverse()
+  const ytdBars = ytdMensual.map((mes) => ({
+    ...mes,
+    height: ytdScaleMax > 0 ? (mes.total / ytdScaleMax) * 100 : 0,
+  }))
 
   return {
     actual,
@@ -148,6 +135,7 @@ const facturacionMensual = computed(() => {
     precioMedioPorteMes,
     ytdMensual,
     ytdBars,
+    ytdScaleTicks,
   }
 })
 
@@ -355,37 +343,29 @@ onMounted(() => {
         </article>
       </div>
 
-      <div class="mt-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-black/15 bg-white p-3.5 dark:border-white/15 dark:bg-black/40">
-        <div class="mb-3 flex items-center justify-between gap-2">
-          <h4 class="text-sm font-semibold uppercase tracking-wide text-black dark:text-white">Facturación anual por mes</h4>
-          <span class="text-xs text-gray-600 dark:text-gray-300">Enero a diciembre · ejercicio actual</span>
+      <div class="mt-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/15 dark:bg-black/40">
+        <div class="mb-4">
+          <h4 class="text-lg font-semibold text-slate-950 dark:text-white">Facturación anual por meses</h4>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Últimos 12 meses</p>
         </div>
 
-        <div class="finance-ytd-chart">
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Evolución de facturación del año actual">
-            <line x1="0" y1="92" x2="100" y2="92" class="ytd-baseline" />
-            <g v-for="mes in facturacionMensual.ytdBars" :key="`bar-${mes.label}`">
-              <rect
-                v-if="mes.total > 0"
-                class="ytd-bar"
-                :x="mes.x"
-                :y="mes.y"
-                :width="mes.width"
-                :height="mes.height"
-                rx="1"
-              >
-                <title>{{ `${mes.label}: ${formatCurrency(mes.total)}` }}</title>
-              </rect>
-              <circle v-else class="ytd-zero-dot" :cx="mes.x + mes.width / 2" cy="92" r="0.9">
-                <title>{{ `${mes.label}: ${formatCurrency(0)}` }}</title>
-              </circle>
-            </g>
-          </svg>
-          <div class="finance-ytd-axis">
-            <span v-for="mes in facturacionMensual.ytdMensual" :key="`axis-${mes.label}`">{{ mes.label }}</span>
+        <div class="finance-bar-chart">
+          <div class="finance-bar-scale" aria-hidden="true">
+            <span v-for="tick in facturacionMensual.ytdScaleTicks" :key="`tick-${tick}`">{{ tick }}</span>
           </div>
-          <div class="finance-ytd-values" aria-label="Valores mensuales de facturación">
-            <span v-for="mes in facturacionMensual.ytdMensual" :key="`value-${mes.label}`">{{ formatCurrencyCompact(mes.total) }}</span>
+          <div class="finance-bar-plot">
+            <div class="finance-grid-lines" aria-hidden="true">
+              <span v-for="tick in facturacionMensual.ytdScaleTicks" :key="`grid-${tick}`"></span>
+            </div>
+            <div class="finance-bars">
+              <div v-for="mes in facturacionMensual.ytdBars" :key="`bar-${mes.label}`" class="finance-bar-slot">
+                <div class="finance-bar-wrap" :title="`${mes.label}: ${formatCurrency(mes.total)}`">
+                  <span v-if="mes.total > 0" class="finance-bar-value">{{ formatCurrencyCompact(mes.total) }}</span>
+                  <span class="finance-bar" :style="{ height: `${Math.max(mes.height, mes.total > 0 ? 4 : 0)}%` }"></span>
+                </div>
+                <span class="finance-bar-label">{{ mes.label }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -468,72 +448,99 @@ onMounted(() => {
   color: rgb(156 163 175 / 1);
 }
 
-.finance-ytd-chart {
+.finance-bar-chart {
   display: flex;
   flex: 1;
   min-height: 0;
+  gap: 0.75rem;
+}
+
+.finance-bar-scale {
+  display: flex;
+  width: 2rem;
   flex-direction: column;
-  border-radius: 0.75rem;
-  border: 1px solid rgb(17 24 39 / 0.18);
-  background: rgb(255 255 255 / 1);
-  padding: 0.6rem;
+  justify-content: space-between;
+  padding-bottom: 1.55rem;
+  font-size: 0.68rem;
+  color: rgb(100 116 139 / 1);
 }
 
-.dark .finance-ytd-chart {
-  border-color: rgb(255 255 255 / 0.2);
-  background: rgb(15 23 42 / 0.75);
-}
-
-.finance-ytd-chart svg {
+.finance-bar-plot {
+  position: relative;
   flex: 1;
   min-height: 0;
+  height: clamp(210px, 26vh, 320px);
+}
+
+.finance-grid-lines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
   width: 100%;
-  height: clamp(150px, 24vh, 280px);
+  height: calc(100% - 1.55rem);
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.ytd-baseline {
-  stroke: rgb(17 24 39 / 0.28);
-  stroke-width: 1;
+.finance-grid-lines span {
+  display: block;
+  border-top: 1px solid rgb(226 232 240 / 1);
 }
 
-.dark .ytd-baseline {
-  stroke: rgb(255 255 255 / 0.32);
-}
-
-.ytd-bar {
-  fill: rgb(37 99 235 / 1);
-}
-
-.finance-ytd-axis {
-  margin-top: 0.4rem;
+.finance-bars {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(2.5rem, 1fr));
-  gap: 0.35rem;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgb(107 114 128 / 1);
-}
-
-.dark .finance-ytd-axis {
-  color: rgb(156 163 175 / 1);
-}
-
-.finance-ytd-values {
-  margin-top: 0.25rem;
-  display: grid;
+  height: 100%;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 0.25rem;
-  font-size: 0.58rem;
-  text-align: center;
-  color: rgb(75 85 99 / 1);
+  gap: 0.8rem;
 }
 
-.dark .finance-ytd-values {
+.finance-bar-slot {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+}
+
+.finance-bar-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 1.55rem);
+  width: 100%;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.finance-bar {
+  width: min(1.55rem, 70%);
+  border-radius: 0.38rem;
+  background: rgb(37 99 235 / 0.72);
+  transition: height 180ms ease;
+}
+
+.finance-bar-value {
+  border-radius: 999px;
+  background: rgb(37 99 235 / 1);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+  padding: 0.18rem 0.42rem;
+  white-space: nowrap;
+}
+
+.finance-bar-label {
+  margin-top: 0.45rem;
+  font-size: 0.68rem;
+  color: rgb(100 116 139 / 1);
+}
+
+.dark .finance-bar-label,
+.dark .finance-bar-scale {
   color: rgb(156 163 175 / 1);
 }
 
-.ytd-zero-dot {
-  fill: rgb(37 99 235 / 0.7);
-}
 </style>

@@ -4,6 +4,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
+import DatePicker from 'primevue/datepicker'
 import Button from 'primevue/button'
 import PorteStatusBadge from './PorteStatusBadge.vue'
 import type { Porte, EstadoPorte } from '@/stores/portes'
@@ -22,6 +23,7 @@ const emit = defineEmits<{
   (e: 'delete', porte: Porte): void
   (e: 'ajustar-precio', porte: Porte): void
   (e: 'facturar', porte: Porte): void
+  (e: 'descargar-albaran', porte: Porte): void
 }>()
 
 const authStore = useAuthStore()
@@ -30,8 +32,9 @@ const isAdmin = computed(() => {
   return role === 'ADMIN' || role === 'SUPERADMIN' || role === 'ROLE_ADMIN' || role === 'ROLE_SUPERADMIN'
 })
 
-// --- Filters ---
 const globalFilter = ref('')
+const dateFrom = ref<Date | null>(null)
+const dateTo = ref<Date | null>(null)
 const ALL_ESTADOS_VALUE = '__ALL_ESTADOS__'
 const estadoFilter = ref<EstadoPorte | typeof ALL_ESTADOS_VALUE>(ALL_ESTADOS_VALUE)
 
@@ -39,6 +42,7 @@ const estadoFilterOptions = [
   { label: 'Todos los estados', value: ALL_ESTADOS_VALUE },
   { label: 'Pendiente', value: 'PENDIENTE' },
   { label: 'Asignado', value: 'ASIGNADO' },
+  { label: 'En recogida', value: 'EN_RECOGIDA' },
   { label: 'En Tránsito', value: 'EN_TRANSITO' },
   { label: 'Entregado', value: 'ENTREGADO' },
   { label: 'Cancelado', value: 'CANCELADO' },
@@ -48,12 +52,30 @@ const estadoFilterOptions = [
 const filteredPortes = computed(() => {
   let result = props.portes
 
-  // Status filter
   if (estadoFilter.value !== ALL_ESTADOS_VALUE) {
     result = result.filter((p) => p.estado === estadoFilter.value)
   }
 
-  // Global text search
+  if (dateFrom.value) {
+    const from = new Date(dateFrom.value)
+    from.setHours(0, 0, 0, 0)
+    result = result.filter((p) => {
+      const dateStr = p.fechaRecogida ?? p.fechaCreacion
+      if (!dateStr) return false
+      return new Date(dateStr) >= from
+    })
+  }
+
+  if (dateTo.value) {
+    const to = new Date(dateTo.value)
+    to.setHours(23, 59, 59, 999)
+    result = result.filter((p) => {
+      const dateStr = p.fechaRecogida ?? p.fechaCreacion
+      if (!dateStr) return false
+      return new Date(dateStr) <= to
+    })
+  }
+
   if (globalFilter.value) {
     const query = globalFilter.value.toLowerCase()
     result = result.filter(
@@ -70,12 +92,10 @@ const filteredPortes = computed(() => {
   return result
 })
 
-// --- Row Click Handler ---
 function onRowClick(event: { data: Porte }): void {
   emit('view', event.data)
 }
 
-// --- Helpers ---
 
 function getConductorName(porte: Porte): string {
   if (!porte.conductor) return '—'
@@ -126,7 +146,23 @@ function formatDate(dateStr: string | undefined): string {
             :options="estadoFilterOptions"
             optionLabel="label"
             optionValue="value"
-            class="w-48"
+            class="w-44"
+          />
+
+          <!-- Date filter -->
+          <DatePicker
+            v-model="dateFrom"
+            placeholder="Desde"
+            dateFormat="dd/mm/yy"
+            showIcon
+            class="w-36"
+          />
+          <DatePicker
+            v-model="dateTo"
+            placeholder="Hasta"
+            dateFormat="dd/mm/yy"
+            showIcon
+            class="w-36"
           />
 
           <!-- Global Search -->
@@ -263,6 +299,16 @@ function formatDate(dateStr: string | undefined): string {
               size="small"
               v-tooltip.top="'Facturar'"
               @click="emit('facturar', slotProps.data)"
+            />
+            <Button
+              v-if="slotProps.data.estado === 'ENTREGADO' || slotProps.data.estado === 'FACTURADO'"
+              icon="pi pi-download"
+              severity="contrast"
+              text
+              rounded
+              size="small"
+              v-tooltip.top="'Descargar albarán'"
+              @click="emit('descargar-albaran', slotProps.data)"
             />
             <Button
               v-if="isAdmin && slotProps.data.estado === 'CANCELADO'"

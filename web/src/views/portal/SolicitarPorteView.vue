@@ -8,14 +8,63 @@
         </p>
       </div>
 
-      <!-- Success message -->
-      <div v-if="successMessage" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+      <!-- Success / result message -->
+      <div v-if="resultPorte" class="mb-6 p-4 rounded-lg border"
+           :class="resultPorte.revisionManual
+             ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+             : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'">
+        <!-- Manual review case -->
+        <template v-if="resultPorte.revisionManual">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-exclamation-triangle text-amber-600"></i>
+            <p class="text-sm text-amber-700 dark:text-amber-300 font-medium">
+              {{ t('portal.solicitar.pendingManualReview') }}
+            </p>
+          </div>
+          <p v-if="resultPorte.motivoRevision" class="text-xs text-amber-600 dark:text-amber-400 ml-6">
+            {{ resultPorte.motivoRevision }}
+          </p>
+        </template>
+        <!-- Analysis OK — show budget + confirm -->
+        <template v-else>
+          <div class="flex items-center gap-2 mb-3">
+            <i class="pi pi-check-circle text-green-600 text-lg"></i>
+            <p class="text-sm text-green-700 dark:text-green-300 font-medium">
+              {{ t('portal.solicitar.estimatedPrice', { price: formatPrice(resultPorte.precio) }) }}
+            </p>
+          </div>
+          <div v-if="resultPorte.distanciaKm" class="text-xs text-green-600 dark:text-green-400 ml-6 mb-1">
+            {{ t('portal.solicitar.distanceLabel', { km: formatKm(resultPorte.distanciaKm) }) }}
+          </div>
+          <div v-if="resultPorte.tipoVehiculoRequerido" class="text-xs text-green-600 dark:text-green-400 ml-6 mb-3">
+            {{ t('portal.solicitar.vehicleLabel', { tipo: formatVehicle(resultPorte.tipoVehiculoRequerido) }) }}
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <Button
+              :label="t('portal.solicitar.confirmAndPublish')"
+              icon="pi pi-send"
+              :loading="confirming"
+              @click="handleConfirm"
+              severity="success"
+              size="small"
+            />
+            <router-link to="/portal/mis-portes" class="inline-flex items-center gap-1 text-sm text-green-700 dark:text-green-300 hover:underline">
+              {{ t('portal.solicitar.viewMyPortes') }}
+            </router-link>
+          </div>
+        </template>
+      </div>
+
+      <!-- Published success -->
+      <div v-if="published" class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <div class="flex items-center gap-2">
-          <i class="pi pi-check-circle text-green-600"></i>
-          <p class="text-sm text-green-700 font-medium">{{ successMessage }}</p>
+          <i class="pi pi-check-circle text-blue-600"></i>
+          <p class="text-sm text-blue-700 dark:text-blue-300 font-medium">
+            {{ t('portal.solicitar.publishedSuccess') }}
+          </p>
         </div>
         <div class="mt-3">
-          <router-link to="/portal/mis-portes" class="text-sm text-green-700 hover:underline font-medium">
+          <router-link to="/portal/mis-portes" class="text-sm text-blue-700 hover:underline font-medium">
             {{ t('portal.solicitar.viewMyPortes') }}
           </router-link>
         </div>
@@ -112,7 +161,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePortesStore } from '@/stores/portes'
-import type { SolicitudPorteRequest } from '@/stores/portes'
+import type { SolicitudPorteRequest, Porte } from '@/stores/portes'
 import AddressAutocomplete from '@/components/AddressAutocomplete.vue'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
@@ -141,7 +190,9 @@ const form = reactive({
 })
 
 const fechaRecogida = ref<Date | null>(null)
-const successMessage = ref('')
+const resultPorte = ref<Porte | null>(null)
+const published = ref(false)
+const confirming = ref(false)
 const localError = ref('')
 const hasTriedSubmit = ref(false)
 const selectedOrigen = ref<SelectedAddress | null>(null)
@@ -154,8 +205,8 @@ const minDate = computed(() => {
   return d
 })
 
-const isOrigenValido = computed(() => hasValidSelection(form.origen, selectedOrigen.value))
-const isDestinoValido = computed(() => hasValidSelection(form.destino, selectedDestino.value))
+const isOrigenValido = computed(() => hasAddressText(form.origen))
+const isDestinoValido = computed(() => hasAddressText(form.destino))
 
 const canSubmit = computed(() => {
   return (
@@ -218,7 +269,8 @@ function onDestinoSelect(addr: SelectedAddress): void {
 }
 
 async function handleSubmit() {
-  successMessage.value = ''
+  resultPorte.value = null
+  published.value = false
   localError.value = ''
   hasTriedSubmit.value = true
 
@@ -235,8 +287,8 @@ async function handleSubmit() {
   const request: SolicitudPorteRequest = {
     origen: form.origen,
     destino: form.destino,
-    ciudadOrigen: form.ciudadOrigen || undefined,
-    ciudadDestino: form.ciudadDestino || undefined,
+    ciudadOrigen: form.ciudadOrigen || form.origen,
+    ciudadDestino: form.ciudadDestino || form.destino,
     latitudOrigen: form.latitudOrigen,
     longitudOrigen: form.longitudOrigen,
     latitudDestino: form.latitudDestino,
@@ -247,10 +299,21 @@ async function handleSubmit() {
 
   try {
     const newPorte = await portesStore.createSolicitud(request)
-    successMessage.value = newPorte.revisionManual
-      ? t('portal.portes.manualReview')
-      : t('portal.portes.pendingDriverAwaitingAcceptance')
+    resultPorte.value = newPorte
+    hasTriedSubmit.value = false
+  } catch {
+    // Error is shown via portesStore.error
+  }
+}
 
+async function handleConfirm() {
+  if (!resultPorte.value) return
+  confirming.value = true
+  try {
+    await portesStore.confirmarSolicitud(resultPorte.value.id)
+    resultPorte.value = null
+    published.value = true
+    // Clear form
     form.origen = ''
     form.destino = ''
     form.descripcionCliente = ''
@@ -263,16 +326,35 @@ async function handleSubmit() {
     fechaRecogida.value = null
     selectedOrigen.value = null
     selectedDestino.value = null
-    hasTriedSubmit.value = false
   } catch {
-    // Error is shown via portesStore.error
+    // Error shown via store
+  } finally {
+    confirming.value = false
   }
 }
 
-function hasValidSelection(inputValue: string, selected: SelectedAddress | null): boolean {
-  if (!selected) return false
-  if (!inputValue || inputValue !== selected.fullAddress) return false
-  return Number.isFinite(selected.lat) && Number.isFinite(selected.lon)
+function formatPrice(value?: number): string {
+  if (value == null || value <= 0) return '—'
+  return value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+function formatKm(value?: number): string {
+  if (value == null || value <= 0) return '—'
+  return value.toLocaleString('es-ES', { maximumFractionDigits: 1 })
+}
+
+function formatVehicle(tipo: string): string {
+  const map: Record<string, string> = {
+    FURGONETA: 'Furgoneta',
+    RIGIDO: 'Camión Rígido',
+    TRAILER: 'Tráiler',
+    ESPECIAL: 'Especial',
+  }
+  return map[tipo] ?? tipo
+}
+
+function hasAddressText(value: string): boolean {
+  return value.trim().length > 0
 }
 
 function formatLocalDateTime(date: Date): string {

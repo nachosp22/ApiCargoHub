@@ -1,18 +1,15 @@
 <template>
   <div>
-    <!-- Loading -->
     <div v-if="portesStore.loading" class="flex justify-center py-12">
       <i class="pi pi-spin pi-spinner text-3xl text-primary-500"></i>
     </div>
 
-    <!-- Error -->
     <div v-else-if="portesStore.error" class="text-center py-12">
       <i class="pi pi-exclamation-triangle text-4xl text-amber-400 mb-4"></i>
       <p class="text-gray-600">{{ portesStore.error }}</p>
       <Button :label="t('portal.portes.retry')" icon="pi pi-refresh" severity="secondary" class="mt-4" @click="loadData" />
     </div>
 
-    <!-- Empty state -->
     <div v-else-if="portesStore.portes.length === 0" class="text-center py-12">
       <i class="pi pi-truck text-4xl text-gray-300 mb-4"></i>
       <h3 class="text-lg font-semibold text-gray-700">{{ t('portal.portes.noPortesTitle') }}</h3>
@@ -22,8 +19,54 @@
       </router-link>
     </div>
 
-    <!-- Table -->
     <div v-else>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-4">
+        <div class="flex flex-wrap items-end gap-4">
+          <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Buscar</label>
+            <input
+              v-model.trim="filters.search"
+              type="text"
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white h-9"
+              placeholder="Buscar por ID, origen, destino..."
+            >
+          </div>
+          <div class="flex gap-2">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Desde</label>
+              <input
+                v-model="filters.fechaDesde"
+                type="date"
+                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white h-9"
+              >
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Hasta</label>
+              <input
+                v-model="filters.fechaHasta"
+                type="date"
+                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white h-9"
+              >
+            </div>
+          </div>
+          <div class="w-44">
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Estado</label>
+            <select
+              v-model="filters.estado"
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white h-9"
+            >
+              <option value="">Todos</option>
+              <option value="PENDIENTE">PENDIENTE</option>
+              <option value="ASIGNADO">ASIGNADO</option>
+              <option value="EN_TRANSITO">EN TRANSITO</option>
+              <option value="ENTREGADO">ENTREGADO</option>
+              <option value="CANCELADO">CANCELADO</option>
+              <option value="FACTURADO">FACTURADO</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <DataTable
         :value="processedPortes"
         :paginator="processedPortes.length > 10"
@@ -36,18 +79,10 @@
         <Column expander style="width: 3rem" />
         <Column field="id" style="width: 7rem">
           <template #header>
-            <div class="flex flex-col gap-2">
-              <button type="button" class="text-left font-semibold hover:text-primary-600" @click="toggleSort('id')">
-                {{ t('portal.portes.id') }}
-                <i :class="sortIcon('id')" class="ml-1"></i>
-              </button>
-              <input
-                v-model.trim="filters.id"
-                type="text"
-                class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md"
-                placeholder="#"
-              >
-            </div>
+            <button type="button" class="text-left font-semibold hover:text-primary-600" @click="toggleSort('id')">
+              {{ t('portal.portes.id') }}
+              <i :class="sortIcon('id')" class="ml-1"></i>
+            </button>
           </template>
           <template #body="{ data }">
             <span class="font-mono text-sm text-gray-500">#{{ data.id }}</span>
@@ -55,18 +90,10 @@
         </Column>
         <Column field="origen">
           <template #header>
-            <div class="flex flex-col gap-2">
-              <button type="button" class="text-left font-semibold hover:text-primary-600" @click="toggleSort('origen')">
-                {{ t('portal.portes.origin') }}
-                <i :class="sortIcon('origen')" class="ml-1"></i>
-              </button>
-              <input
-                v-model.trim="filters.origen"
-                type="text"
-                class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md"
-                :placeholder="t('portal.portes.origin')"
-              >
-            </div>
+            <button type="button" class="text-left font-semibold hover:text-primary-600" @click="toggleSort('origen')">
+              {{ t('portal.portes.origin') }}
+              <i :class="sortIcon('origen')" class="ml-1"></i>
+            </button>
           </template>
           <template #body="{ data }">
             <span class="font-medium text-gray-800 dark:text-gray-200 break-words">
@@ -76,18 +103,10 @@
         </Column>
         <Column field="destino">
           <template #header>
-            <div class="flex flex-col gap-2">
-              <button type="button" class="text-left font-semibold hover:text-primary-600" @click="toggleSort('destino')">
-                {{ t('portal.portes.destination') }}
-                <i :class="sortIcon('destino')" class="ml-1"></i>
-              </button>
-              <input
-                v-model.trim="filters.destino"
-                type="text"
-                class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md"
-                :placeholder="t('portal.portes.destination')"
-              >
-            </div>
+            <button type="button" class="text-left font-semibold hover:text-primary-600" @click="toggleSort('destino')">
+              {{ t('portal.portes.destination') }}
+              <i :class="sortIcon('destino')" class="ml-1"></i>
+            </button>
           </template>
           <template #body="{ data }">
             <span class="font-medium text-gray-800 dark:text-gray-200 break-words">
@@ -97,22 +116,14 @@
         </Column>
         <Column field="estado" style="width: 12rem">
           <template #header>
-            <div class="flex flex-col gap-2">
-              <button type="button" class="text-left font-semibold hover:text-primary-600" @click="toggleSort('estado')">
-                {{ t('portal.portes.status') }}
-                <i :class="sortIcon('estado')" class="ml-1"></i>
-              </button>
-              <input
-                v-model.trim="filters.estado"
-                type="text"
-                class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md"
-                :placeholder="t('portal.portes.status')"
-              >
-            </div>
+            <button type="button" class="text-left font-semibold hover:text-primary-600" @click="toggleSort('estado')">
+              {{ t('portal.portes.status') }}
+              <i :class="sortIcon('estado')" class="ml-1"></i>
+            </button>
           </template>
           <template #body="{ data }">
             <span
-              class="text-xs font-medium px-2.5 py-1 rounded-full"
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset"
               :class="estadoBadgeClass(resolvePortalStatusKey(data))"
             >
               {{ resolvePortalStatusLabel(data) }}
@@ -121,17 +132,10 @@
         </Column>
         <Column field="fechaRecogida" style="width: 12rem">
           <template #header>
-            <div class="flex flex-col gap-2">
-              <button type="button" class="text-left font-semibold hover:text-primary-600" @click="toggleSort('fechaRecogida')">
-                {{ t('portal.portes.date') }}
-                <i :class="sortIcon('fechaRecogida')" class="ml-1"></i>
-              </button>
-              <input
-                v-model="filters.fecha"
-                type="date"
-                class="w-full px-2 py-1 text-xs border border-gray-300 rounded-md"
-              >
-            </div>
+            <button type="button" class="text-left font-semibold hover:text-primary-600" @click="toggleSort('fechaRecogida')">
+              {{ t('portal.portes.date') }}
+              <i :class="sortIcon('fechaRecogida')" class="ml-1"></i>
+            </button>
           </template>
           <template #body="{ data }">
             <span class="text-sm text-gray-600">{{ formatDate(data.fechaRecogida) }}</span>
@@ -150,19 +154,29 @@
         </Column>
         <Column header="" style="width: 8rem">
           <template #body="{ data }">
-            <Button
-              v-if="data.estado === 'EN_TRANSITO'"
-              :label="t('portal.portes.tracking')"
-              icon="pi pi-map-marker"
-              severity="info"
-              text
-              size="small"
-              @click="openTrackingModal(data.id)"
-            />
+            <div class="flex items-center gap-2">
+              <Button
+                v-if="data.estado === 'EN_TRANSITO'"
+                :label="t('portal.portes.tracking')"
+                icon="pi pi-map-marker"
+                severity="info"
+                text
+                size="small"
+                @click="openTrackingModal(data.id)"
+              />
+              <Button
+                v-if="data.estado === 'ENTREGADO' || data.estado === 'FACTURADO'"
+                label="Albarán"
+                icon="pi pi-download"
+                severity="secondary"
+                text
+                size="small"
+                @click="handleDownloadAlbaran(data.id)"
+              />
+            </div>
           </template>
         </Column>
 
-        <!-- Expanded row detail -->
         <template #expansion="{ data }">
           <div class="p-4 bg-gray-50 dark:bg-gray-800/50">
             <div class="grid md:grid-cols-3 gap-4 text-sm">
@@ -215,6 +229,23 @@
                 {{ t('portal.portes.manualReview') }}
               </p>
             </div>
+            <!-- Pendiente de confirmación del cliente: mostrar presupuesto + confirmar -->
+            <div v-else-if="isPendienteConfirmacion(data)" class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p class="text-sm text-green-700 font-medium mb-2">
+                <i class="pi pi-euro mr-1"></i>
+                {{ t('portal.solicitar.estimatedPrice', { price: formatPrice(data.precio) }) }}
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <Button
+                  :label="t('portal.solicitar.confirmAndPublish')"
+                  icon="pi pi-send"
+                  :loading="confirmingPorteId === data.id"
+                  @click="handleConfirmFromList(data.id)"
+                  severity="success"
+                  size="small"
+                />
+              </div>
+            </div>
             <div v-else-if="resolvePendingConductorMessage(data)" class="mt-3 p-3 bg-sky-50 border border-sky-200 rounded-lg">
               <p class="text-sm text-sky-700">
                 <i class="pi pi-info-circle mr-1"></i>
@@ -236,8 +267,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { usePortesStore } from '@/stores/portes'
 import type { Porte } from '@/stores/portes'
@@ -247,11 +279,13 @@ import Button from 'primevue/button'
 import TrackingModal from '@/components/TrackingModal.vue'
 
 const { t } = useI18n()
+const route = useRoute()
 const authStore = useAuthStore()
 const portesStore = usePortesStore()
 const expandedRows = ref({})
 const trackingModalVisible = ref(false)
 const selectedTrackingPorteId = ref<number | null>(null)
+const confirmingPorteId = ref<number | null>(null)
 
 function openTrackingModal(porteId: number) {
   selectedTrackingPorteId.value = porteId
@@ -262,34 +296,57 @@ type SortField = 'id' | 'origen' | 'destino' | 'estado' | 'fechaRecogida' | 'pre
 const sortField = ref<SortField>('fechaRecogida')
 const sortDirection = ref<'asc' | 'desc'>('asc')
 const filters = ref({
-  id: '',
-  origen: '',
-  destino: '',
+  search: '',
+  fechaDesde: '',
+  fechaHasta: '',
   estado: '',
-  fecha: '',
 })
 
 const processedPortes = computed(() => {
-  const filtered = portesStore.portes.filter((porte) => {
-    const idValue = String(porte.id ?? '')
-    const origenValue = normalizeText(porte.origen)
-    const destinoValue = normalizeText(porte.destino)
-    const estadoValue = normalizeText(resolvePortalStatusLabel(porte))
-    const fechaIso = toIsoDate(porte.fechaRecogida)
+  const search = normalizeText(filters.value.search)
 
-    return (
-      (!filters.value.id || idValue.includes(filters.value.id)) &&
-      (!filters.value.origen || origenValue.includes(normalizeText(filters.value.origen))) &&
-      (!filters.value.destino || destinoValue.includes(normalizeText(filters.value.destino))) &&
-      (!filters.value.estado || estadoValue.includes(normalizeText(filters.value.estado))) &&
-      (!filters.value.fecha || fechaIso === filters.value.fecha)
-    )
+  const filtered = portesStore.portes.filter((porte) => {
+    // Global search
+    if (search) {
+      const idMatch = String(porte.id).includes(search)
+      const origenMatch = normalizeText(porte.origen).includes(search)
+      const destinoMatch = normalizeText(porte.destino).includes(search)
+      const estadoMatch = normalizeText(resolvePortalStatusLabel(porte)).includes(search)
+      if (!idMatch && !origenMatch && !destinoMatch && !estadoMatch) return false
+    }
+
+    // Estado filter
+    if (filters.value.estado && porte.estado !== filters.value.estado) return false
+
+    // Fecha desde
+    if (filters.value.fechaDesde) {
+      const porteDate = toIsoDate(porte.fechaRecogida)
+      if (!porteDate || porteDate < filters.value.fechaDesde) return false
+    }
+
+    // Fecha hasta
+    if (filters.value.fechaHasta) {
+      const porteDate = toIsoDate(porte.fechaRecogida)
+      if (!porteDate || porteDate > filters.value.fechaHasta) return false
+    }
+
+    return true
   })
 
   return [...filtered].sort((a, b) => comparePortes(a, b))
 })
 
-onMounted(() => loadData())
+onMounted(async () => {
+  await loadData()
+  const searchQuery = route.query.search
+  if (searchQuery) {
+    filters.value.search = String(searchQuery)
+    nextTick(() => {
+      const table = document.querySelector('.p-datatable')
+      if (table) table.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
+})
 
 async function loadData() {
   const cId = authStore.clienteId
@@ -301,6 +358,14 @@ async function loadData() {
 function formatAddress(addr: string): string {
   if (!addr || addr === '—') return '—'
   return addr
+}
+
+async function handleDownloadAlbaran(porteId: number) {
+  try {
+    await portesStore.downloadAlbaran(porteId)
+  } catch (err) {
+    console.error('Error downloading albaran PDF:', err)
+  }
 }
 
 function normalizeText(value?: string | null): string {
@@ -321,7 +386,31 @@ function resolvePortalStatusLabel(porte: Porte): string {
 
 function resolvePendingConductorMessage(porte: Porte): string | null {
   if (porte.estado !== 'PENDIENTE' || porte.revisionManual) return null
+  // Si está pendiente de confirmación del cliente, no mostrar mensaje genérico
+  if (isPendienteConfirmacion(porte)) return null
   return t('portal.portes.pendingDriverAwaitingAcceptance')
+}
+
+function isPendienteConfirmacion(porte: Porte): boolean {
+  return porte.estado === 'PENDIENTE'
+    && !porte.revisionManual
+    && porte.motivoRevision === 'Pendiente de confirmación del cliente'
+}
+
+async function handleConfirmFromList(porteId: number) {
+  confirmingPorteId.value = porteId
+  try {
+    await portesStore.confirmarSolicitud(porteId)
+  } catch {
+    // Error shown via store
+  } finally {
+    confirmingPorteId.value = null
+  }
+}
+
+function formatPrice(value?: number): string {
+  if (value == null || value <= 0) return '—'
+  return value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function toIsoDate(dateStr?: string): string {
@@ -420,15 +509,15 @@ function formatDimensions(porte: {
 
 function estadoBadgeClass(estado: string): string {
   const map: Record<string, string> = {
-    PENDIENTE: 'bg-yellow-100 text-yellow-700',
-    PENDIENTE_REVISION: 'bg-amber-100 text-amber-700',
-    PENDIENTE_CONDUCTOR: 'bg-sky-100 text-sky-700',
-    SOLICITUD: 'bg-purple-100 text-purple-700',
-    ASIGNADO: 'bg-blue-100 text-blue-700',
-    EN_TRANSITO: 'bg-indigo-100 text-indigo-700',
-    ENTREGADO: 'bg-green-100 text-green-700',
-    CANCELADO: 'bg-red-100 text-red-700',
-    FACTURADO: 'bg-gray-100 text-gray-700',
+    PENDIENTE: 'bg-yellow-50 text-yellow-700',
+    PENDIENTE_REVISION: 'bg-amber-50 text-amber-700',
+    PENDIENTE_CONDUCTOR: 'bg-sky-50 text-sky-700',
+    SOLICITUD: 'bg-purple-50 text-purple-700',
+    ASIGNADO: 'bg-blue-50 text-blue-700',
+    EN_TRANSITO: 'bg-indigo-50 text-indigo-700',
+    ENTREGADO: 'bg-green-50 text-green-700',
+    CANCELADO: 'bg-red-50 text-red-700',
+    FACTURADO: 'bg-gray-50 text-gray-600',
   }
   return map[estado] ?? 'bg-gray-100 text-gray-600'
 }
