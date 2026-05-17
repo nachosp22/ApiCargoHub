@@ -149,7 +149,9 @@ public class DevDataSeeder implements ApplicationRunner {
         List<Porte> created = new ArrayList<>();
         for(P p:s){
             Porte x=findPorte(p.or+" Asturias",p.de,p.desc).orElseGet(Porte::new);
-            x.setOrigen(p.or+" Asturias"); x.setDestino(p.de+" Asturias");
+            String o=p.or; String d=p.de;
+            x.setOrigen(esAsturias(o)?o+" Asturias":o);
+            x.setDestino(esAsturias(d)?d+" Asturias":d);
             x.setLatitudOrigen(p.lo);x.setLongitudOrigen(p.ln);
             x.setLatitudDestino(p.ld);x.setLongitudDestino(p.lg);
             x.setDistanciaKm(p.km);x.setDistanciaEstimada(true);
@@ -175,6 +177,7 @@ public class DevDataSeeder implements ApplicationRunner {
     // ═══ Helpers ═══
     private Usuario upsert(String e,String pw,RolUsuario r,boolean a){ String n=e.toLowerCase(); Usuario u=ur.findByEmail(n).orElseGet(Usuario::new); u.setEmail(n); if(u.getPassword()==null||!pe.matches(pw,u.getPassword()))u.setPassword(pe.encode(pw)); u.setRol(r);u.setActivo(a);if(u.getFechaRegistro()==null)u.setFechaRegistro(LocalDateTime.now()); return ur.save(u); }
     private Optional<Porte> findPorte(String o,String d,String de){ return pr.findAll().stream().filter(p->o.equals(p.getOrigen())&&d.equals(p.getDestino())&&de.equals(p.getDescripcionCliente())).findFirst(); }
+    private boolean esAsturias(String c){ return java.util.Set.of("Oviedo","Gijón","Avilés","Mieres","Luanco","Cangas").contains(c); }
 
     private record C(String e,String n,String cif,String t,String d,String se){}
     private record D(String e,String n,String a,String dni,String t,String cb,Double la,Double lo){}
