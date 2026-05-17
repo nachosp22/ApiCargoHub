@@ -60,8 +60,8 @@ public class DevDataSeeder implements ApplicationRunner {
     }
 
     // ═══ Admin ═══
-    private void seedSuperadmin() { Usuario u=upsert("superadmin@cargohub.local","Super123!",RolUsuario.SUPERADMIN); u.setNombre("Super Admin"); ur.save(u); }
-    private void seedAdmin()      { Usuario u=upsert("admin@cargohub.local",     "Admin123!", RolUsuario.ADMIN);      u.setNombre("Admin");       ur.save(u); }
+    private void seedSuperadmin() { Usuario u=upsert("superadmin@cargohub.local","Super123!",RolUsuario.SUPERADMIN,true); u.setNombre("Super Admin"); ur.save(u); }
+    private void seedAdmin()      { Usuario u=upsert("admin@cargohub.local",     "Admin123!", RolUsuario.ADMIN,true);      u.setNombre("Admin");       ur.save(u); }
 
     // ═══ Clientes (5) ═══
     private List<Cliente> seedClientes() {
