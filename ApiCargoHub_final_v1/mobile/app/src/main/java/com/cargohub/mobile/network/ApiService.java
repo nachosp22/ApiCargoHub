@@ -1,0 +1,231 @@
+package com.cargohub.mobile.network;
+
+import com.cargohub.mobile.data.model.EstadisticasConductor;
+import com.cargohub.mobile.data.model.FacturaPageResponse;
+import com.cargohub.mobile.data.model.FacturaResumen;
+import com.cargohub.mobile.data.model.LoginResponse;
+import com.cargohub.mobile.data.model.Notificacion;
+import com.cargohub.mobile.data.model.UnreadCountResponse;
+import com.cargohub.mobile.data.model.AgendaBloqueo;
+import com.cargohub.mobile.data.model.AgendaBloqueoRequest;
+import com.cargohub.mobile.data.model.BloqueoRecurrente;
+import com.cargohub.mobile.data.model.ConductorProfileResponse;
+import com.cargohub.mobile.data.model.ConductorProfileUpdateRequest;
+import com.cargohub.mobile.data.model.CrearFotoCargaRequest;
+import com.cargohub.mobile.data.model.CrearIncidenciaRequest;
+import com.cargohub.mobile.data.model.DriverLocationUpdateRequest;
+import com.cargohub.mobile.data.model.FotoCarga;
+import com.cargohub.mobile.data.model.IncidenciaEventoResponse;
+import com.cargohub.mobile.data.model.Porte;
+import com.cargohub.mobile.data.model.PorteTrackingResponse;
+import com.cargohub.mobile.data.model.IncidenciaResponse;
+import com.cargohub.mobile.data.model.RecordTrackingPauseRequest;
+import com.cargohub.mobile.data.model.StartTrackingSessionRequest;
+import com.cargohub.mobile.data.model.TrackingSessionResponse;
+import com.cargohub.mobile.data.model.UpdateTrackingSessionRequest;
+import com.cargohub.mobile.data.model.Vehiculo;
+import com.cargohub.mobile.data.model.VehiculoUpsertRequest;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.DELETE;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.PATCH;
+import retrofit2.http.Query;
+
+public interface ApiService {
+
+    @GET("health")
+    Call<Void> health();
+
+    @FormUrlEncoded
+    @POST("api/auth/login")
+    Call<LoginResponse> login(@Field("email") String email, @Field("password") String password);
+
+    @GET("api/conductores/{id}")
+    Call<ConductorProfileResponse> getConductorProfile(@Path("id") long conductorId);
+
+    @PUT("api/conductores/{id}")
+    Call<ConductorProfileResponse> updateConductorProfile(@Path("id") long conductorId,
+                                                          @Body ConductorProfileUpdateRequest request);
+
+    @DELETE("api/conductores/{id}")
+    Call<Void> deactivateConductorProfile(@Path("id") long conductorId);
+
+    @GET("api/conductores/{id}/agenda")
+    Call<List<AgendaBloqueo>> getAgenda(@Path("id") long conductorId,
+                                        @Query("desde") String desde,
+                                        @Query("hasta") String hasta);
+
+    @POST("api/conductores/{id}/agenda")
+    Call<AgendaBloqueo> createAgendaBloqueo(@Path("id") long conductorId,
+                                            @Body AgendaBloqueoRequest request);
+
+    @DELETE("api/conductores/agenda/{bloqueoId}")
+    Call<Void> deleteAgendaBloqueo(@Path("bloqueoId") long bloqueoId);
+
+    @GET("api/conductores/{id}/bloqueos-recurrentes")
+    Call<List<BloqueoRecurrente>> getBloqueoRecurrentes(@Path("id") long conductorId);
+
+    @PUT("api/conductores/{id}/bloqueos-recurrentes")
+    Call<List<BloqueoRecurrente>> setBloqueoRecurrentes(@Path("id") long conductorId,
+                                                         @Body List<Integer> diasBloqueados);
+
+    @GET("api/conductores/{id}/dias-laborables")
+    Call<List<Integer>> getDiasLaborables(@Path("id") long conductorId);
+
+    @PUT("api/conductores/{id}/dias-laborables")
+    Call<List<Integer>> setDiasLaborables(@Path("id") long conductorId,
+                                          @Body List<Integer> diasLaborables);
+
+    @GET("api/conductores/{conductorId}/vehiculos")
+    Call<List<Vehiculo>> getVehiculos(@Path("conductorId") long conductorId);
+
+    @POST("api/conductores/{conductorId}/vehiculos")
+    Call<Vehiculo> createVehiculo(@Path("conductorId") long conductorId,
+                                  @Body VehiculoUpsertRequest request);
+
+    @PUT("api/conductores/{conductorId}/vehiculos/{vehiculoId}/activar")
+    Call<Void> activateVehiculo(@Path("conductorId") long conductorId,
+                                @Path("vehiculoId") long vehiculoId);
+
+    @PUT("api/conductores/{conductorId}/vehiculos/{vehiculoId}/desactivar")
+    Call<Void> deactivateVehiculo(@Path("conductorId") long conductorId,
+                                  @Path("vehiculoId") long vehiculoId);
+
+    @PUT("api/conductores/{conductorId}/vehiculos/{vehiculoId}")
+    Call<Vehiculo> updateVehiculo(@Path("conductorId") long conductorId,
+                                  @Path("vehiculoId") long vehiculoId,
+                                  @Body VehiculoUpsertRequest request);
+
+    @GET("api/portes/ofertas/{conductorId}")
+    Call<List<Porte>> getPortesOferta(@Path("conductorId") long conductorId);
+
+    @GET("api/portes/conductor/{conductorId}")
+    Call<List<Porte>> getPortesDelConductor(@Path("conductorId") long conductorId);
+
+    @GET("api/portes/{porteId}")
+    Call<Porte> getPorteDetail(@Path("porteId") long porteId);
+
+    @GET("api/portes/{porteId}/tracking")
+    Call<PorteTrackingResponse> getPorteTracking(@Path("porteId") long porteId);
+
+    @POST("api/portes/{porteId}/aceptar")
+    Call<Porte> acceptPorteOffer(@Path("porteId") long porteId,
+                                 @Query("conductorId") long conductorId);
+
+    @POST("api/portes/{porteId}/rechazar")
+    Call<Void> rejectPorteOffer(@Path("porteId") long porteId,
+                                @Query("conductorId") long conductorId);
+
+    @PUT("api/portes/{porteId}/estado")
+    Call<Porte> changePorteState(@Path("porteId") long porteId,
+                                 @Query("nuevo") String nuevoEstado);
+
+    @GET("api/incidencias/porte/{porteId}")
+    Call<List<IncidenciaResponse>> getIncidenciasPorPorte(@Path("porteId") long porteId);
+
+    @GET("api/incidencias/{id}")
+    Call<IncidenciaResponse> getIncidenciaById(@Path("id") long incidenciaId);
+
+    @GET("api/incidencias/{id}/historial")
+    Call<List<IncidenciaEventoResponse>> getIncidenciaHistorial(@Path("id") long incidenciaId);
+
+    @POST("api/incidencias")
+    Call<IncidenciaResponse> crearIncidencia(
+            @Query("porteId") long porteId,
+            @Body CrearIncidenciaRequest request
+    );
+
+    @POST("api/v1/tracking/drivers/{driverId}/locations")
+    Call<Void> upsertDriverLocation(@Path("driverId") long driverId,
+                                    @Body DriverLocationUpdateRequest request);
+
+    @POST("api/v1/tracking/sessions")
+    Call<TrackingSessionResponse> startTrackingSession(@Body StartTrackingSessionRequest request);
+
+    @PATCH("api/v1/tracking/sessions/{sessionId}")
+    Call<TrackingSessionResponse> updateTrackingSession(@Path("sessionId") long sessionId,
+                                                        @Body UpdateTrackingSessionRequest request);
+
+    @POST("api/v1/tracking/sessions/{sessionId}/pausas")
+    Call<Void> recordTrackingPause(@Path("sessionId") long sessionId,
+                                   @Body RecordTrackingPauseRequest request);
+
+    @POST("api/conductores/{id}/ubicacion")
+    Call<Void> reportLegacyConductorLocation(@Path("id") long conductorId,
+                                              @Query("lat") double lat,
+                                              @Query("lon") double lon);
+
+    // ── Facturación conductor ──
+
+    @GET("api/conductores/{id}/facturas")
+    Call<FacturaPageResponse> getFacturas(@Path("id") long conductorId,
+                                          @Query("desde") String desde,
+                                          @Query("hasta") String hasta,
+                                          @Query("pagada") Boolean pagada,
+                                          @Query("page") int page,
+                                          @Query("size") int size);
+
+    @GET("api/conductores/{id}/facturas/resumen")
+    Call<FacturaResumen> getFacturasResumen(@Path("id") long conductorId,
+                                            @Query("periodo") String periodo);
+
+    // ── Notificaciones ──
+
+    @GET("api/notificaciones")
+    Call<List<Notificacion>> getNotificaciones();
+
+    @GET("api/notificaciones/count")
+    Call<UnreadCountResponse> getNotificacionesUnreadCount();
+
+    @PUT("api/notificaciones/{id}/leer")
+    Call<Notificacion> markNotificacionAsRead(@Path("id") long notificacionId);
+
+    @PUT("api/notificaciones/leer-todas")
+    Call<Void> markAllNotificacionesAsRead();
+
+    // ── Estadísticas conductor ──
+
+    @GET("api/conductores/{id}/estadisticas")
+    Call<EstadisticasConductor> getEstadisticas(@Path("id") long conductorId,
+                                                @Query("desde") String desde,
+                                                @Query("hasta") String hasta);
+
+    // ── Fotos de carga ──
+
+    @GET("api/portes/{porteId}/fotos")
+    Call<List<FotoCarga>> getFotosCarga(@Path("porteId") long porteId);
+
+    @POST("api/portes/{porteId}/fotos")
+    Call<FotoCarga> subirFotoCarga(@Path("porteId") long porteId,
+                                   @Body CrearFotoCargaRequest request);
+
+    @DELETE("api/portes/{porteId}/fotos/{fotoId}")
+    Call<Void> eliminarFotoCarga(@Path("porteId") long porteId,
+                                 @Path("fotoId") long fotoId);
+
+    // ── Foto de perfil ──
+
+    @POST("api/usuarios/me/foto")
+    Call<java.util.Map<String, String>> subirFotoPerfil(@Body java.util.Map<String, String> body);
+
+    @DELETE("api/usuarios/me/foto")
+    Call<Void> eliminarFotoPerfil();
+
+    @GET("api/usuarios/me/foto")
+    Call<java.util.Map<String, String>> obtenerFotoPerfil();
+
+    // ── Firma de entrega ──
+
+    @POST("api/portes/{porteId}/firma")
+    Call<Porte> firmarEntrega(@Path("porteId") long porteId,
+                              @Body java.util.Map<String, String> body);
+}

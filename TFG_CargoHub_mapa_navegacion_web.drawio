@@ -1,0 +1,164 @@
+<mxfile host="app.diagrams.net" agent="ApiCargoHub">
+  <diagram id="nav-web-detallado" name="Navegacion web detallada">
+    <mxGraphModel dx="1768" dy="971" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="w1" edge="1" parent="1" source="landing" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="info" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w5" edge="1" parent="1" source="login" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="panel" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w7" edge="1" parent="1" source="panel" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="menu" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="690" y="435" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="w8" edge="1" parent="1" source="panel" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="perfil" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="690" y="435" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="w9" edge="1" parent="1" source="menu" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="solicitar" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w10" edge="1" parent="1" source="menu" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="misportes" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w12" edge="1" parent="1" source="menu" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="facturas" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w14" edge="1" parent="1" source="solicitar" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="form-porte" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1300" y="245" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="w15" edge="1" parent="1" source="form-porte" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="carga" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w17" edge="1" parent="1" source="misportes" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="portes-list" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w18" edge="1" parent="1" source="portes-list" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="porte-detail" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w19" edge="1" parent="1" source="tracking" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="tracking-detail" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w20" edge="1" parent="1" source="facturas" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="fact-list" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="w21" edge="1" parent="1" source="fact-list" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="fact-download" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sec-publica" parent="1" style="text;html=1;fontSize=15;fontStyle=1;align=center;strokeColor=none;fillColor=none;fontColor=#000000;" value="Web" vertex="1">
+          <mxGeometry height="30" width="190" x="70" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="sec-acceso" parent="1" style="text;html=1;fontSize=15;fontStyle=1;align=center;strokeColor=none;fillColor=none;fontColor=#000000;" value="Acceso" vertex="1">
+          <mxGeometry height="30" width="190" x="335" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="sec-modulos" parent="1" style="text;html=1;fontSize=15;fontStyle=1;align=center;strokeColor=none;fillColor=none;fontColor=#000000;" value="Secciones" vertex="1">
+          <mxGeometry height="30" width="300" x="930" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="sec-detalle" parent="1" style="text;html=1;fontSize=15;fontStyle=1;align=center;strokeColor=none;fillColor=none;fontColor=#000000;" value="Acciones / detalle" vertex="1">
+          <mxGeometry height="30" width="320" x="1240" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="Zt2Zj1xVom_enGAFmfit-1" edge="1" parent="1" source="landing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="registro">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Zt2Zj1xVom_enGAFmfit-2" edge="1" parent="1" source="landing" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="landing" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Landing / inicio" vertex="1">
+          <mxGeometry height="50" width="165" x="87.5" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="info" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Informacion servicio" vertex="1">
+          <mxGeometry height="50" width="180" x="80" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="login" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Login" vertex="1">
+          <mxGeometry height="50" width="165" x="420" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="Zt2Zj1xVom_enGAFmfit-3" edge="1" parent="1" source="registro" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="registro" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Registro cliente" vertex="1">
+          <mxGeometry height="50" width="165" x="420" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="panel" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Panel cliente" vertex="1">
+          <mxGeometry height="50" width="165" x="420" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="Zt2Zj1xVom_enGAFmfit-7" edge="1" parent="1" source="menu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="misportes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Zt2Zj1xVom_enGAFmfit-8" edge="1" parent="1" source="menu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="solicitar">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="menu" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Menu cliente" vertex="1">
+          <mxGeometry height="50" width="165" x="660" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="perfil" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Perfil / datos empresa" vertex="1">
+          <mxGeometry height="50" width="190" x="620" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="solicitar" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Solicitar porte" vertex="1">
+          <mxGeometry height="50" width="165" x="990" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="misportes" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Mis portes" vertex="1">
+          <mxGeometry height="50" width="165" x="990" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="tracking" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Seguimiento" vertex="1">
+          <mxGeometry height="50" width="165" x="1280" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="form-porte" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Formulario de solicitud" vertex="1">
+          <mxGeometry height="50" width="210" x="1180" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="carga" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Datos de carga y fechas" vertex="1">
+          <mxGeometry height="50" width="180" x="1460" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="confirmacion" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Confirmar solicitud" vertex="1">
+          <mxGeometry height="50" width="200" x="1460" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="portes-list" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Listado de portes propios" vertex="1">
+          <mxGeometry height="50" width="210" x="1280" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="porte-detail" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Detalle del porte" vertex="1">
+          <mxGeometry height="50" width="180" x="1510" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="tracking-detail" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Estado y ubicacion" vertex="1">
+          <mxGeometry height="50" width="200" x="1480" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="fact-list" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Listado facturas" vertex="1">
+          <mxGeometry height="50" width="190" x="1280" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="fact-download" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Ver / descargar factura" vertex="1">
+          <mxGeometry height="50" width="190" x="1500" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="Zt2Zj1xVom_enGAFmfit-4" edge="1" parent="1" source="menu" style="endArrow=block;html=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=10;edgeStyle=orthogonalEdgeStyle;" target="facturas" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="910" y="325" />
+              <mxPoint x="910" y="535" />
+            </Array>
+            <mxPoint x="935" y="445" as="sourcePoint" />
+            <mxPoint x="1073" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="facturas" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontColor=#000000;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Mis facturas" vertex="1">
+          <mxGeometry height="50" width="165" x="990" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="Zt2Zj1xVom_enGAFmfit-5" edge="1" parent="1" source="portes-list" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.648;entryY=-0.045;entryDx=0;entryDy=0;entryPerimeter=0;" target="tracking">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Zt2Zj1xVom_enGAFmfit-6" edge="1" parent="1" source="carga" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.447;entryY=0.03;entryDx=0;entryDy=0;entryPerimeter=0;" target="confirmacion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

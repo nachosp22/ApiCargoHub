@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="ApiCargoHub QA" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>QA Madrid Tracking Route</name>
+    <desc>Short urban route around central Madrid for emulator tracking QA.</desc>
+  </metadata>
+  <trk>
+    <name>Madrid Centro QA Loop</name>
+    <trkseg>
+      <trkpt lat="40.416775" lon="-3.703790"><ele>667</ele></trkpt>
+      <trkpt lat="40.417320" lon="-3.701950"><ele>668</ele></trkpt>
+      <trkpt lat="40.418180" lon="-3.699900"><ele>670</ele></trkpt>
+      <trkpt lat="40.419220" lon="-3.698250"><ele>671</ele></trkpt>
+      <trkpt lat="40.420500" lon="-3.697550"><ele>672</ele></trkpt>
+      <trkpt lat="40.421550" lon="-3.698600"><ele>673</ele></trkpt>
+      <trkpt lat="40.422000" lon="-3.700700"><ele>674</ele></trkpt>
+      <trkpt lat="40.421500" lon="-3.703200"><ele>672</ele></trkpt>
+      <trkpt lat="40.420300" lon="-3.705400"><ele>670</ele></trkpt>
+      <trkpt lat="40.418900" lon="-3.706600"><ele>669</ele></trkpt>
+      <trkpt lat="40.417500" lon="-3.706100"><ele>668</ele></trkpt>
+      <trkpt lat="40.416775" lon="-3.703790"><ele>667</ele></trkpt>
+    </trkseg>
+  </trk>
+</gpx>

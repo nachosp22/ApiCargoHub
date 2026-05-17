@@ -1,0 +1,178 @@
+<mxfile host="app.diagrams.net" agent="ApiCargoHub" pages="2">
+  <diagram id="er-simple" name="Entidad relacion simple">
+    <mxGraphModel dx="1414" dy="1593" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="usuario" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="USUARIO" vertex="1">
+          <mxGeometry height="50" width="120" x="60" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="cliente" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="CLIENTE" vertex="1">
+          <mxGeometry height="50" width="120" x="710" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="conductor" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="CONDUCTOR" vertex="1">
+          <mxGeometry height="50" width="130" x="360" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="vehiculo" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="VEHICULO" vertex="1">
+          <mxGeometry height="50" width="130" x="360" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="porte" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="PORTE" vertex="1">
+          <mxGeometry height="50" width="120" x="710" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="factura" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="FACTURA" vertex="1">
+          <mxGeometry height="50" width="120" x="1120" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ubicacion" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="UBICACION" vertex="1">
+          <mxGeometry height="50" width="130" x="1120" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="albaran" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="ALBARAN" vertex="1">
+          <mxGeometry height="50" width="120" x="710" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="incidencia" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="INCIDENCIA" vertex="1">
+          <mxGeometry height="50" width="130" x="60" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="tracking" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="TRACKING_SESSION" vertex="1">
+          <mxGeometry height="50" width="180" x="1070" y="555" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_es_conductor" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="es" vertex="1">
+          <mxGeometry height="70" width="70" x="240" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="card_es_conductor" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;align=center" value="1:1" vertex="1">
+          <mxGeometry height="25" width="60" x="245" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_es_cliente" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="es" vertex="1">
+          <mxGeometry height="70" width="70" x="85" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="card_es_cliente" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;align=center" value="1:1" vertex="1">
+          <mxGeometry height="25" width="60" x="90" y="-5" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_tiene_vehiculo" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1;rotation=-90;" value="tiene" vertex="1">
+          <mxGeometry height="70" width="70" x="390" y="195" as="geometry" />
+        </mxCell>
+        <mxCell id="card_tiene_vehiculo" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;align=center;rotation=-90;" value="1:N" vertex="1">
+          <mxGeometry height="25" width="60" x="350" y="217.5" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_solicita" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1;rotation=-90;" value="solicita" vertex="1">
+          <mxGeometry height="70" width="70" x="735" y="195" as="geometry" />
+        </mxCell>
+        <mxCell id="card_solicita" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;align=center;rotation=-90;" value="N :1" vertex="1">
+          <mxGeometry height="25" width="60" x="690" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_realiza" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="realiza" vertex="1">
+          <mxGeometry height="70" width="80" x="555" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="card_realiza" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;align=center" value="1:N" vertex="1">
+          <mxGeometry height="25" width="60" x="565" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_genera_factura" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="genera" vertex="1">
+          <mxGeometry height="70" width="80" x="910" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="card_genera_factura" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;align=center" value="1:1" vertex="1">
+          <mxGeometry height="25" width="60" x="920" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_reporta" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="reporta" vertex="1">
+          <mxGeometry height="70" width="80" x="905" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="card_reporta" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;align=center" value="1:N" vertex="1">
+          <mxGeometry height="25" width="60" x="915" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_genera_albaran" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1;rotation=-90;" value="genera" vertex="1">
+          <mxGeometry height="70" width="70" x="735" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="card_genera_albaran" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;align=center;rotation=-90;" value="1:1" vertex="1">
+          <mxGeometry height="25" width="60" x="690" y="452.5" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_tiene_incidencia" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="tiene" vertex="1">
+          <mxGeometry height="70" width="80" x="440" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="card_tiene_incidencia" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;align=center" value="1:N" vertex="1">
+          <mxGeometry height="25" width="60" x="450" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_tiene_tracking" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;fontStyle=1" value="tiene&lt;br&gt;seguimiento" vertex="1">
+          <mxGeometry height="80" width="90" x="900" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="card_tiene_tracking" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;align=center" value="1:N" vertex="1">
+          <mxGeometry height="25" width="60" x="915" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="usuario" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="rel_es_conductor" value="(0,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="rel_es_conductor" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="conductor" value="(1,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="usuario" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="rel_es_cliente" value="(0,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="rel_es_cliente" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="cliente" value="(1,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="vehiculo" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="rel_tiene_vehiculo" value="(1,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="rel_tiene_vehiculo" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="conductor" value="(0,N)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="cliente" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="rel_solicita" value="(0,N)">
+          <mxGeometry relative="1" x="0.0435" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="rel_solicita" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="porte" value="(1,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="conductor" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="rel_realiza" value="(0,N)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="rel_realiza" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="porte" value="(0,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="factura" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="rel_genera_factura" value="(1,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="rel_genera_factura" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="porte" value="(0,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="porte" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="rel_reporta" value="(0,N)">
+          <mxGeometry relative="1" x="0.0667" y="-5" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="880" y="335" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="rel_reporta" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="ubicacion" value="(1,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="porte" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="rel_genera_albaran" value="(0,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="rel_genera_albaran" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="albaran" value="(1,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="incidencia" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="rel_tiene_incidencia" value="(1,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="rel_tiene_incidencia" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="porte" value="(0,N)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="porte" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="rel_tiene_tracking" value="(0,N)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e20" edge="1" parent="1" source="rel_tiene_tracking" style="endArrow=none;html=1;rounded=0;strokeColor=#000000" target="tracking" value="(1,1)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="-goMnVMFmhra3OlLEnl_-1" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Diagrama completo en Anexo&lt;/h1&gt;" vertex="1">
+          <mxGeometry height="120" width="420" x="915" y="660" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="Bzu3WYHVqTRXwO_z-_mZ" name="Página-2">
+    <mxGraphModel dx="1414" dy="743" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

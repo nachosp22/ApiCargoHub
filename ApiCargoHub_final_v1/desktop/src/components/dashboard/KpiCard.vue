@@ -1,0 +1,56 @@
+<script setup lang="ts">
+interface Props {
+  title: string
+  value: number | string
+  icon: string
+  iconBgColor: string
+  iconTextColor: string
+  trend?: string
+  trendPositive?: boolean
+}
+
+defineProps<Props>()
+
+function formatNumber(val: number | string): string {
+  const num = typeof val === 'string' ? parseInt(val, 10) : val
+  if (isNaN(num)) return String(val)
+  return num.toLocaleString('es-ES')
+}
+</script>
+
+<template>
+  <div class="h-full min-h-[140px] bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 transition-all duration-200 hover:shadow-md">
+    <div class="flex h-full items-start justify-between">
+      <!-- Text Content -->
+      <div class="flex min-h-full flex-1 min-w-0 flex-col">
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ title }}</p>
+        <p class="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ formatNumber(value) }}</p>
+
+        <!-- Trend Indicator -->
+        <div class="mt-2 min-h-4 flex items-center gap-1">
+          <template v-if="trend">
+            <i
+              class="pi text-xs"
+              :class="trendPositive ? 'pi-arrow-up text-emerald-500' : 'pi-arrow-down text-red-500'"
+            ></i>
+            <span
+              class="text-xs font-medium"
+              :class="trendPositive ? 'text-emerald-600' : 'text-red-600'"
+            >
+              {{ trend }} vs mes anterior
+            </span>
+          </template>
+          <span v-else class="invisible text-xs font-medium">&nbsp;</span>
+        </div>
+      </div>
+
+      <!-- Icon -->
+      <div
+        class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ml-4"
+        :class="[iconBgColor]"
+      >
+        <i class="pi text-xl" :class="[icon, iconTextColor]"></i>
+      </div>
+    </div>
+  </div>
+</template>

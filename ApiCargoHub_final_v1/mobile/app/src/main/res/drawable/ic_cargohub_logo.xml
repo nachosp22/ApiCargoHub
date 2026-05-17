@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <!-- Left face -->
+    <path
+        android:fillColor="#1E40AF"
+        android:pathData="M256,296L88,199v148l168,97V296z" />
+    <!-- Right face -->
+    <path
+        android:fillColor="#2563EB"
+        android:pathData="M256,296l168,-97v148l-168,97V296z" />
+    <!-- Top face -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M256,102L88,199l168,97 168,-97L256,102z" />
+    <!-- Arrow indicator -->
+    <path
+        android:fillColor="#EAFFFFFF"
+        android:pathData="M216,199l40,-28 40,28 -16,11v34h-48v-34L216,199z" />
+</vector>

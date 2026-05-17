@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ch_background"
+    android:orientation="vertical">
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/loadingContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="@dimen/ch_space_xl"
+                android:visibility="gone">
+
+                <ProgressBar
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_sm"
+                    android:gravity="center"
+                    android:text="@string/incidencia_loading_title"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleSmall"
+                    android:textColor="@color/ch_text_primary" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_xs"
+                    android:gravity="center"
+                    android:text="@string/incidencia_loading_body"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
+                    android:textColor="@color/ch_text_secondary" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/emptyContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="@dimen/ch_space_xl"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_state_surface"
+                    android:gravity="center"
+                    android:padding="@dimen/ch_space_lg"
+                    android:text="@string/incidencia_empty_historial"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyLarge"
+                    android:textColor="@color/ch_text_secondary" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/errorContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="@dimen/ch_space_xl"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/incidencia_error_title"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleSmall"
+                    android:textColor="@color/ch_error_text" />
+
+                <TextView
+                    android:id="@+id/errorMessage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_xs"
+                    android:background="@drawable/bg_error_soft"
+                    android:gravity="center"
+                    android:padding="@dimen/ch_space_md"
+                    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyLarge"
+                    android:textColor="@color/ch_error_text" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/retryButton"
+                    style="@style/Widget.ApiCargoHub.Button.Secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ch_space_md"
+                    android:text="@string/retry_button"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/incidenciasRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingHorizontal="@dimen/ch_space_sm"
+                android:paddingBottom="2dp"
+                android:visibility="gone"
+                tools:listitem="@layout/item_incidencia" />
+        </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</LinearLayout>

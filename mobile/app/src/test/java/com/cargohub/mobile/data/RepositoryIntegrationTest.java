@@ -126,7 +126,9 @@ public class RepositoryIntegrationTest {
                 "Ana",
                 "Lopez",
                 "600111222",
-                "Madrid"
+                "12345678A",
+                "Madrid",
+                25
         ), capture);
 
         RepositoryResult<ConductorProfileResponse> result = capture.await();
@@ -141,7 +143,9 @@ public class RepositoryIntegrationTest {
         assertTrue(body.contains("\"nombre\":\"Ana\""));
         assertTrue(body.contains("\"apellidos\":\"Lopez\""));
         assertTrue(body.contains("\"telefono\":\"600111222\""));
+        assertTrue(body.contains("\"dni\":\"12345678A\""));
         assertTrue(body.contains("\"ciudadBase\":\"Madrid\""));
+        assertTrue(body.contains("\"radioAccionKm\":25"));
     }
 
     @Test
@@ -159,8 +163,7 @@ public class RepositoryIntegrationTest {
                 12000,
                 6000,
                 2400,
-                2600,
-                true
+                2600
         ), capture);
 
         RepositoryResult<Vehiculo> result = capture.await();
@@ -175,7 +178,6 @@ public class RepositoryIntegrationTest {
         String body = request.getBody().readUtf8();
         assertTrue(body.contains("\"matricula\":\"1234ABC\""));
         assertTrue(body.contains("\"tipo\":\"TRAILER\""));
-        assertTrue(body.contains("\"trampillaElevadora\":true"));
     }
 
     @Test
@@ -304,7 +306,7 @@ public class RepositoryIntegrationTest {
 
     @Test
     public void getOffers_parsesCurrentBackendPorteContract() throws Exception {
-        server.enqueue(jsonResponse(200, "[{\"id\":3,\"origen\":\"Bilbao\",\"destino\":\"Zaragoza\",\"estado\":\"PENDIENTE\",\"descripcionCliente\":\"Materiales de construccion\",\"requiereFrio\":true,\"distanciaKm\":305.0,\"precioFinal\":520.0}]"));
+        server.enqueue(jsonResponse(200, "[{\"id\":3,\"origen\":\"Bilbao\",\"destino\":\"Zaragoza\",\"estado\":\"PENDIENTE\",\"descripcionCliente\":\"Materiales de construccion\",\"distanciaKm\":305.0,\"precioFinal\":520.0}]"));
 
         PorteRepository repository = new PorteRepository(createApiService(), null, null);
         CallbackCapture<List<Porte>> capture = new CallbackCapture<>();

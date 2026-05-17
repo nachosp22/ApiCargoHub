@@ -1,0 +1,416 @@
+<mxfile host="app.diagrams.net" agent="ApiCargoHub">
+  <diagram id="clases-ampliado-bn" name="Clases ampliado BN">
+    <mxGraphModel dx="1414" dy="777" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3100" pageHeight="2450" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Usuario" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;Usuario&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- String email&lt;br&gt;- String nombre&lt;br&gt;- String password&lt;br&gt;- RolUsuario rol&lt;br&gt;- boolean activo&lt;br&gt;- LocalDateTime fechaRegistro&lt;br&gt;- LocalDateTime ultimoAcceso&lt;br&gt;- String tokenRecuperacion&lt;br&gt;- String fotoUrl&lt;hr&gt;+ registrarUsuario()&lt;br&gt;+ iniciarSesion()&lt;br&gt;+ actualizarPerfil()&lt;br&gt;+ crearAdmin()&lt;br&gt;+ toggleActivo()&lt;br&gt;+ eliminarUsuario()" vertex="1">
+          <mxGeometry height="280" width="230" x="1330" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="Cliente" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;Cliente&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- Usuario usuario&lt;br&gt;- String nombreEmpresa&lt;br&gt;- String cif&lt;br&gt;- String direccionFiscal&lt;br&gt;- String telefono&lt;br&gt;- String emailContacto&lt;br&gt;- String sector&lt;hr&gt;+ crearCliente()&lt;br&gt;+ verPerfil()&lt;br&gt;+ actualizarPerfil()&lt;br&gt;+ listarClientes()&lt;br&gt;+ deshabilitarCliente()&lt;br&gt;+ consultarEnvios()" vertex="1">
+          <mxGeometry height="265" width="220" x="910" y="197.5" as="geometry" />
+        </mxCell>
+        <mxCell id="Conductor" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;Conductor&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- Usuario usuario&lt;br&gt;- String nombre&lt;br&gt;- String apellidos&lt;br&gt;- String dni&lt;br&gt;- String telefono&lt;br&gt;- String ciudadBase&lt;br&gt;- Double latitudActual&lt;br&gt;- Double longitudActual&lt;br&gt;- boolean buscarRetorno&lt;br&gt;- String diasLaborables&lt;br&gt;- boolean disponible&lt;hr&gt;+ crearConductor()&lt;br&gt;+ aprobarConductor()&lt;br&gt;+ rechazarConductor()&lt;br&gt;+ darDeBajaConductor()&lt;br&gt;+ actualizarPerfil()&lt;br&gt;+ actualizarUbicacion()&lt;br&gt;+ consultarAgenda()&lt;br&gt;+ buscarDisponibles()" vertex="1">
+          <mxGeometry height="350" width="240" x="1790" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="Porte" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;Porte&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- String origen&lt;br&gt;- String destino&lt;br&gt;- String ciudadOrigen&lt;br&gt;- String ciudadDestino&lt;br&gt;- Double distanciaKm&lt;br&gt;- Double precio&lt;br&gt;- Double ajustePrecio&lt;br&gt;- String descripcionCliente&lt;br&gt;- Double pesoTotalKg&lt;br&gt;- Double volumenTotalM3&lt;br&gt;- TipoVehiculo tipoVehiculoRequerido&lt;br&gt;- boolean revisionManual&lt;br&gt;- EstadoPorte estado&lt;br&gt;- Integer version&lt;br&gt;- LocalDateTime fechaCreacion&lt;br&gt;- LocalDateTime fechaRecogida&lt;br&gt;- LocalDateTime fechaEntrega&lt;br&gt;- String firmaEntregaBase64&lt;br&gt;- Cliente cliente&lt;br&gt;- Conductor conductor&lt;br&gt;- Set&lt;Long&gt; conductoresRechazados&lt;hr&gt;+ crearPorte()&lt;br&gt;+ crearSolicitudPorte()&lt;br&gt;+ aceptarPorte()&lt;br&gt;+ rechazarPorte()&lt;br&gt;+ cambiarEstado()&lt;br&gt;+ actualizarPorte()&lt;br&gt;+ asignarConductor()&lt;br&gt;+ registrarFirmaEntrega()&lt;br&gt;+ obtenerTracking()" vertex="1">
+          <mxGeometry height="510" width="280" x="880" y="670" as="geometry" />
+        </mxCell>
+        <mxCell id="Factura" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;Factura&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- String numeroSerie&lt;br&gt;- Double baseImponible&lt;br&gt;- Double iva&lt;br&gt;- Double importeTotal&lt;br&gt;- LocalDate fechaEmision&lt;br&gt;- boolean pagada&lt;br&gt;- LocalDate fechaPago&lt;br&gt;- String formaPago&lt;br&gt;- Porte porte&lt;hr&gt;+ generarFactura()&lt;br&gt;+ pagarFactura()&lt;br&gt;+ consultarFactura()&lt;br&gt;+ listarFacturas()&lt;br&gt;+ descargarFacturaPdf()" vertex="1">
+          <mxGeometry height="270" width="220" x="330" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="FotoCarga" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;FotoCarga&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- Porte porte&lt;br&gt;- TipoFotoCarga tipo&lt;br&gt;- String fotoUrl&lt;br&gt;- String descripcion&lt;br&gt;- LocalDateTime fechaCaptura&lt;hr&gt;+ subirFotoCarga()&lt;br&gt;+ listarFotosCarga()&lt;br&gt;+ eliminarFotoCarga()&lt;br&gt;+ validarPropietarioFoto()" vertex="1">
+          <mxGeometry height="210" width="210" x="1280" y="865" as="geometry" />
+        </mxCell>
+        <mxCell id="Vehiculo" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;Vehiculo&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- String matricula&lt;br&gt;- String marca&lt;br&gt;- String modelo&lt;br&gt;- TipoVehiculo tipo&lt;br&gt;- EstadoVehiculo estado&lt;br&gt;- Integer capacidadCargaKg&lt;br&gt;- Double volumenM3&lt;br&gt;- Conductor conductor&lt;hr&gt;+ crearVehiculo()&lt;br&gt;+ guardarVehiculo()&lt;br&gt;+ actualizarVehiculo()&lt;br&gt;+ activarVehiculo()&lt;br&gt;+ desactivarVehiculo()&lt;br&gt;+ darDeBajaVehiculo()&lt;br&gt;+ reactivarVehiculo()&lt;br&gt;+ listarFlota()" vertex="1">
+          <mxGeometry height="300" width="200" x="2150" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="BloqueoAgenda" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;BloqueoAgenda&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- LocalDateTime fechaInicio&lt;br&gt;- LocalDateTime fechaFin&lt;br&gt;- TipoBloqueoAgenda tipo&lt;br&gt;- String titulo&lt;br&gt;- Conductor conductor&lt;hr&gt;+ crearBloqueoAgenda()&lt;br&gt;+ eliminarBloqueoAgenda()&lt;br&gt;+ consultarAgendaConductor()" vertex="1">
+          <mxGeometry height="200" width="200" x="2410" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="BloqueoRecurrente" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;BloqueoRecurrente&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- Conductor conductor&lt;br&gt;- int diaSemana&lt;br&gt;- boolean activo&lt;br&gt;- LocalDateTime createdAt&lt;br&gt;- LocalDateTime updatedAt&lt;hr&gt;+ consultarBloqueosRecurrentes()&lt;br&gt;+ actualizarBloqueosRecurrentes()&lt;br&gt;+ toggleDiaBloqueado()" vertex="1">
+          <mxGeometry height="190" width="210" x="2650" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="TrackingSession" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;TrackingSession&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- Conductor conductor&lt;br&gt;- Porte porte&lt;br&gt;- TrackingSessionStatus status&lt;br&gt;- TrackingSessionPhase currentPhase&lt;br&gt;- LocalDateTime startedAt&lt;br&gt;- LocalDateTime endedAt&lt;br&gt;- LocalDateTime lastSampleAt&lt;hr&gt;+ iniciarSesionTracking()&lt;br&gt;+ actualizarSesionTracking()&lt;br&gt;+ obtenerSesionTracking()" vertex="1">
+          <mxGeometry height="210" width="250" x="1650" y="1180" as="geometry" />
+        </mxCell>
+        <mxCell id="TrackingPause" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;TrackingPause&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- TrackingSession session&lt;br&gt;- String motivo&lt;br&gt;- String nota&lt;br&gt;- LocalDateTime startedAt&lt;br&gt;- LocalDateTime endedAt&lt;hr&gt;+ registrarPausaTracking()" vertex="1">
+          <mxGeometry height="160" width="340" x="2100" y="1180" as="geometry" />
+        </mxCell>
+        <mxCell id="LocationSample" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;LocationSample&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- TrackingSession session&lt;br&gt;- Conductor conductor&lt;br&gt;- Porte porte&lt;br&gt;- Double lat&lt;br&gt;- Double lon&lt;br&gt;- LocalDateTime recordedAt&lt;br&gt;- LocalDateTime receivedAt&lt;br&gt;- Double speedKph&lt;br&gt;- Integer headingDeg&lt;hr&gt;+ registrarMuestraUbicacion()" vertex="1">
+          <mxGeometry height="210" width="340" x="1970" y="1520" as="geometry" />
+        </mxCell>
+        <mxCell id="Incidencia" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;Incidencia&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- String titulo&lt;br&gt;- String descripcion&lt;br&gt;- LocalDateTime fechaReporte&lt;br&gt;- EstadoIncidencia estado&lt;br&gt;- SeveridadIncidencia severidad&lt;br&gt;- PrioridadIncidencia prioridad&lt;br&gt;- LocalDateTime fechaLimiteSla&lt;br&gt;- String resolucion&lt;br&gt;- Usuario admin&lt;br&gt;- Porte porte&lt;hr&gt;+ reportarIncidencia()&lt;br&gt;+ resolverIncidencia()&lt;br&gt;+ listarPendientes()&lt;br&gt;+ listarTodas()&lt;br&gt;+ obtenerIncidencia()&lt;br&gt;+ listarPorPorte()&lt;br&gt;+ contarPendientes()" vertex="1">
+          <mxGeometry height="310" width="360" x="470" y="1390" as="geometry" />
+        </mxCell>
+        <mxCell id="IncidenciaEvento" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;IncidenciaEvento&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- Incidencia incidencia&lt;br&gt;- Usuario actor&lt;br&gt;- EstadoIncidencia estadoAnterior&lt;br&gt;- EstadoIncidencia estadoNuevo&lt;br&gt;- LocalDateTime fecha&lt;br&gt;- String accion&lt;br&gt;- String comentario&lt;hr&gt;+ registrarEventoIncidencia()&lt;br&gt;+ listarHistorialIncidencia()" vertex="1">
+          <mxGeometry height="190" width="360" x="1060" y="1700" as="geometry" />
+        </mxCell>
+        <mxCell id="CargoAnalysisLog" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;dashed=1;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;CargoAnalysisLog&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;- Long id&lt;br&gt;- String requestData&lt;br&gt;- LocalDateTime requestTimestamp&lt;br&gt;- String responseData&lt;br&gt;- Boolean success&lt;br&gt;- String errorMessage&lt;br&gt;- Double pesoTotalKg&lt;br&gt;- Double volumenTotalM3&lt;br&gt;- String tipoVehiculoRequerido&lt;br&gt;- Boolean revisionManual&lt;br&gt;- Porte porte&lt;hr&gt;+ registrarAnalisisCarga()&lt;br&gt;+ registrarErrorAnalisisCarga()" vertex="1">
+          <mxGeometry height="240" width="340" x="70" y="1660" as="geometry" />
+        </mxCell>
+        <mxCell id="ERolUsuario" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;fontSize=11;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;RolUsuario&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;ADMIN&lt;br&gt;SUPERADMIN&lt;br&gt;CONDUCTOR&lt;br&gt;CLIENTE" vertex="1">
+          <mxGeometry height="150" width="120" x="1590" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="EEstadoPorte" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;fontSize=11;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;EstadoPorte&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;PENDIENTE&lt;br&gt;ASIGNADO&lt;br&gt;EN_RECOGIDA&lt;br&gt;EN_TRANSITO&lt;br&gt;ENTREGADO&lt;br&gt;CANCELADO&lt;br&gt;FACTURADO" vertex="1">
+          <mxGeometry height="150" width="130" x="700" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="ETipoVehiculo" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;fontSize=11;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;TipoVehiculo&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;FURGONETA&lt;br&gt;CAMION_PEQUENO&lt;br&gt;CAMION_MEDIANO&lt;br&gt;CAMION_GRANDE&lt;br&gt;TRAILER" vertex="1">
+          <mxGeometry height="150" width="130" x="1980" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="EEstadoVehiculo" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;fontSize=11;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;EstadoVehiculo&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;DISPONIBLE&lt;br&gt;EN_SERVICIO&lt;br&gt;MANTENIMIENTO&lt;br&gt;AVERIADO&lt;br&gt;RETIRADO" vertex="1">
+          <mxGeometry height="110" width="130" x="1980" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="ETipoBloqueoAgenda" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;fontSize=11;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;TipoBloqueoAgenda&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;VACACIONES&lt;br&gt;DESCANSO&lt;br&gt;MANTENIMIENTO_VEHICULO&lt;br&gt;PERSONAL&lt;br&gt;OTRO" vertex="1">
+          <mxGeometry height="110" width="170" x="2430" y="860" as="geometry" />
+        </mxCell>
+        <mxCell id="ETrackingSessionStatus" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;fontSize=11;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;TrackingSessionStatus&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;ACTIVE&lt;br&gt;PAUSED&lt;br&gt;COMPLETED" vertex="1">
+          <mxGeometry height="90" width="140" x="1820" y="1410" as="geometry" />
+        </mxCell>
+        <mxCell id="ETrackingSessionPhase" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;fontSize=11;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;TrackingSessionPhase&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;PRE_TRIP&lt;br&gt;EN_ROUTE&lt;br&gt;POST_TRIP" vertex="1">
+          <mxGeometry height="90" width="130" x="1620" y="1410" as="geometry" />
+        </mxCell>
+        <mxCell id="ETipoFotoCarga" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;fontSize=11;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;TipoFotoCarga&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;RECOGIDA&lt;br&gt;ENTREGA&lt;br&gt;INCIDENCIA&lt;br&gt;OTRO" vertex="1">
+          <mxGeometry height="150" width="130" x="1320" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="EEstadoIncidencia" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;fontSize=11;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;EstadoIncidencia&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;ABIERTA&lt;br&gt;EN_PROCESO&lt;br&gt;RESUELTA&lt;br&gt;CERRADA" vertex="1">
+          <mxGeometry height="100" width="110" x="460" y="1940" as="geometry" />
+        </mxCell>
+        <mxCell id="ESeveridadIncidencia" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;fontSize=11;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;SeveridadIncidencia&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;BAJA&lt;br&gt;MEDIA&lt;br&gt;ALTA&lt;br&gt;CRITICA" vertex="1">
+          <mxGeometry height="110" width="120" x="470" y="1730" as="geometry" />
+        </mxCell>
+        <mxCell id="EPrioridadIncidencia" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;spacing=8;overflow=fill;fontSize=11;" value="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;PrioridadIncidencia&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;BAJA&lt;br&gt;MEDIA&lt;br&gt;ALTA&lt;br&gt;URGENTE" vertex="1">
+          <mxGeometry height="100" width="120" x="740" y="1735" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="Usuario" style="endArrow=block;endFill=0;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Cliente" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1-src-card" connectable="0" parent="e1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e1-tgt-card" connectable="0" parent="e1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..1" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint x="2" y="11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="Usuario" style="endArrow=block;endFill=0;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Conductor" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2-src-card" connectable="0" parent="e2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2-tgt-card" connectable="0" parent="e2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..1" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="Cliente" style="startArrow=diamond;startFill=0;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Porte" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3-src-card" connectable="0" parent="e3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint x="-4" y="5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3-tgt-card" connectable="0" parent="e3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..*" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="Porte" style="endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Conductor" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1810" y="830" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4-src-card" connectable="0" parent="e4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="*" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4-tgt-card" connectable="0" parent="e4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..1" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint y="-39" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="Porte" style="startArrow=diamond;startFill=1;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Factura" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="790" y="905" />
+              <mxPoint x="790" y="905" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5-src-card" connectable="0" parent="e5" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5-tgt-card" connectable="0" parent="e5" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..1" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="Porte" style="startArrow=diamond;startFill=1;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="FotoCarga" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1190" y="970" />
+              <mxPoint x="1190" y="970" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6-src-card" connectable="0" parent="e6" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6-tgt-card" connectable="0" parent="e6" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..*" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint x="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="Conductor" style="startArrow=diamond;startFill=0;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Vehiculo" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2250" y="410" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7-src-card" connectable="0" parent="e7" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7-tgt-card" connectable="0" parent="e7" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..*" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="Conductor" style="startArrow=diamond;startFill=0;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="BloqueoAgenda" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2510" y="370" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8-src-card" connectable="0" parent="e8" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint x="-26" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8-tgt-card" connectable="0" parent="e8" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..*" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="Conductor" style="startArrow=diamond;startFill=0;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="BloqueoRecurrente" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2755" y="330" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9-src-card" connectable="0" parent="e9" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint x="-52" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9-tgt-card" connectable="0" parent="e9" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..*" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="Conductor" style="startArrow=diamond;startFill=0;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="TrackingSession" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1860" y="890" />
+              <mxPoint x="1825" y="890" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10-src-card" connectable="0" parent="e10" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint y="-25" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10-tgt-card" connectable="0" parent="e10" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..*" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="TrackingSession" style="endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Porte" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1360" y="1285" />
+              <mxPoint x="1360" y="1285" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11-src-card" connectable="0" parent="e11" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="*" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint x="33" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11-tgt-card" connectable="0" parent="e11" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..1" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint x="-1" y="-33" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="TrackingSession" style="startArrow=diamond;startFill=1;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="TrackingPause" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12-src-card" connectable="0" parent="e12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12-tgt-card" connectable="0" parent="e12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..*" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint x="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="TrackingSession" style="startArrow=diamond;startFill=0;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="LocationSample" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2140" y="1380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e13-src-card" connectable="0" parent="e13" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e13-tgt-card" connectable="0" parent="e13" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..*" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="Porte" style="startArrow=diamond;startFill=0;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Incidencia" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="650" y="1020" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14-src-card" connectable="0" parent="e14" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14-tgt-card" connectable="0" parent="e14" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..*" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="Incidencia" style="startArrow=diamond;startFill=1;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="IncidenciaEvento" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="900" y="1650" />
+              <mxPoint x="900" y="1650" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e15-src-card" connectable="0" parent="e15" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e15-tgt-card" connectable="0" parent="e15" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..*" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint y="11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="Incidencia" style="endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Usuario" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="650" y="1970" />
+              <mxPoint x="1550" y="1970" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e16-tgt-card" connectable="0" parent="e16" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..1" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint x="-921" y="1008" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="IncidenciaEvento" style="endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Usuario" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1300" y="1230" />
+              <mxPoint x="1500" y="1230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e17-src-card" connectable="0" parent="e17" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="*" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint y="102" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e17-tgt-card" connectable="0" parent="e17" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..1" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint x="-16" y="-96" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="LocationSample" style="startArrow=diamond;startFill=0;endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Conductor" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2470" y="1625" />
+              <mxPoint x="2470" y="1030" />
+              <mxPoint x="1920" y="1030" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e18-src-card" connectable="0" parent="e18" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="*" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint x="-141" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e18-tgt-card" connectable="0" parent="e18" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="1" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint x="-1" y="-133" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="LocationSample" style="endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;" target="Porte" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1070" y="1625" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e19-src-card" connectable="0" parent="e19" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="*" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e19-tgt-card" connectable="0" parent="e19" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..1" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint y="-89" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e20" edge="1" parent="1" source="CargoAnalysisLog" style="endArrow=open;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;fontColor=#000000;fontSize=11;dashed=1;" target="Porte" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="980" y="1880" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e20-src-card" connectable="0" parent="e20" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="*" vertex="1">
+          <mxGeometry relative="1" x="-0.82" y="-1" as="geometry">
+            <mxPoint x="-92" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e20-tgt-card" connectable="0" parent="e20" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#000000;labelBackgroundColor=#ffffff;" value="0..1" vertex="1">
+          <mxGeometry relative="1" x="0.82" y="-1" as="geometry">
+            <mxPoint y="-82" as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

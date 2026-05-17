@@ -1,0 +1,316 @@
+package com.cargohub.backend.service;
+
+import com.cargohub.backend.entity.Incidencia;
+import com.cargohub.backend.entity.IncidenciaEvento;
+import com.cargohub.backend.entity.Porte;
+import com.cargohub.backend.entity.Usuario;
+import com.cargohub.backend.entity.enums.EstadoIncidencia;
+import com.cargohub.backend.entity.enums.PrioridadIncidencia;
+import com.cargohub.backend.entity.enums.SeveridadIncidencia;
+import com.cargohub.backend.exception.IncidenciaTransitionException;
+import com.cargohub.backend.repository.IncidenciaEventoRepository;
+import com.cargohub.backend.repository.IncidenciaRepository;
+import com.cargohub.backend.repository.PorteRepository;
+import com.cargohub.backend.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
+
+import java.time.LocalDateTime;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+@Service
+public class IncidenciaService {
+
+    private static final Set<EstadoIncidencia> ESTADOS_RESOLVER_PERMITIDOS =
+            EnumSet.of(EstadoIncidencia.EN_REVISION, EstadoIncidencia.RESUELTA, EstadoIncidencia.DESESTIMADA);
+
+    private static final Map<EstadoIncidencia, Set<EstadoIncidencia>> TRANSICIONES_VALIDAS =
+            new EnumMap<>(EstadoIncidencia.class);
+
+    static {
+        TRANSICIONES_VALIDAS.put(EstadoIncidencia.ABIERTA,
+                EnumSet.of(EstadoIncidencia.EN_REVISION, EstadoIncidencia.RESUELTA, EstadoIncidencia.DESESTIMADA));
+        TRANSICIONES_VALIDAS.put(EstadoIncidencia.EN_REVISION,
+                EnumSet.of(EstadoIncidencia.RESUELTA, EstadoIncidencia.DESESTIMADA));
+        TRANSICIONES_VALIDAS.put(EstadoIncidencia.RESUELTA, EnumSet.noneOf(EstadoIncidencia.class));
+        TRANSICIONES_VALIDAS.put(EstadoIncidencia.DESESTIMADA, EnumSet.noneOf(EstadoIncidencia.class));
+    }
+
+    @Autowired private IncidenciaRepository incidenciaRepository;
+    @Autowired private IncidenciaEventoRepository incidenciaEventoRepository;
+    @Autowired private PorteRepository porteRepository;
+    @Autowired private UsuarioRepository usuarioRepository;
+
+    // --- 1. REPORTAR PROBLEMA (Conductor/Cliente) ---
+
+    /**
+     * Reporta una nueva incidencia asociada a un porte con los datos mínimos obligatorios.
+     *
+     * @param porteId     identificador del porte al que pertenece la incidencia
+     * @param titulo      título descriptivo de la incidencia
+     * @param descripcion descripción detallada del problema reportado
+     * @return la incidencia recién creada y persistida
+     */
+    @Transactional
+    public Incidencia reportarIncidencia(Long porteId, String titulo, String descripcion) {
+        return reportarIncidencia(porteId, titulo, descripcion, null, null, null);
+    }
+
+    /**
+     * Reporta una nueva incidencia asociada a un porte con todos los parámetros opcionales.
+     *
+     * @param porteId         identificador del porte al que pertenece la incidencia
+     * @param titulo          título descriptivo de la incidencia
+     * @param descripcion     descripción detallada del problema reportado
+     * @param severidad       nivel de severidad de la incidencia (se asigna MEDIA si es null)
+     * @param prioridad       nivel de prioridad de la incidencia (se asigna MEDIA si es null)
+     * @param authentication  contexto de autenticación del usuario que reporta
+     * @return la incidencia recién creada y persistida con su evento de creación registrado
+     */
+    @Transactional
+    public Incidencia reportarIncidencia(Long porteId,
+                                         String titulo,
+                                         String descripcion,
+                                         SeveridadIncidencia severidad,
+                                         PrioridadIncidencia prioridad,
+                                         Authentication authentication) {
+        Porte porte = porteRepository.findById(porteId)
+                .orElseThrow(() -> new RuntimeException("Porte no encontrado"));
+
+        if (titulo == null || titulo.isBlank()) {
+            throw new IllegalArgumentException("El título es obligatorio");
+        }
+        if (descripcion == null || descripcion.isBlank()) {
+            throw new IllegalArgumentException("La descripción es obligatoria");
+        }
+
+        Incidencia incidencia = new Incidencia();
+        incidencia.setPorte(porte);
+        incidencia.setTitulo(titulo);
+        incidencia.setDescripcion(descripcion);
+        incidencia.setEstado(EstadoIncidencia.ABIERTA);
+        incidencia.setFechaReporte(LocalDateTime.now());
+        incidencia.setSeveridad(severidad != null ? severidad : SeveridadIncidencia.MEDIA);
+        incidencia.setPrioridad(prioridad != null ? prioridad : PrioridadIncidencia.MEDIA);
+        incidencia.setFechaLimiteSla(calcularFechaLimiteSla(
+                incidencia.getSeveridad(),
+                incidencia.getPrioridad(),
+                incidencia.getFechaReporte()
+        ));
+
+        Incidencia guardada = incidenciaRepository.save(incidencia);
+        registrarEvento(guardada,
+                null,
+                EstadoIncidencia.ABIERTA,
+                resolverActor(authentication),
+                "CREADA",
+                "Incidencia reportada");
+        return guardada;
+    }
+
+    // --- 2. RESOLVER (Admin) ---
+
+    /**
+     * Resuelve una incidencia cambiando su estado a un estado final permitido.
+     *
+     * @param incidenciaId  identificador de la incidencia a resolver
+     * @param authentication contexto de autenticación del administrador que resuelve
+     * @param resolucion    texto con la resolución aplicada a la incidencia
+     * @param estadoFinal   estado final al que se transiciona (RESUELTA o DESESTIMADA)
+     * @return la incidencia actualizada con su resolución y estado final
+     */
+    @Transactional
+    public Incidencia resolverIncidencia(Long incidenciaId,
+                                         Authentication authentication,
+                                         String resolucion,
+                                         EstadoIncidencia estadoFinal) {
+        Incidencia incidencia = incidenciaRepository.findById(incidenciaId)
+                .orElseThrow(() -> new RuntimeException("Incidencia no encontrada"));
+
+        if (estadoFinal == null) {
+            throw new IllegalArgumentException("El estado final es obligatorio");
+        }
+        if (!ESTADOS_RESOLVER_PERMITIDOS.contains(estadoFinal)) {
+            throw new IllegalArgumentException("Estado final no permitido para resolver incidencias: " + estadoFinal);
+        }
+        if (esEstadoTerminal(estadoFinal) && (resolucion == null || resolucion.isBlank())) {
+            throw new IllegalArgumentException("La resolución es obligatoria para estados finales RESUELTA/DESESTIMADA");
+        }
+
+        validarTransicion(incidencia.getEstado(), estadoFinal);
+
+        String email = authentication != null ? authentication.getName() : null;
+        if (email == null) {
+            throw new RuntimeException("Admin no autenticado");
+        }
+
+        Usuario admin = usuarioRepository.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new RuntimeException("Admin no encontrado"));
+
+        incidencia.setResolucion(resolucion);
+        incidencia.setAdmin(admin);
+        EstadoIncidencia estadoAnterior = incidencia.getEstado();
+        incidencia.setEstado(estadoFinal);
+        incidencia.setFechaResolucion(LocalDateTime.now());
+
+        Incidencia guardada = incidenciaRepository.save(incidencia);
+        registrarEvento(guardada,
+                estadoAnterior,
+                estadoFinal,
+                admin,
+                "TRANSICION_ESTADO",
+                resolucion);
+        return guardada;
+    }
+
+    // --- 3. CONSULTAS ---
+
+    /**
+     * Lista todas las incidencias que se encuentran pendientes (ABIERTA o EN_REVISION).
+     *
+     * @return lista de incidencias pendientes de resolución
+     */
+    public List<Incidencia> listarPendientes() {
+        // Devuelve las ABIERTA o EN_REVISION
+        return incidenciaRepository.findByEstadoIn(EnumSet.of(EstadoIncidencia.ABIERTA, EstadoIncidencia.EN_REVISION));
+    }
+
+    /**
+     * Lista todas las incidencias asociadas a un porte específico.
+     *
+     * @param porteId identificador del porte
+     * @return lista de incidencias vinculadas al porte indicado
+     */
+    public List<Incidencia> listarPorPorte(Long porteId) {
+        return incidenciaRepository.findByPorteId(porteId);
+    }
+
+    /**
+     * Lista todas las incidencias pendientes que han superado su fecha límite de SLA.
+     *
+     * @return lista de incidencias vencidas según su compromiso de SLA
+     */
+    public List<Incidencia> listarVencidasSla() {
+        return incidenciaRepository.findByEstadoInAndFechaLimiteSlaBefore(
+                EnumSet.of(EstadoIncidencia.ABIERTA, EstadoIncidencia.EN_REVISION),
+                LocalDateTime.now()
+        );
+    }
+
+    /**
+     * Lista el historial completo de eventos de una incidencia ordenados cronológicamente.
+     *
+     * @param incidenciaId identificador de la incidencia
+     * @return lista de eventos de la incidencia ordenados por fecha ascendente
+     */
+    public List<IncidenciaEvento> listarHistorial(Long incidenciaId) {
+        if (!incidenciaRepository.existsById(incidenciaId)) {
+            throw new RuntimeException("Incidencia no encontrada");
+        }
+        return incidenciaEventoRepository.findByIncidenciaIdOrderByFechaAsc(incidenciaId);
+    }
+
+    // --- 4. MÉTODOS ADICIONALES ---
+
+    /**
+     * Lista todas las incidencias registradas en el sistema sin filtrar.
+     *
+     * @return lista completa de todas las incidencias
+     */
+    public List<Incidencia> listarTodas() {
+        return incidenciaRepository.findAll();
+    }
+
+    /**
+     * Obtiene una incidencia por su identificador.
+     *
+     * @param id identificador de la incidencia
+     * @return la entidad Incidencia correspondiente al ID proporcionado
+     */
+    public Incidencia obtenerPorId(Long id) {
+        return incidenciaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Incidencia no encontrada"));
+    }
+
+    /**
+     * Cuenta la cantidad de incidencias pendientes (ABIERTA o EN_REVISION).
+     *
+     * @return mapa con la clave "pendientes" y el total de incidencias en ese estado
+     */
+    public Map<String, Long> contarPendientes() {
+        long count = incidenciaRepository.countByEstadoIn(EnumSet.of(EstadoIncidencia.ABIERTA, EstadoIncidencia.EN_REVISION));
+        return Map.of("pendientes", count);
+    }
+
+    /**
+     * Valida que la transición entre el estado actual y el estado final sea permitida.
+     */
+    private void validarTransicion(EstadoIncidencia estadoActual, EstadoIncidencia estadoFinal) {
+        Set<EstadoIncidencia> permitidos = TRANSICIONES_VALIDAS.getOrDefault(estadoActual, Set.of());
+        if (!permitidos.contains(estadoFinal)) {
+            throw new IncidenciaTransitionException(
+                    "Transición no permitida: " + estadoActual + " -> " + estadoFinal
+            );
+        }
+    }
+
+    /**
+     * Determina si un estado es terminal (RESUELTA o DESESTIMADA).
+     */
+    private boolean esEstadoTerminal(EstadoIncidencia estado) {
+        return estado == EstadoIncidencia.RESUELTA || estado == EstadoIncidencia.DESESTIMADA;
+    }
+
+    /**
+     * Calcula la fecha límite de SLA según la severidad, prioridad y fecha base de la incidencia.
+     */
+    private LocalDateTime calcularFechaLimiteSla(SeveridadIncidencia severidad,
+                                                 PrioridadIncidencia prioridad,
+                                                 LocalDateTime fechaBase) {
+        int horas;
+        if (severidad == SeveridadIncidencia.ALTA || prioridad == PrioridadIncidencia.ALTA) {
+            horas = 24;
+        } else if (severidad == SeveridadIncidencia.MEDIA || prioridad == PrioridadIncidencia.MEDIA) {
+            horas = 72;
+        } else {
+            horas = 120;
+        }
+        return fechaBase.plusHours(horas);
+    }
+
+    /**
+     * Resuelve el usuario actor a partir del contexto de autenticación.
+     */
+    private Usuario resolverActor(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return null;
+        }
+        return usuarioRepository.findByEmail(authentication.getName().toLowerCase()).orElse(null);
+    }
+
+    /**
+     * Registra un evento en el historial de una incidencia con su cambio de estado y actor responsable.
+     */
+    private void registrarEvento(Incidencia incidencia,
+                                 EstadoIncidencia estadoAnterior,
+                                 EstadoIncidencia estadoNuevo,
+                                 Usuario actor,
+                                 String accion,
+                                 String comentario) {
+        IncidenciaEvento evento = new IncidenciaEvento();
+        evento.setIncidencia(incidencia);
+        evento.setEstadoAnterior(estadoAnterior);
+        evento.setEstadoNuevo(estadoNuevo);
+        evento.setActor(actor);
+        evento.setAccion(accion);
+        evento.setComentario(comentario);
+        evento.setFecha(LocalDateTime.now());
+        incidenciaEventoRepository.save(evento);
+    }
+}

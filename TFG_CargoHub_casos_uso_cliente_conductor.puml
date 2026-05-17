@@ -1,0 +1,73 @@
+﻿@startuml
+top to bottom direction
+scale max 650 width
+skinparam monochrome true
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam nodesep 15
+skinparam ranksep 18
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  FontColor Black
+  FontSize 10
+}
+
+actor "Cliente" as Cliente
+actor "Conductor" as Conductor
+
+rectangle "CargoHub - Cliente y conductor" {
+  usecase "Iniciar\nsesion" as CU01
+  usecase "Gestionar\nperfil" as CU02
+  usecase "Solicitar\nporte" as CU03
+  usecase "Mis\nportes" as CU04
+  usecase "Seguimiento\ndel porte" as CU05
+  usecase "Facturas" as CU06
+  usecase "Ofertas /\nasignaciones" as CU07
+  usecase "Aceptar /\nrechazar" as CU08
+  usecase "Estado\ndel porte" as CU09
+  usecase "Ubicacion\nGPS" as CU10
+  usecase "Entrega y\nalbaran" as CU11
+  usecase "Reportar\nincidencia" as CU12
+  usecase "Vehiculo\ny agenda" as CU13
+
+  CU01 -[hidden]down- CU02
+  CU02 -[hidden]down- CU03
+  CU03 -[hidden]down- CU04
+  CU04 -[hidden]down- CU05
+  CU05 -[hidden]down- CU06
+  CU06 -[hidden]down- CU07
+  CU07 -[hidden]down- CU08
+  CU08 -[hidden]down- CU09
+  CU09 -[hidden]down- CU10
+  CU10 -[hidden]down- CU11
+  CU11 -[hidden]down- CU12
+  CU12 -[hidden]down- CU13
+}
+
+CU01 -right- Cliente
+CU02 -right- Cliente
+CU03 -right- Cliente
+CU04 -right- Cliente
+CU05 -right- Cliente
+CU06 -right- Cliente
+
+CU01 -right- Conductor
+CU02 -right- Conductor
+CU07 -right- Conductor
+CU08 -right- Conductor
+CU09 -right- Conductor
+CU10 -right- Conductor
+CU11 -right- Conductor
+CU12 -right- Conductor
+CU13 -right- Conductor
+
+CU03 ..> CU01 : <<include>>
+CU04 ..> CU01 : <<include>>
+CU07 ..> CU01 : <<include>>
+CU11 ..> CU09 : <<extend>>
+CU12 ..> CU09 : <<extend>>
+@enduml

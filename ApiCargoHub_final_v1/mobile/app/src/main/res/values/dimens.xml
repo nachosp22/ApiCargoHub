@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ── Spacing tokens ── -->
+    <dimen name="spacing_2xs">4dp</dimen>
+    <dimen name="spacing_xs">8dp</dimen>
+    <dimen name="spacing_sm">12dp</dimen>
+    <dimen name="spacing_md">16dp</dimen>
+    <dimen name="spacing_lg">20dp</dimen>
+    <dimen name="spacing_xl">24dp</dimen>
+    <dimen name="spacing_2xl">32dp</dimen>
+    <dimen name="spacing_3xl">40dp</dimen>
+
+    <!-- Backward-compat aliases (old ch_space_* → new tokens) -->
+    <dimen name="ch_space_2xs">@dimen/spacing_2xs</dimen>
+    <dimen name="ch_space_xs">@dimen/spacing_xs</dimen>
+    <dimen name="ch_space_sm">@dimen/spacing_sm</dimen>
+    <dimen name="ch_space_md">@dimen/spacing_md</dimen>
+    <dimen name="ch_space_lg">@dimen/spacing_lg</dimen>
+    <dimen name="ch_space_xl">@dimen/spacing_xl</dimen>
+    <dimen name="ch_space_2xl">@dimen/spacing_2xl</dimen>
+    <dimen name="ch_space_3xl">@dimen/spacing_3xl</dimen>
+
+    <!-- ── Radius tokens ── -->
+    <dimen name="radius_sm">8dp</dimen>
+    <dimen name="radius_md">12dp</dimen>
+    <dimen name="radius_lg">16dp</dimen>
+    <dimen name="radius_xl">24dp</dimen>
+
+    <!-- Backward-compat aliases -->
+    <dimen name="ch_radius_sm">@dimen/radius_md</dimen>
+    <dimen name="ch_radius_md">@dimen/radius_lg</dimen>
+    <dimen name="ch_radius_lg">@dimen/radius_xl</dimen>
+
+    <!-- ── Typography scale (reduced ~2sp) ── -->
+    <dimen name="ch_text_size_caption">13sp</dimen>
+    <dimen name="ch_text_size_label">14sp</dimen>
+    <dimen name="ch_text_size_body">15sp</dimen>
+    <dimen name="ch_text_size_body_large">16sp</dimen>
+    <dimen name="ch_text_size_title">18sp</dimen>
+    <dimen name="ch_text_size_title_large">22sp</dimen>
+    <dimen name="ch_text_size_display">30sp</dimen>
+    <dimen name="ch_text_size_hero">32sp</dimen>
+
+    <!-- ── Line heights (adjusted proportionally) ── -->
+    <dimen name="ch_line_height_caption">18sp</dimen>
+    <dimen name="ch_line_height_label">20sp</dimen>
+    <dimen name="ch_line_height_body">22sp</dimen>
+    <dimen name="ch_line_height_body_large">24sp</dimen>
+    <dimen name="ch_line_height_title">26sp</dimen>
+    <dimen name="ch_line_height_title_large">30sp</dimen>
+    <dimen name="ch_line_height_display">38sp</dimen>
+
+    <!-- ── Driving mode ── -->
+    <dimen name="driving_speed_text_size">36sp</dimen>
+    <dimen name="driving_eta_text_size">16sp</dimen>
+    <dimen name="driving_distance_text_size">18sp</dimen>
+    <dimen name="driving_fab_mini_size">48dp</dimen>
+
+    <!-- Tracking meta card -->
+    <dimen name="tracking_session_meta_card_max_width">240dp</dimen>
+</resources>

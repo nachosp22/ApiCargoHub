@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/porteSpinnerText"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="14dp"
+    android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+    android:textColor="@color/ch_text_primary"
+    android:background="@color/ch_surface_card"
+    android:ellipsize="end"
+    android:maxLines="1" />

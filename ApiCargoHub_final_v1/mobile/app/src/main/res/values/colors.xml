@@ -1,0 +1,74 @@
+<resources>
+    <!-- ── Blue scale ── -->
+    <color name="ch_blue_50">#EFF6FF</color>
+    <color name="ch_blue_100">#DBEAFE</color>
+    <color name="ch_blue_200">#BFDBFE</color>
+    <color name="ch_blue_300">#93C5FD</color>
+    <color name="ch_blue_500">#3B82F6</color>
+    <color name="ch_blue_600">#2563EB</color>
+    <color name="ch_blue_700">#1D4ED8</color>
+    <color name="ch_blue_800">#1E40AF</color>
+    <color name="ch_blue_900">#1E3A8A</color>
+
+    <!-- ── Semantic: Primary ── -->
+    <color name="ch_primary">@color/ch_blue_600</color>
+    <color name="ch_primary_dark">@color/ch_blue_800</color>
+    <color name="ch_primary_light">@color/ch_blue_500</color>
+    <color name="ch_on_primary">@color/white</color>
+    <color name="ch_primary_container">@color/ch_blue_100</color>
+    <color name="ch_on_primary_container">@color/ch_blue_900</color>
+
+    <!-- Backward-compat aliases -->
+    <color name="ch_accent_primary">@color/ch_primary</color>
+    <color name="ch_accent_primary_soft">@color/ch_blue_50</color>
+    <color name="ch_on_accent_primary">@color/ch_on_primary</color>
+
+    <!-- ── Semantic: Surface / Background ── -->
+    <color name="ch_background">#F9FAFB</color>
+    <color name="ch_surface">#FFFFFF</color>
+    <color name="ch_surface_alt">#F1F5F9</color>
+    <color name="ch_surface_card">@color/ch_surface</color>
+    <color name="ch_on_surface">#1E293B</color>
+    <color name="ch_on_surface_variant">#64748B</color>
+
+    <!-- Backward-compat aliases -->
+    <color name="ch_text_primary">@color/ch_on_surface</color>
+    <color name="ch_text_secondary">@color/ch_on_surface_variant</color>
+
+    <!-- ── Semantic: Outline / Divider ── -->
+    <color name="ch_outline">#E5E7EB</color>
+    <color name="ch_card_stroke">@color/ch_outline</color>
+
+    <!-- ── Semantic: Status ── -->
+    <color name="ch_success">#16A34A</color>
+    <color name="ch_success_soft">#ECFDF3</color>
+    <color name="ch_success_text">#166534</color>
+
+    <color name="ch_warning">#D97706</color>
+    <color name="ch_warning_soft">#FEF9C3</color>
+    <color name="ch_warning_text">#854D0E</color>
+
+    <color name="ch_error">#DC2626</color>
+    <color name="ch_error_soft">#FEE2E2</color>
+    <color name="ch_error_text">#991B1B</color>
+
+    <!-- ── Navigation ── -->
+    <color name="ch_nav_item">#334155</color>
+    <color name="ch_nav_item_selected">@color/ch_primary</color>
+
+    <!-- ── Dark theme surface tokens ── -->
+    <color name="ch_dark_background">#0F172A</color>
+    <color name="ch_dark_surface">#1E293B</color>
+    <color name="ch_dark_surface_alt">#334155</color>
+    <color name="ch_dark_on_surface">#F1F5F9</color>
+    <color name="ch_dark_on_surface_variant">#94A3B8</color>
+    <color name="ch_dark_outline">#475569</color>
+
+    <!-- ── Overlays ── -->
+    <color name="ch_overlay_strong">#B3000000</color>
+    <color name="ch_overlay_medium">#99000000</color>
+    <color name="ch_success_chip_tint">#4016A34A</color>
+    <color name="ch_warning_chip_tint">#40D97706</color>
+
+    <color name="white">#FFFFFF</color>
+</resources>

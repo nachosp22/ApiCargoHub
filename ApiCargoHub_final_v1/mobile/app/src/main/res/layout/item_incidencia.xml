@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_sm"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/ch_surface_card"
+    app:cardCornerRadius="@dimen/radius_md"
+    app:cardElevation="2dp"
+    app:strokeColor="@android:color/transparent"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/ch_space_md">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/incidenciaTitulo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+                android:textColor="@color/ch_text_primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/incidenciaEstado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/ch_space_xs"
+                android:background="@drawable/bg_estado_badge"
+                android:paddingHorizontal="@dimen/ch_space_sm"
+                android:paddingVertical="4dp"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelSmall"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Description hidden for compact view — progressive disclosure -->
+        <TextView
+            android:id="@+id/incidenciaDescripcion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_xs"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+            android:textColor="@color/ch_text_secondary" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ch_space_sm"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/incidenciaSeveridad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_state_chip"
+                android:paddingStart="@dimen/ch_space_sm"
+                android:paddingTop="4dp"
+                android:paddingEnd="@dimen/ch_space_sm"
+                android:paddingBottom="4dp"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="@dimen/ch_space_sm"
+                android:layout_marginHorizontal="@dimen/ch_space_sm"
+                android:background="@color/ch_outline" />
+
+            <TextView
+                android:id="@+id/incidenciaFecha"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.ApiCargoHub.LabelMedium"
+                android:textColor="@color/ch_text_secondary" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

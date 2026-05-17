@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Isometric box - left face -->
+  <path d="M256 296L88 199v148l168 97V296z" fill="#1E40AF"/>
+  <!-- Isometric box - right face -->
+  <path d="M256 296l168-97v148l-168 97V296z" fill="#2563EB"/>
+  <!-- Isometric box - top face -->
+  <path d="M256 102L88 199l168 97 168-97L256 102z" fill="#3B82F6"/>
+  <!-- Forward arrow on top face -->
+  <path d="M216 199l40-28 40 28-16 11v34l-48 0v-34L216 199z" fill="white" opacity="0.92"/>
+</svg>

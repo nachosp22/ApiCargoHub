@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_home_panel"
+    android:orientation="vertical"
+    android:padding="@dimen/ch_space_md">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/ch_space_sm"
+        android:background="@color/ch_outline" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Filtrar ofertas"
+        android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleLarge"
+        android:textColor="@color/ch_text_primary"
+        android:textStyle="bold" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ch_space_md"
+        android:columnCount="2"
+        android:useDefaultMargins="true">
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.ApiCargoHub.TextInputLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:hint="Precio min (€)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/bsFilterMinPrice"
+                style="@style/Widget.ApiCargoHub.TextInputEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.ApiCargoHub.TextInputLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:hint="Precio max (€)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/bsFilterMaxPrice"
+                style="@style/Widget.ApiCargoHub.TextInputEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.ApiCargoHub.TextInputLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:hint="Km min">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/bsFilterMinKm"
+                style="@style/Widget.ApiCargoHub.TextInputEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.ApiCargoHub.TextInputLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:hint="Km max">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/bsFilterMaxKm"
+                style="@style/Widget.ApiCargoHub.TextInputEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </GridLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.ApiCargoHub.TextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ch_space_sm"
+        android:hint="Día (DD/MM/AAAA)">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/bsFilterDay"
+            style="@style/Widget.ApiCargoHub.TextInputEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:cursorVisible="false"
+            android:focusable="false"
+            android:inputType="none"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ch_space_md"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/bsFilterClearButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="@dimen/ch_space_sm"
+            android:layout_weight="1"
+            android:text="Limpiar"
+            android:textAllCaps="false" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/bsFilterApplyButton"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/ch_primary"
+            android:text="Aplicar filtros"
+            android:textAllCaps="false"
+            android:textColor="@color/white" />
+    </LinearLayout>
+</LinearLayout>

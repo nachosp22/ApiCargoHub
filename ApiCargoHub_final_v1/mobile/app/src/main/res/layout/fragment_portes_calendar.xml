@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/ch_background"
+    android:paddingHorizontal="@dimen/ch_space_md"
+    android:paddingTop="@dimen/ch_space_lg"
+    android:paddingBottom="@dimen/ch_space_sm">
+
+    <TextView
+        android:id="@+id/portesCalendarTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/portes_calendar_title"
+        android:textAppearance="@style/TextAppearance.ApiCargoHub.HeadlineLarge"
+        android:textColor="@color/ch_text_primary"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/portesCalendarSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ch_space_xs"
+        android:text="@string/portes_calendar_subtitle"
+        android:textAppearance="@style/TextAppearance.ApiCargoHub.BodyMedium"
+        android:textColor="@color/ch_text_secondary" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ch_space_md"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/portesCalendarPrevButton"
+            style="@style/Widget.ApiCargoHub.Button.Secondary"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:contentDescription="@string/portes_calendar_prev_month"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="44dp"
+            android:text="@string/portes_calendar_prev_short"
+            android:textAllCaps="false" />
+
+        <TextView
+            android:id="@+id/portesCalendarMonthText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/ch_space_sm"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+            android:textColor="@color/ch_text_primary"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/portesCalendarNextButton"
+            style="@style/Widget.ApiCargoHub.Button.Secondary"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:contentDescription="@string/portes_calendar_next_month"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="44dp"
+            android:text="@string/portes_calendar_next_short"
+            android:textAllCaps="false" />
+
+        <TextView
+            android:id="@+id/portesCalendarStatsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/ch_space_sm"
+            android:textAppearance="@style/TextAppearance.ApiCargoHub.BodySmall"
+            android:textColor="@color/ch_text_secondary" />
+    </LinearLayout>
+
+    <GridLayout
+        android:id="@+id/portesCalendarGrid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ch_space_sm"
+        android:columnCount="7"
+        android:rowCount="7" />
+
+    <TextView
+        android:id="@+id/portesCalendarSelectedDayText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ch_space_sm"
+        android:textAppearance="@style/TextAppearance.ApiCargoHub.TitleMedium"
+        android:textColor="@color/ch_text_primary"
+        android:textStyle="bold" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/portesCalendarRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="@dimen/ch_space_xs"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/ch_space_md" />
+
+</LinearLayout>

@@ -236,7 +236,7 @@ public class PorteService {
             double km = CalculadoraDistancia.calcularKm(
                     porte.getLatitudOrigen(), porte.getLongitudOrigen(),
                     porte.getLatitudDestino(), porte.getLongitudDestino());
-            porte.setDistanciaKm(km * 1.2);
+            porte.setDistanciaKm(km);
             porte.setDistanciaEstimada(true);
         } else {
             porte.setDistanciaKm(0.0);
@@ -870,7 +870,7 @@ public class PorteService {
             double km = CalculadoraDistancia.calcularKm(
                     porte.getLatitudOrigen(), porte.getLongitudOrigen(),
                     porte.getLatitudDestino(), porte.getLongitudDestino());
-            porte.setDistanciaKm(km * 1.2);
+            porte.setDistanciaKm(km);
             porte.setDistanciaEstimada(true);
         }
 
@@ -918,7 +918,7 @@ public class PorteService {
             double km = CalculadoraDistancia.calcularKm(
                     porte.getLatitudOrigen(), porte.getLongitudOrigen(),
                     porte.getLatitudDestino(), porte.getLongitudDestino());
-            porte.setDistanciaKm(km * 1.2);
+            porte.setDistanciaKm(km);
             porte.setDistanciaEstimada(true);
         }
 

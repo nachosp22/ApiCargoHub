@@ -1,0 +1,940 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "portes": "Portes",
+    "revision": "Revisión Portes",
+    "conductores": "Conductores",
+    "aprobaciones": "Aprobaciones",
+    "vehiculos": "Vehículos",
+    "incidencias": "Incidencias",
+    "facturas": "Facturas",
+    "clientes": "Clientes",
+    "mapaFlota": "Mapa flota",
+    "cerrarSesion": "Cerrar sesión",
+    "brand": "CargoHub"
+  },
+  "topbar": {
+    "notificaciones": "Notificaciones",
+    "usuarioFallback": "Usuario",
+    "na": "N/A"
+  },
+  "login": {
+    "titulo": "Plataforma de Gestión Logística",
+    "iniciarSesion": "Iniciar Sesión",
+    "correo": "Correo electrónico",
+    "contrasena": "Contraseña",
+    "placeholderCorreo": "tu@correo.com",
+    "placeholderContrasena": "••••••••",
+    "errors": {
+      "camposVacios": "Por favor, completa todos los campos.",
+      "credencialesInvalidas": "Credenciales inválidas. Verifica tu correo y contraseña.",
+      "sinConexion": "No se pudo conectar con el servidor. Inténtalo más tarde.",
+      "errorServidor": "El servidor respondió con un error. Inténtalo más tarde.",
+      "errorInesperado": "Error inesperado. Inténtalo de nuevo."
+    }
+  },
+  "dashboard": {
+    "subtitle": "Resumen general de la plataforma de transporte",
+    "mockBanner": "Mostrando datos de demostración — la API no está disponible en este momento.",
+    "kpiTitles": {
+      "portesEsteMes": "Portes Este Mes",
+      "portesActivos": "Portes Activos",
+      "portesMañana": "Portes Mañana",
+      "incidenciasPendientes": "Incidencias Pendientes"
+    },
+    "statMiniCards": {
+      "entregasHoy": "Entregas Hoy",
+      "slaCumplimiento": "SLA Cumplimiento",
+      "kmRecorridos": "Km Recorridos (Hoy)"
+    },
+    "activityChart": {
+      "title": "Portes por Mes",
+      "subtitle": "Actividad de transporte en los últimos 12 meses",
+      "chartLabel": "Portes"
+    },
+    "recentPortes": {
+      "title": "Portes Recientes",
+      "subtitle": "Últimos portes registrados en el sistema",
+      "searchPlaceholder": "Buscar portes...",
+      "empty": "No se encontraron portes",
+      "status": {
+        "completado": "Completado",
+        "entregado": "Entregado",
+        "enRuta": "En Ruta",
+        "pendiente": "Pendiente",
+        "programado": "Programado",
+        "cancelado": "Cancelado"
+      }
+    },
+    "kpiCard": {
+      "vsMesAnterior": "vs mes anterior"
+    }
+  },
+  "portes": {
+    "title": "Portes",
+    "subtitle": "Gestión de portes y envíos",
+    "newButton": "Nuevo Porte",
+    "detail": {
+      "ruta": "Ruta",
+      "origen": "Origen",
+      "destino": "Destino",
+      "distancia": "Distancia:",
+      "conductor": "Conductor",
+      "cliente": "Cliente",
+      "creacion": "Creación",
+      "recogida": "Recogida",
+      "entrega": "Entrega",
+      "economico": "Económico",
+      "precioBase": "Precio Base",
+      "ajuste": "Ajuste",
+      "total": "Total",
+      "descripcion": "Descripción",
+      "sinAsignar": "Sin asignar",
+      "sinCliente": "Sin cliente"
+    },
+    "deleteDialog": {
+      "title": "Confirmar eliminación",
+      "message": "¿Eliminar el porte #{id}?",
+      "warning": "Esta acción no se puede deshacer. Se eliminará el porte y toda su información asociada."
+    },
+    "ajusteDialog": {
+      "title": "Ajustar Precio",
+      "label": "Nuevo precio (€)",
+      "motivo": "Motivo del ajuste",
+      "placeholder": "Explica el motivo del ajuste de precio..."
+    },
+    "facturarDialog": {
+      "title": "Confirmar facturación",
+      "message": "¿Facturar el porte #{id}?",
+      "warning": "Se marcará como facturado y se generará la factura correspondiente.",
+      "importe": "Importe:"
+    },
+    "toasts": {
+      "success": {
+        "creado": "Porte creado",
+        "actualizado": "Porte actualizado",
+        "eliminado": "Porte eliminado",
+        "facturado": "Porte facturado",
+        "precioAjustado": "Precio ajustado"
+      },
+      "error": {
+        "titulo": "Error",
+        "guardar": "No se pudo guardar el porte.",
+        "eliminar": "No se pudo eliminar el porte.",
+        "ajustar": "No se pudo ajustar el precio.",
+        "facturar": "No se pudo facturar el porte."
+      }
+    },
+    "buttons": {
+      "cancelar": "Cancelar",
+      "eliminar": "Eliminar",
+      "aplicarAjuste": "Aplicar Ajuste",
+      "facturar": "Facturar"
+    },
+    "table": {
+      "title": "Lista de Portes",
+      "count": "{n} portes encontrados",
+      "searchPlaceholder": "Buscar portes..."
+    },
+    "filters": {
+      "todos": "Todos los estados",
+      "pendiente": "Pendiente",
+      "asignado": "Asignado",
+      "enTransito": "En Tránsito",
+      "entregado": "Entregado",
+      "cancelado": "Cancelado",
+      "facturado": "Facturado"
+    },
+    "columns": {
+      "id": "ID",
+      "origen": "Origen",
+      "destino": "Destino",
+      "conductor": "Conductor",
+      "estado": "Estado",
+      "fechaProgramada": "Fecha Programada",
+      "acciones": "Acciones"
+    },
+    "tooltips": {
+      "verDetalle": "Ver detalle",
+      "editar": "Editar",
+      "ajustarPrecio": "Ajustar precio",
+      "facturar": "Facturar",
+      "eliminar": "Eliminar"
+    },
+    "empty": {
+      "title": "No se encontraron portes",
+      "subtitle": "Intenta ajustar los filtros o crear un nuevo porte"
+    },
+    "dialog": {
+      "titleNew": "Nuevo Porte",
+      "titleEdit": "Editar Porte #{id}",
+      "labels": {
+        "origen": "Origen",
+        "destino": "Destino",
+        "cliente": "Cliente",
+        "conductor": "Conductor",
+        "vehiculo": "Vehículo",
+        "fechaRecogida": "Fecha Recogida",
+        "fechaEntrega": "Fecha Entrega",
+        "descripcion": "Descripción / Notas",
+        "estado": "Estado"
+      },
+      "placeholders": {
+        "origen": "Ciudad de origen",
+        "destino": "Ciudad de destino",
+        "cliente": "Seleccionar cliente",
+        "conductor": "Seleccionar conductor",
+        "vehiculo": "Seleccionar vehículo",
+        "fecha": "Seleccionar fecha",
+        "descripcion": "Descripción de la carga, instrucciones especiales..."
+      },
+      "validation": {
+        "required": "Campo requerido"
+      },
+      "buttons": {
+        "cancelar": "Cancelar",
+        "guardarCambios": "Guardar Cambios",
+        "crearPorte": "Crear Porte"
+      }
+    },
+    "statusLabels": {
+      "entregado": "Entregado",
+      "completado": "Completado",
+      "enTransito": "En Tránsito",
+      "enRuta": "En Ruta",
+      "enCarga": "En Carga",
+      "enDescarga": "En Descarga",
+      "programado": "Programado",
+      "asignado": "Asignado",
+      "pendiente": "Pendiente",
+      "cancelado": "Cancelado",
+      "incidencia": "Incidencia",
+      "facturado": "Facturado"
+    },
+    "fotos": {
+      "title": "Fotos de Carga",
+      "empty": "No hay fotos para este porte",
+      "error": "No se pudieron cargar las fotos",
+      "retry": "Reintentar",
+      "tipos": {
+        "carga": "Carga",
+        "descarga": "Descarga",
+        "dano": "Daño"
+      }
+    },
+    "revision": {
+      "dialog": {
+        "title": "Revisión Manual",
+        "motivo": "Motivo de revisión"
+      },
+      "datosCliente": {
+        "title": "Datos del Cliente",
+        "empresa": "Empresa",
+        "cif": "CIF",
+        "telefono": "Teléfono",
+        "email": "Email",
+        "descripcion": "Descripción del cliente"
+      },
+      "dimensiones": {
+        "title": "Dimensiones de Carga",
+        "peso": "Peso (kg)",
+        "volumen": "Volumen (m³)",
+        "tipoVehiculo": "Tipo Vehículo",
+        "largo": "Largo máx. (m)",
+        "ancho": "Ancho máx. (m)",
+        "alto": "Alto máx. (m)"
+      },
+      "tipoOptions": {
+        "furgoneta": "Furgoneta",
+        "rigido": "Rígido",
+        "trailer": "Tráiler",
+        "especial": "Especial"
+      },
+      "buttons": {
+        "guardarDimensiones": "Guardar Dimensiones",
+        "buscarConductores": "Buscar Conductores",
+        "asignar": "Asignar"
+      },
+      "candidatos": {
+        "title": "Conductores Candidatos",
+        "count": "{n} encontrados",
+        "columns": {
+          "conductor": "Conductor",
+          "vehiculo": "Vehículo",
+          "score": "Score"
+        },
+        "empty": "No se encontraron conductores disponibles con las dimensiones actuales."
+      },
+      "toasts": {
+        "dimensionesActualizadas": "Dimensiones actualizadas",
+        "conductorAsignado": "Conductor asignado",
+        "errorDimensiones": "Error al actualizar dimensiones",
+        "errorAsignar": "Error al asignar conductor",
+        "copiado": "{label} copiado"
+      },
+      "precioEstimado": "Precio estimado"
+    }
+  },
+  "clientes": {
+    "title": "Clientes",
+    "subtitle": "Gestión de clientes y sus portes",
+    "newButton": "Nuevo Cliente",
+    "stats": {
+      "totalClientes": "Total Clientes",
+      "conEmail": "Con Email",
+      "conTelefono": "Con Teléfono"
+    },
+    "deleteDialog": {
+      "title": "Eliminar Cliente",
+      "message": "¿Eliminar a {nombre}?",
+      "warning": "Esta acción no se puede deshacer. Se eliminará el cliente y toda su información."
+    },
+    "toasts": {
+      "creado": "Cliente creado",
+      "actualizado": "Cliente actualizado",
+      "eliminado": "Cliente eliminado",
+      "errorGuardar": "No se pudo guardar el cliente.",
+      "errorEliminar": "No se pudo eliminar el cliente."
+    },
+    "table": {
+      "title": "Lista de Clientes",
+      "count": "{n} clientes encontrados",
+      "searchPlaceholder": "Buscar clientes..."
+    },
+    "columns": {
+      "empresa": "Empresa",
+      "cifNif": "CIF/NIF",
+      "email": "Email",
+      "telefono": "Teléfono",
+      "direccion": "Dirección",
+      "acciones": "Acciones"
+    },
+    "tooltips": {
+      "editar": "Editar",
+      "verPortes": "Ver portes",
+      "eliminar": "Eliminar"
+    },
+    "empty": {
+      "title": "No se encontraron clientes",
+      "subtitle": "Intenta ajustar los filtros o crear un nuevo cliente"
+    },
+    "dialog": {
+      "titleNew": "Nuevo Cliente",
+      "titleEdit": "Editar Cliente #{id}",
+      "labels": {
+        "nombre": "Nombre / Razón Social",
+        "cifNif": "CIF/NIF",
+        "email": "Email",
+        "telefono": "Teléfono",
+        "direccion": "Dirección",
+        "ciudad": "Ciudad",
+        "codigoPostal": "Código Postal",
+        "pais": "País"
+      },
+      "placeholders": {
+        "nombre": "Nombre de la empresa",
+        "cifNif": "B12345678",
+        "email": "email@empresa.com",
+        "telefono": "+34 600 000 000",
+        "direccion": "Calle, número...",
+        "ciudad": "Ciudad",
+        "codigoPostal": "28001",
+        "pais": "España"
+      }
+    },
+    "portesTab": {
+      "empty": "Este cliente no tiene portes registrados"
+    }
+  },
+  "conductores": {
+    "title": "Conductores",
+    "subtitle": "Gestión de conductores y asignaciones",
+    "newButton": "Nuevo Conductor",
+    "stats": {
+      "total": "Total",
+      "activos": "Activos",
+      "disponibles": "Disponibles",
+      "inactivos": "Inactivos"
+    },
+    "estado": {
+      "activo": "Activo",
+      "inactivo": "Inactivo",
+      "suspendido": "Suspendido"
+    },
+    "detailTabs": {
+      "informacion": "Información",
+      "agenda": "Agenda",
+      "vehiculos": "Vehículos",
+      "estadisticas": "Estadísticas",
+      "portes": "Portes"
+    },
+    "info": {
+      "title": "Información de Contacto",
+      "email": "Email",
+      "telefono": "Teléfono",
+      "dniLicencia": "DNI / Licencia",
+      "ciudadBase": "Ciudad Base"
+    },
+    "infoStats": {
+      "portesAsignados": "Portes Asignados",
+      "radioAccion": "Radio de Acción"
+    },
+    "preferencias": {
+      "title": "Preferencias",
+      "diasLaborables": "Días Laborables",
+      "disponibilidad": "Disponibilidad"
+    },
+    "disponibilidad": {
+      "disponible": "Disponible",
+      "noDisponible": "No disponible"
+    },
+    "agenda": {
+      "empty": "Sin bloqueos en la agenda"
+    },
+    "vehiculos": {
+      "columns": {
+        "matricula": "Matrícula",
+        "marca": "Marca",
+        "modelo": "Modelo",
+        "tipo": "Tipo",
+        "estado": "Estado"
+      },
+      "estado": {
+        "activo": "Activo",
+        "inactivo": "Inactivo"
+      },
+      "empty": "Sin vehículos asignados"
+    },
+    "statsTab": {
+      "portesCompletados": "Portes Completados",
+      "ingresoTotal": "Ingreso Total",
+      "mediaPorPorte": "Media por Porte",
+      "sinDatos": "Sin datos de estadísticas"
+    },
+    "portesTab": {
+      "columns": {
+        "id": "ID",
+        "estado": "Estado",
+        "origen": "Origen",
+        "destino": "Destino",
+        "fecha": "Fecha",
+        "precio": "Precio"
+      },
+      "empty": "Sin portes registrados"
+    },
+    "toggle": {
+      "desactivar": "Desactivar Conductor",
+      "activar": "Activar Conductor",
+      "confirmDeactivate": "¿Desactivar al conductor {nombre}?",
+      "confirmActivate": "¿Activar al conductor {nombre}?"
+    },
+    "toasts": {
+      "creado": "Conductor creado",
+      "actualizado": "Conductor actualizado",
+      "activado": "Conductor activado",
+      "desactivado": "Conductor desactivado",
+      "errorGuardar": "No se pudo guardar el conductor.",
+      "errorEstado": "No se pudo cambiar el estado del conductor."
+    },
+    "table": {
+      "title": "Lista de Conductores",
+      "count": "{n} conductores encontrados",
+      "searchPlaceholder": "Buscar conductores...",
+      "filters": {
+        "todos": "Todos los estados",
+        "activo": "Activo",
+        "inactivo": "Inactivo",
+        "suspendido": "Suspendido"
+      },
+      "columns": {
+        "conductor": "Conductor",
+        "email": "Email",
+        "telefono": "Teléfono",
+        "licenciaDni": "Licencia/DNI",
+        "estado": "Estado",
+        "portes": "Portes",
+        "acciones": "Acciones"
+      },
+      "empty": {
+        "title": "No se encontraron conductores",
+        "subtitle": "Intenta ajustar los filtros o dar de alta un nuevo conductor"
+      }
+    },
+    "dialog": {
+      "titleNew": "Nuevo Conductor",
+      "titleEdit": "Editar Conductor #{id}",
+      "labels": {
+        "nombre": "Nombre",
+        "apellidos": "Apellidos",
+        "email": "Email",
+        "telefono": "Teléfono",
+        "dniLicencia": "DNI / Licencia",
+        "ciudadBase": "Ciudad Base",
+        "contrasena": "Contraseña"
+      },
+      "emailHint": "El email no se puede modificar"
+    },
+    "statsChart": {
+      "title": "Ingresos por Mes",
+      "label": "Ingresos",
+      "empty": "Sin datos de ingresos"
+    }
+  },
+  "vehiculos": {
+    "title": "Vehículos",
+    "subtitle": "Gestión de flota y mantenimiento",
+    "newButton": "Nuevo Vehículo",
+    "stats": {
+      "totalFlota": "Total Flota",
+      "disponibles": "Disponibles",
+      "deBaja": "De Baja"
+    },
+    "estado": {
+      "disponible": "Disponible",
+      "baja": "Baja"
+    },
+    "tipo": {
+      "furgoneta": "Furgoneta",
+      "rigido": "Rígido",
+      "trailer": "Tráiler",
+      "especial": "Especial"
+    },
+    "detail": {
+      "title": "Información del Vehículo",
+      "matricula": "Matrícula",
+      "marcaModelo": "Marca / Modelo",
+      "capacidadCarga": "Capacidad de Carga",
+      "conductorAsignado": "Conductor Asignado",
+      "sinAsignar": "Sin asignar"
+    },
+    "dimensiones": {
+      "title": "Dimensiones y Equipamiento",
+      "largo": "Largo útil",
+      "ancho": "Ancho útil",
+      "alto": "Alto útil",
+      "volumen": "Volumen"
+    },
+    "siNo": {
+      "si": "Sí",
+      "no": "No"
+    },
+    "mockStats": {
+      "kmRecorridos": "Km Recorridos",
+      "portesCompletados": "Portes Completados"
+    },
+    "table": {
+      "title": "Flota de Vehículos",
+      "count": "{n} vehículos encontrados",
+      "searchPlaceholder": "Buscar vehículos...",
+      "filters": {
+        "todosEstados": "Todos los estados",
+        "todosTipos": "Todos los tipos"
+      },
+      "columns": {
+        "matricula": "Matrícula",
+        "marca": "Marca",
+        "modelo": "Modelo",
+        "tipo": "Tipo",
+        "capacidad": "Capacidad",
+        "estado": "Estado",
+        "acciones": "Acciones"
+      },
+      "empty": {
+        "title": "No se encontraron vehículos",
+        "subtitle": "Intenta ajustar los filtros o dar de alta un nuevo vehículo"
+      }
+    },
+    "dialog": {
+      "titleNew": "Nuevo Vehículo",
+      "titleEdit": "Editar Vehículo #{id}",
+      "labels": {
+        "matricula": "Matrícula",
+        "marca": "Marca",
+        "modelo": "Modelo",
+        "tipo": "Tipo",
+        "capacidadCarga": "Capacidad de carga (kg)",
+        "largo": "Largo (mm)",
+        "ancho": "Ancho (mm)",
+        "alto": "Alto (mm)"
+      },
+      "tipoOptions": {
+        "furgoneta": "Furgoneta",
+        "rigido": "Rígido",
+        "trailer": "Tráiler",
+        "lona": "Lona",
+        "plataforma": "Plataforma",
+        "cisterna": "Cisterna",
+        "portacontenedores": "Portacontenedores"
+      }
+    },
+    "toasts": {
+      "creado": "Vehículo creado",
+      "actualizado": "Vehículo actualizado",
+      "errorGuardar": "No se pudo guardar el vehículo."
+    }
+  },
+  "facturas": {
+    "title": "Facturas",
+    "subtitle": "Gestión de facturación",
+    "kpis": {
+      "totalFacturas": "Total Facturas",
+      "totalFacturado": "Total Facturado",
+      "pagado": "Pagado",
+      "pendiente": "Pendiente"
+    },
+    "kpiCount": "{n} facturas",
+    "table": {
+      "title": "Lista de Facturas",
+      "count": "{n} facturas encontradas",
+      "searchPlaceholder": "Buscar facturas...",
+      "filters": {
+        "todas": "Todas",
+        "pagadas": "Pagadas",
+        "pendientes": "Pendientes",
+        "desde": "Desde",
+        "hasta": "Hasta",
+        "limpiarFiltros": "Limpiar filtros"
+      },
+      "columns": {
+        "nSerie": "Nº Serie",
+        "fechaEmision": "Fecha Emisión",
+        "cliente": "Cliente",
+        "baseImponible": "Base Imponible",
+        "iva": "IVA",
+        "total": "Total",
+        "estado": "Estado",
+        "acciones": "Acciones"
+      },
+      "status": {
+        "pagada": "Pagada",
+        "pendiente": "Pendiente"
+      },
+      "empty": {
+        "title": "No se encontraron facturas",
+        "subtitle": "Intenta ajustar los filtros de búsqueda"
+      }
+    },
+    "detail": {
+      "descargarPdf": "Descargar PDF",
+      "emisor": "Emisor",
+      "cliente": "Cliente",
+      "formaPago": "Forma de Pago",
+      "condiciones": "Condiciones",
+      "fechaEmision": "Fecha Emisión",
+      "fechaPago": "Fecha Pago",
+      "porte": {
+        "title": "Detalle del Porte",
+        "nPorte": "Nº Porte",
+        "ruta": "Ruta",
+        "conductor": "Conductor",
+        "fRecogida": "F. Recogida",
+        "fEntrega": "F. Entrega",
+        "pesoVolumen": "Peso / Volumen",
+        "descripcion": "Descripción"
+      },
+      "importes": {
+        "title": "Importes",
+        "baseImponible": "Base Imponible",
+        "iva": "IVA (21%)",
+        "total": "Total",
+        "observaciones": "Observaciones"
+      }
+    }
+  },
+  "incidencias": {
+    "title": "Incidencias",
+    "subtitle": "Gestión de incidencias y seguimiento SLA",
+    "newButton": "Nueva Incidencia",
+    "viewAll": "Ver Todas",
+    "viewExpired": "Ver Vencidas",
+    "expiredMessage": "Mostrando solo incidencias con SLA vencido.",
+    "toasts": {
+      "creada": "Incidencia creada",
+      "actualizada": "Incidencia actualizada",
+      "errorGuardar": "No se pudo guardar la incidencia.",
+      "errorActualizar": "No se pudo actualizar la incidencia."
+    },
+    "table": {
+      "title": "Lista de Incidencias",
+      "count": "{n} incidencias encontradas",
+      "searchPlaceholder": "Buscar incidencias...",
+      "estadoFilters": {
+        "todos": "Todos los estados",
+        "abierta": "Abierta",
+        "enRevision": "En Revisión",
+        "resuelta": "Resuelta",
+        "desestimada": "Desestimada"
+      },
+      "severidadFilters": {
+        "todas": "Todas las severidades",
+        "alta": "Alta",
+        "media": "Media",
+        "baja": "Baja"
+      },
+      "prioridad": {
+        "alta": "Alta",
+        "media": "Media",
+        "baja": "Baja"
+      },
+      "columns": {
+        "id": "ID",
+        "porte": "Porte",
+        "descripcion": "Descripción",
+        "severidad": "Severidad",
+        "prioridad": "Prioridad",
+        "estado": "Estado",
+        "fechaCreacion": "Fecha Creación",
+        "sla": "SLA",
+        "acciones": "Acciones"
+      },
+      "tooltip": {
+        "resolver": "Resolver"
+      },
+      "empty": {
+        "title": "No se encontraron incidencias",
+        "subtitle": "Intenta ajustar los filtros o crear una nueva incidencia"
+      }
+    },
+    "dialog": {
+      "titleNew": "Nueva Incidencia",
+      "labels": {
+        "porte": "Porte",
+        "titulo": "Título",
+        "descripcion": "Descripción",
+        "severidad": "Severidad",
+        "prioridad": "Prioridad"
+      },
+      "placeholders": {
+        "porte": "Seleccionar porte",
+        "titulo": "Título de la incidencia",
+        "descripcion": "Describe la incidencia en detalle...",
+        "severidad": "Seleccionar severidad",
+        "prioridad": "Seleccionar prioridad"
+      }
+    },
+    "resolverDialog": {
+      "title": "Resolver Incidencia",
+      "nuevoEstado": "Nuevo Estado",
+      "resolucion": "Resolución",
+      "comentario": "Comentario (opcional)",
+      "resolucionPlaceholder": "Describe cómo se resolvió la incidencia...",
+      "comentarioPlaceholder": "Añade un comentario adicional...",
+      "validation": "Campo requerido para resolver la incidencia",
+      "confirm": "Confirmar"
+    },
+    "detail": {
+      "descripcion": "Descripción",
+      "estadoSla": "Estado SLA",
+      "slaConsumed": "{n}% consumido",
+      "reporte": "Reporte:",
+      "limite": "Límite:",
+      "info": "Información",
+      "porte": "Porte",
+      "prioridad": "Prioridad",
+      "fechaReporte": "Fecha Reporte",
+      "resolucion": "Resolución",
+      "sinResolucion": "Sin resolución aún",
+      "historial": "Historial",
+      "sinEventos": "No hay eventos registrados",
+      "resolver": "Resolver"
+    },
+    "sla": {
+      "vencida": "VENCIDA · hace {duration}",
+      "restante": "{duration} restantes"
+    },
+    "statusBadge": {
+      "abierta": "Abierta",
+      "enRevision": "En Revisión",
+      "resuelta": "Resuelta",
+      "desestimada": "Desestimada"
+    },
+    "severidadBadge": {
+      "alta": "Alta",
+      "media": "Media",
+      "baja": "Baja"
+    }
+  },
+  "fleetMap": {
+    "title": "Mapa de flota",
+    "connection": {
+      "estado": "Estado:",
+      "online": "En línea",
+      "degradado": "Degradado",
+      "sinConexion": "Sin conexión",
+      "ultimoSnapshot": "Último snapshot:"
+    },
+    "buttons": {
+      "actualizar": "Actualizar"
+    },
+    "degradado": {
+      "message": "Operación degradada:",
+      "countdown": "Actualiza en {n}s"
+    },
+    "stats": {
+      "conductores": "Conductores:",
+      "autoajustar": "Autoajustar:"
+    },
+    "autoajustar": {
+      "on": "ON",
+      "off": "OFF"
+    },
+    "search": {
+      "placeholder": "Buscar conductor por ID",
+      "filterAll": "Todos los estados",
+      "empty": "sin conductores activos"
+    },
+    "detail": {
+      "title": "Detalle conductor #{id}",
+      "estado": "Estado",
+      "coords": "Coords",
+      "actualizado": "Actualizado",
+      "velocidad": "Velocidad",
+      "rumbo": "Rumbo"
+    },
+    "popup": {
+      "title": "Conductor #{id}",
+      "coords": "Coords:",
+      "velocidad": "Velocidad:",
+      "rumbo": "Rumbo:",
+      "actualizado": "Actualizado:"
+    }
+  },
+  "revision": {
+    "title": "Revisión de Portes",
+    "subtitle": "Portes pendientes de revisión manual — ajusta dimensiones y asigna conductores",
+    "refresh": "Actualizar",
+    "allClear": "No hay portes pendientes de revisión. ¡Todo al día!",
+    "empty": "No hay portes pendientes de revisión.",
+    "columns": {
+      "id": "ID",
+      "estado": "Estado",
+      "ruta": "Ruta",
+      "cliente": "Cliente",
+      "motivo": "Motivo",
+      "fecha": "Fecha"
+    },
+    "motivoDefault": "Revisión pendiente",
+    "button": "Revisar",
+    "toast": {
+      "summary": "Porte asignado correctamente",
+      "detail": "El porte ha sido retirado de la lista de revisión."
+    }
+  },
+  "aprobacion": {
+    "title": "Aprobación de Conductores",
+    "subtitle": "Conductores registrados pendientes de aprobación",
+    "count": "{n} pendientes",
+    "empty": {
+      "title": "No hay conductores pendientes",
+      "subtitle": "Todos los registros han sido procesados"
+    },
+    "columns": {
+      "nombre": "Nombre",
+      "email": "Email",
+      "telefono": "Teléfono",
+      "dni": "DNI",
+      "ciudad": "Ciudad",
+      "radio": "Radio (km)",
+      "acciones": "Acciones"
+    },
+    "buttons": {
+      "aprobar": "Aprobar",
+      "rechazar": "Rechazar"
+    },
+    "confirm": {
+      "aprobarTitle": "Confirmar aprobación",
+      "rechazarTitle": "Confirmar rechazo",
+      "aprobarMessage": "¿Aprobar al conductor {nombre}? Se le habilitará el acceso a la plataforma.",
+      "rechazarMessage": "¿Rechazar al conductor {nombre}? No podrá acceder a la plataforma."
+    },
+    "toasts": {
+      "aprobado": "Conductor aprobado",
+      "rechazado": "Conductor rechazado",
+      "error": "No se pudo procesar la solicitud."
+    }
+  },
+  "estadisticas": {
+    "title": "Estadísticas Globales",
+    "subtitle": "Panel de análisis y métricas de la plataforma",
+    "kpis": {
+      "totalPortes": "Total Portes",
+      "ingresosTotales": "Ingresos Totales",
+      "conductoresActivos": "Conductores Activos",
+      "clientes": "Clientes"
+    },
+    "charts": {
+      "portesPorMes": {
+        "title": "Portes por Mes",
+        "subtitle": "Últimos 12 meses"
+      },
+      "portesPorEstado": {
+        "title": "Portes por Estado",
+        "subtitle": "Distribución actual"
+      },
+      "ingresosPorMes": {
+        "title": "Ingresos por Mes",
+        "subtitle": "Evolución de facturación (últimos 12 meses)"
+      }
+    },
+    "facturas": {
+      "emitidas": "Facturas Emitidas",
+      "pagadas": "Facturas Pagadas",
+      "pendientes": "Facturas Pendientes"
+    },
+    "topConductores": {
+      "title": "Top 5 Conductores",
+      "columns": {
+        "numero": "#",
+        "nombre": "Nombre",
+        "portes": "Portes"
+      }
+    },
+    "topClientes": {
+      "title": "Top 5 Clientes",
+      "columns": {
+        "numero": "#",
+        "empresa": "Empresa",
+        "facturado": "Facturado",
+        "portes": "Portes"
+      }
+    },
+    "sinDatos": "Sin datos"
+  },
+  "search": {
+    "categories": {
+      "conductores": "Conductores",
+      "portes": "Portes",
+      "clientes": "Clientes",
+      "vehiculos": "Vehículos",
+      "incidencias": "Incidencias",
+      "facturas": "Facturas"
+    },
+    "placeholder": "Buscar...",
+    "clear": "Limpiar búsqueda",
+    "footer": {
+      "navegar": "navegar",
+      "ir": "ir",
+      "cerrar": "cerrar"
+    },
+    "empty": {
+      "message": "Sin resultados para \"{query}\"",
+      "hint": "Intentá con otro término"
+    },
+    "loading": "Buscando..."
+  },
+  "common": {
+    "months": ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+    "buttons": {
+      "cancelar": "Cancelar",
+      "guardar": "Guardar",
+      "eliminar": "Eliminar",
+      "confirmar": "Confirmar",
+      "cerrar": "Cerrar"
+    },
+    "validation": {
+      "required": "Campo requerido"
+    },
+    "error": "Error",
+    "loading": "Cargando..."
+  }
+}

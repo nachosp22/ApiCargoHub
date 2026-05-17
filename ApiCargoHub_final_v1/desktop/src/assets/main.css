@@ -1,0 +1,228 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+html,
+body,
+#app {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  @apply bg-canvas dark:bg-gray-900 text-gray-800 dark:text-gray-200;
+}
+
+/* Scrollbar styling for Electron */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}
+
+/* ============================================================
+   PrimeVue Dark Mode Overrides
+   PrimeVue components don't pick up Tailwind dark: variants,
+   so we override their internal CSS here with .dark selector.
+   ============================================================ */
+
+/* --- InputText --- */
+.dark .p-inputtext {
+  background-color: #1f2937; /* gray-800 */
+  border-color: #374151;     /* gray-700 */
+  color: #f3f4f6;            /* gray-100 */
+}
+.dark .p-inputtext::placeholder {
+  color: #6b7280; /* gray-500 */
+}
+.dark .p-inputtext:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgb(37 99 235 / 0.2);
+}
+
+/* --- Select (Dropdown) --- */
+.dark .p-select {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+.dark .p-select:not(.p-disabled):hover {
+  border-color: #4b5563;
+}
+.dark .p-select-label {
+  color: #f3f4f6;
+}
+.dark .p-select-dropdown {
+  color: #9ca3af;
+}
+.dark .p-select-overlay {
+  background-color: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+}
+.dark .p-select-list-container {
+  background-color: #1f2937;
+}
+.dark .p-select-option {
+  color: #f3f4f6;
+}
+.dark .p-select-option:not(.p-disabled):hover,
+.dark .p-select-option.p-focus:not(.p-selected) {
+  background-color: #374151;
+  color: #f9fafb;
+}
+.dark .p-select-option.p-selected {
+  background-color: #1d4ed8;
+  color: #ffffff;
+}
+.dark .p-select-filter {
+  background-color: #111827;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+/* --- DataTable --- */
+.dark .p-datatable {
+  color: #f3f4f6;
+}
+.dark .p-datatable-thead > tr > th {
+  background-color: #111827 !important; /* gray-900 */
+  color: #9ca3af !important;            /* gray-400 */
+  border-color: #374151 !important;     /* gray-700 */
+}
+.dark .p-datatable-tbody > tr {
+  background-color: #1f2937; /* gray-800 */
+  color: #f3f4f6;
+}
+.dark .p-datatable-tbody > tr:nth-child(odd) {
+  background-color: #111827; /* gray-900 — striped alternate */
+}
+.dark .p-datatable-tbody > tr:hover,
+.dark .p-datatable-tbody > tr.p-highlight:hover {
+  background-color: #374151 !important; /* gray-700 */
+}
+.dark .p-datatable-tbody > tr > td {
+  border-color: #374151 !important; /* gray-700 */
+}
+.dark .p-datatable-tfoot > tr > td {
+  background-color: #111827;
+  border-color: #374151;
+}
+
+/* --- Paginator --- */
+.dark .p-paginator {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #d1d5db;
+}
+.dark .p-paginator .p-paginator-page,
+.dark .p-paginator .p-paginator-first,
+.dark .p-paginator .p-paginator-prev,
+.dark .p-paginator .p-paginator-next,
+.dark .p-paginator .p-paginator-last {
+  color: #d1d5db;
+  background-color: transparent;
+}
+.dark .p-paginator .p-paginator-page:not(.p-highlight):hover,
+.dark .p-paginator .p-paginator-first:hover,
+.dark .p-paginator .p-paginator-prev:hover,
+.dark .p-paginator .p-paginator-next:hover,
+.dark .p-paginator .p-paginator-last:hover {
+  background-color: #374151;
+  color: #f3f4f6;
+}
+.dark .p-paginator .p-paginator-page.p-highlight {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+/* --- Dialog --- */
+.dark .p-dialog {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+.dark .p-dialog-header {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  border-bottom-color: #374151;
+}
+.dark .p-dialog-header .p-dialog-header-icon {
+  color: #9ca3af;
+}
+.dark .p-dialog-header .p-dialog-header-icon:hover {
+  background-color: #374151;
+  color: #f3f4f6;
+}
+.dark .p-dialog-content {
+  background-color: #1f2937;
+  color: #f3f4f6;
+}
+.dark .p-dialog-footer {
+  background-color: #1f2937;
+  border-top-color: #374151;
+}
+
+/* --- TabView (conductor detail tabs) --- */
+.dark .p-tabview {
+  background-color: transparent;
+}
+.dark .p-tabview-nav {
+  background-color: transparent;
+  border-color: #374151;
+}
+.dark .p-tabview-nav li .p-tabview-nav-link {
+  background-color: transparent;
+  color: #9ca3af;
+  border-color: transparent;
+}
+.dark .p-tabview-nav li:not(.p-highlight) .p-tabview-nav-link:hover {
+  color: #f3f4f6;
+  border-color: #4b5563;
+}
+.dark .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  color: #60a5fa;
+  border-color: #2563eb;
+  background-color: transparent;
+}
+.dark .p-tabview-panels {
+  background-color: transparent;
+  color: #f3f4f6;
+}
+
+/* --- Tag (status badges in dialog tables) --- */
+.dark .p-tag {
+  background-color: #374151;
+  color: #d1d5db;
+}
+.dark .p-tag.p-tag-success {
+  background-color: rgb(6 78 59 / 0.6);
+  color: #6ee7b7;
+}
+.dark .p-tag.p-tag-danger {
+  background-color: rgb(127 29 29 / 0.6);
+  color: #fca5a5;
+}
+.dark .p-tag.p-tag-warn {
+  background-color: rgb(120 53 15 / 0.6);
+  color: #fcd34d;
+}
+.dark .p-tag.p-tag-info {
+  background-color: rgb(30 58 138 / 0.6);
+  color: #93c5fd;
+}
+.dark .p-tag.p-tag-secondary {
+  background-color: #374151;
+  color: #d1d5db;
+}
